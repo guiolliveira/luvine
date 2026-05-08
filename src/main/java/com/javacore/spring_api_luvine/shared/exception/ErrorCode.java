@@ -12,7 +12,10 @@ public enum ErrorCode {
 
     // USER
     INVALID_NAME(HttpStatus.BAD_REQUEST),
-    INVALID_EMAIL(HttpStatus.BAD_REQUEST);
+    INVALID_EMAIL(HttpStatus.BAD_REQUEST),
+
+    // SHARED
+    TOKEN_HASH(HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final HttpStatus status;
 
