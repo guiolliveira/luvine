@@ -8,6 +8,7 @@ public enum ErrorCode {
     // AUTH
     EMAIL_AREADY_EXISTS(HttpStatus.CONFLICT),
     PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST),
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED),
 
     // USER
     INVALID_NAME(HttpStatus.BAD_REQUEST),
