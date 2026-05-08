@@ -7,7 +7,7 @@ public class EmailAlreadyExistsException extends BusinessException {
     public EmailAlreadyExistsException() {
         super(
                 "Não foi possível processar sua solicitação com as informações fornecidas",
-                ErrorCode.EMAIL_AREADY_EXISTS
+                ErrorCode.EMAIL_ALREADY_EXISTS
         );
     }
 }

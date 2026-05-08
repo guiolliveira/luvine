@@ -1,7 +1,9 @@
 package com.javacore.spring_api_luvine.auth.service;
 
+import com.javacore.spring_api_luvine.auth.domain.entity.RefreshToken;
 import com.javacore.spring_api_luvine.auth.domain.exception.EmailAlreadyExistsException;
 import com.javacore.spring_api_luvine.auth.domain.exception.InvalidCredentialsException;
+import com.javacore.spring_api_luvine.auth.domain.exception.InvalidRefreshTokenException;
 import com.javacore.spring_api_luvine.auth.domain.exception.PasswordMisMatchException;
 import com.javacore.spring_api_luvine.auth.dto.LoginRequest;
 import com.javacore.spring_api_luvine.auth.dto.LoginResponse;
@@ -9,6 +11,7 @@ import com.javacore.spring_api_luvine.auth.dto.RegisterRequest;
 import com.javacore.spring_api_luvine.auth.dto.RegisterResponse;
 import com.javacore.spring_api_luvine.auth.mapper.AuthMapper;
 import com.javacore.spring_api_luvine.auth.repository.RefreshTokenRepository;
+import com.javacore.spring_api_luvine.shared.util.TokenHash;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
@@ -20,6 +23,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +63,7 @@ public class AuthService {
         return authMapper.toRegisterResponse(user);
     }
 
-    public LoginResponse login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request, String deviceInfo, String ipAddress) {
         Email email = new Email(request.email());
 
         try {
@@ -73,6 +78,43 @@ public class AuthService {
         User user = userRepository.findByEmail(email.value())
                 .orElseThrow(InvalidCredentialsException::new);
 
-        return new LoginResponse(tokenService.generateAccessToken(user));
+        String refreshToken = tokenService.generateRefreshToken(
+                user,
+                deviceInfo,
+                ipAddress
+        );
+        String accessToken = tokenService.generateAccessToken(user);
+
+        return new LoginResponse(accessToken, refreshToken);
+    }
+
+    public LoginResponse refresh(String refreshToken) {
+        String tokenHash = TokenHash.hash(refreshToken);
+
+        RefreshToken token = refreshTokenRepository.findByToken(tokenHash)
+                .orElseThrow(InvalidRefreshTokenException::new);
+
+        if (token.isRevoked()) {
+            throw new InvalidRefreshTokenException();
+        }
+
+        if (token.getExpiresAt().isBefore(Instant.now())) {
+            throw new InvalidRefreshTokenException();
+        }
+
+        token.revoke();
+
+        String newRefreshToken = tokenService.generateRefreshToken(
+                token.getUser(),
+                token.getDeviceInfo(),
+                token.getIpAddress()
+        );
+
+        String newTokenHash = TokenHash.hash(newRefreshToken);
+        token.markAsReplacedBy(newTokenHash);
+
+        String newAccessToken = tokenService.generateAccessToken(token.getUser());
+
+        return new LoginResponse(newAccessToken, newRefreshToken);
     }
 }

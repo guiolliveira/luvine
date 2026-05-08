@@ -6,9 +6,10 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ErrorCode {
     // AUTH
-    EMAIL_AREADY_EXISTS(HttpStatus.CONFLICT),
+    EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT),
     PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST),
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED),
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED),
 
     // USER
     INVALID_NAME(HttpStatus.BAD_REQUEST),
