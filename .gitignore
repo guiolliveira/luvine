@@ -38,3 +38,4 @@ out/
 
 ### Confidential ###
 .env
+src/main/resources/security/private.pem
