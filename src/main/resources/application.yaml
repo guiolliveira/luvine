@@ -14,3 +14,6 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  jwt:
+    private-key: classpath:security/private.pem
+    public-key: classpath:security/public.pem
