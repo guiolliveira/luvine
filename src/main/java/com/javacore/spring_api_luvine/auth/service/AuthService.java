@@ -8,6 +8,7 @@ import com.javacore.spring_api_luvine.auth.dto.LoginResponse;
 import com.javacore.spring_api_luvine.auth.dto.RegisterRequest;
 import com.javacore.spring_api_luvine.auth.dto.RegisterResponse;
 import com.javacore.spring_api_luvine.auth.mapper.AuthMapper;
+import com.javacore.spring_api_luvine.auth.repository.RefreshTokenRepository;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
@@ -29,6 +30,7 @@ public class AuthService {
     private final AuthMapper authMapper;
     private final TokenService tokenService;
     private final AuthenticationManager authenticationManager;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
