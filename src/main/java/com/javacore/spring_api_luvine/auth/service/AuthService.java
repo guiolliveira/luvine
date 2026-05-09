@@ -1,16 +1,12 @@
 package com.javacore.spring_api_luvine.auth.service;
 
 import com.javacore.spring_api_luvine.auth.domain.entity.RefreshToken;
-import com.javacore.spring_api_luvine.auth.domain.exception.EmailAlreadyExistsException;
-import com.javacore.spring_api_luvine.auth.domain.exception.InvalidCredentialsException;
-import com.javacore.spring_api_luvine.auth.domain.exception.InvalidRefreshTokenException;
-import com.javacore.spring_api_luvine.auth.domain.exception.PasswordMisMatchException;
-import com.javacore.spring_api_luvine.auth.dto.LoginRequest;
-import com.javacore.spring_api_luvine.auth.dto.LoginResponse;
-import com.javacore.spring_api_luvine.auth.dto.RegisterRequest;
-import com.javacore.spring_api_luvine.auth.dto.RegisterResponse;
+import com.javacore.spring_api_luvine.auth.domain.exception.*;
+import com.javacore.spring_api_luvine.auth.dto.*;
 import com.javacore.spring_api_luvine.auth.mapper.AuthMapper;
 import com.javacore.spring_api_luvine.auth.repository.RefreshTokenRepository;
+import com.javacore.spring_api_luvine.shared.messaging.dto.EmailMessageRequest;
+import com.javacore.spring_api_luvine.shared.messaging.service.producer.ProducerService;
 import com.javacore.spring_api_luvine.shared.util.TokenHash;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
@@ -36,6 +32,8 @@ public class AuthService {
     private final TokenService tokenService;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final EmailVerificationService verificationService;
+    private final ProducerService producerService;
 
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
@@ -60,6 +58,14 @@ public class AuthService {
 
         userRepository.save(user);
 
+        EmailVerificationCreationResult verification = verificationService.createCode(user);
+
+        producerService.producer(new EmailMessageRequest(
+                user.getEmail(),
+                user.getFirstName(),
+                verification.rawCode()
+        ));
+
         return authMapper.toRegisterResponse(user);
     }
 
@@ -75,8 +81,11 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
 
-        User user = userRepository.findByEmail(email.value())
-                .orElseThrow(InvalidCredentialsException::new);
+        User user = findUserByEmailOrThrow(email.value());
+
+        if (!user.isEmailVerified()) {
+            throw new EmailNotVerifiedException();
+        }
 
         String refreshToken = tokenService.generateRefreshToken(
                 user,
@@ -95,6 +104,7 @@ public class AuthService {
                 .orElseThrow(InvalidRefreshTokenException::new);
 
         if (token.isRevoked()) {
+            revokedAllUserTokens(token.getUser());
             throw new InvalidRefreshTokenException();
         }
 
@@ -116,5 +126,46 @@ public class AuthService {
         String newAccessToken = tokenService.generateAccessToken(token.getUser());
 
         return new LoginResponse(newAccessToken, newRefreshToken);
+    }
+
+    public MessageResponse verifyEmail(VerifyEmailRequest request) {
+        User user = findUserByEmailOrThrow(request.email());
+
+        if (user.isEmailVerified()) {
+            throw new EmailAlreadyVerifiedException();
+        }
+
+        verificationService.validateCode(user.getId(), request.code());
+
+        return new MessageResponse("Email verificado com sucesso!");
+    }
+
+    public MessageResponse resendEmail(ResendEmailRequest request) {
+        User user = findUserByEmailOrThrow(request.email());
+
+        EmailVerificationCreationResult verification = verificationService.createCode(user);
+
+        producerService.producer(new EmailMessageRequest(
+                user.getEmail(),
+                user.getFirstName(),
+                verification.rawCode()
+        ));
+
+        return new MessageResponse("Email de verificação reenviado com sucesso!");
+    }
+
+    private User findUserByEmailOrThrow(String email) {
+        Email normalized = new Email(email);
+
+        return userRepository.findByEmail(normalized.value())
+                .orElseThrow(InvalidCredentialsException::new);
+    }
+
+    private void revokedAllUserTokens(User user) {
+        var tokens = refreshTokenRepository.findAllByUser(user);
+
+        for (var t : tokens) {
+            t.revoke();
+        }
     }
 }

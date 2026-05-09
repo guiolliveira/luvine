@@ -1,9 +1,6 @@
 package com.javacore.spring_api_luvine.auth.controller;
 
-import com.javacore.spring_api_luvine.auth.dto.LoginRequest;
-import com.javacore.spring_api_luvine.auth.dto.LoginResponse;
-import com.javacore.spring_api_luvine.auth.dto.RegisterRequest;
-import com.javacore.spring_api_luvine.auth.dto.RegisterResponse;
+import com.javacore.spring_api_luvine.auth.dto.*;
 import com.javacore.spring_api_luvine.auth.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -66,5 +63,15 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header("Set-Cookie", cookie.toString())
                 .body(new LoginResponse(loginResponse.accessToken(), null));
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<MessageResponse> verifyEmail(@RequestBody @Valid VerifyEmailRequest request) {
+        return ResponseEntity.ok(authService.verifyEmail(request));
+    }
+
+    @PostMapping("/resend-email")
+    public ResponseEntity<MessageResponse> resendEmail(@RequestBody @Valid ResendEmailRequest request) {
+        return ResponseEntity.ok(authService.resendEmail(request));
     }
 }
