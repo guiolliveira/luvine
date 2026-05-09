@@ -19,7 +19,8 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@RequestBody @Valid RegisterRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
+        RegisterResponse response = authService.register(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
@@ -43,6 +44,7 @@ public class AuthController {
                 .sameSite("Strict")
                 .build();
 
+
         return ResponseEntity.ok()
                 .header("Set-Cookie", cookie.toString())
                 .body(new LoginResponse(loginResponse.accessToken(), null));
@@ -50,6 +52,7 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<LoginResponse> refresh(@CookieValue("refreshToken") String refreshToken) {
+
         LoginResponse loginResponse = authService.refresh(refreshToken);
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", loginResponse.refreshToken())
@@ -60,6 +63,7 @@ public class AuthController {
                 .sameSite("Strict")
                 .build();
 
+
         return ResponseEntity.ok()
                 .header("Set-Cookie", cookie.toString())
                 .body(new LoginResponse(loginResponse.accessToken(), null));
@@ -67,11 +71,13 @@ public class AuthController {
 
     @PostMapping("/verify-email")
     public ResponseEntity<MessageResponse> verifyEmail(@RequestBody @Valid VerifyEmailRequest request) {
-        return ResponseEntity.ok(authService.verifyEmail(request));
+        MessageResponse response = authService.verifyEmail(request);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/resend-email")
     public ResponseEntity<MessageResponse> resendEmail(@RequestBody @Valid ResendEmailRequest request) {
-        return ResponseEntity.ok(authService.resendEmail(request));
+        MessageResponse response = authService.resendEmail(request);
+        return ResponseEntity.ok(response);
     }
 }
