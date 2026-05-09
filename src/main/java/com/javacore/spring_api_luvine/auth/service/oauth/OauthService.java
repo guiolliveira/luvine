@@ -1,8 +1,10 @@
 package com.javacore.spring_api_luvine.auth.service.oauth;
 
+import com.javacore.spring_api_luvine.auth.domain.exception.ProviderConflictException;
 import com.javacore.spring_api_luvine.auth.dto.LoginResponse;
 import com.javacore.spring_api_luvine.auth.service.TokenService;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
+import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
 import com.javacore.spring_api_luvine.user.repository.UserRepository;
@@ -20,6 +22,12 @@ public class OauthService {
         Email normalizedEmail = new Email(email);
 
         User user = userRepository.findByEmail(normalizedEmail.value())
+                .map(existingUser -> {
+                    if (existingUser.getUserProvider() != UserProvider.GOOGLE) {
+                        throw new ProviderConflictException();
+                    }
+                    return existingUser;
+                })
                 .orElseGet(() -> {
                     Name normalizedFullName = new Name(name);
 
@@ -31,7 +39,8 @@ public class OauthService {
                             normalizedEmail.value(),
                             firstName,
                             lastName,
-                            ""
+                            "",
+                            UserProvider.GOOGLE
                     );
 
                     newUser.markEmailAsVerified();

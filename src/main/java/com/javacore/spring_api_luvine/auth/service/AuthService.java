@@ -9,6 +9,7 @@ import com.javacore.spring_api_luvine.shared.messaging.dto.EmailMessageRequest;
 import com.javacore.spring_api_luvine.shared.messaging.service.producer.ProducerService;
 import com.javacore.spring_api_luvine.shared.util.TokenHash;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
+import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
 import com.javacore.spring_api_luvine.user.repository.UserRepository;
@@ -53,7 +54,8 @@ public class AuthService {
                 email.value(),
                 firstName.value(),
                 lastName.value(),
-                passwordEncoder.encode(request.password())
+                passwordEncoder.encode(request.password()),
+                UserProvider.LOCAL
         );
 
         userRepository.save(user);
@@ -82,6 +84,10 @@ public class AuthService {
         }
 
         User user = findUserByEmailOrThrow(email.value());
+
+        if (user.getUserProvider() != UserProvider.LOCAL) {
+            throw new ProviderConflictException();
+        }
 
         if (!user.isEmailVerified()) {
             throw new EmailNotVerifiedException();

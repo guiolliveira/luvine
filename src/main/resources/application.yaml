@@ -36,3 +36,13 @@ spring:
     password: ${RABBITMQ_PASSWORD}
     host: localhost
     port: 5672
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 903822593869-s9j0mjp46kb23t5rk3uba4a67aatacm9.apps.googleusercontent.com
+            client-secret: ${CLIENT_GOOGLE_SECRET}
+            scope:
+              - profile
+              - email

@@ -49,12 +49,16 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean emailVerified;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, updatable = false)
+    private UserProvider userProvider;
+
     private Instant lastVerificationEmailSentAt;
 
     @Column(nullable = false)
     private Integer verificationEmailRequestCount;
 
-    private User(String email, String firstName, String lastName, String password) {
+    private User(String email, String firstName, String lastName, String password, UserProvider userProvider) {
         this.publicId = UUID.randomUUID();
         this.email = email;
         this.firstName = firstName;
@@ -64,11 +68,15 @@ public class User implements UserDetails {
         this.updatedAt = Instant.now();
         this.active = true;
         this.emailVerified = false;
+        this.userProvider = userProvider;
         this.verificationEmailRequestCount = 0;
     }
 
-    public static User create(String email, String firstName, String lastName, String password) {
-        return new User(email, firstName, lastName, password);
+    public static User create(
+            String email, String firstName,
+            String lastName, String password,
+            UserProvider userProvider) {
+        return new User(email, firstName, lastName, password, userProvider);
     }
 
     public void markEmailAsVerified() {
