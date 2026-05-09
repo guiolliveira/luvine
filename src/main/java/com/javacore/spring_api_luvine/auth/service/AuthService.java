@@ -131,7 +131,7 @@ public class AuthService {
     public MessageResponse verifyEmail(VerifyEmailRequest request) {
         User user = findUserByEmailOrThrow(request.email());
 
-        if (!user.isEmailVerified()) {
+        if (user.isEmailVerified()) {
             throw new EmailAlreadyVerifiedException();
         }
 

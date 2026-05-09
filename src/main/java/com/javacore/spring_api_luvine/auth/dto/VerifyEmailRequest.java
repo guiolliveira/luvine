@@ -11,7 +11,7 @@ public record VerifyEmailRequest(
         String email,
 
         @NotBlank(message = "Informe o código de verificação")
-        @Pattern(regexp = "^\\d{5}$", message = "O código de verificação deve conter exatamente 5 digitos")
+        @Pattern(regexp = "^\\d{6}$", message = "O código de verificação deve conter exatamente 6 digitos")
         String code
 ) {
 }

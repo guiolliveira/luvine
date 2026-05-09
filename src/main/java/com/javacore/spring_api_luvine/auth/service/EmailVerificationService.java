@@ -76,7 +76,7 @@ public class EmailVerificationService {
     @Transactional
     public void validateCode(Long userId, String code) {
         EmailVerification verification =
-                verificationRepository.findFirstByUserIdAndVerificationCodeOrderByCreatedAtDesc(userId)
+                verificationRepository.findFirstByUserIdAndUsedFalseOrderByCreatedAtDesc(userId)
                         .orElseThrow(InvalidCodeException::new);
 
         if (!passwordEncoder.matches(code, verification.getVerificationCode())) {

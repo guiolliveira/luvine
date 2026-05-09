@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Repository
 public interface EmailVerificationRepository extends JpaRepository<EmailVerification, UUID> {
-    Optional<EmailVerification> findFirstByUserIdAndVerificationCodeOrderByCreatedAtDesc(Long userId);
+    Optional<EmailVerification> findFirstByUserIdAndUsedFalseOrderByCreatedAtDesc(Long userId);
 
     @Modifying
     @Query("UPDATE EmailVerification e SET e.used = TRUE WHERE e.user.id = :userId AND e.used = FALSE")

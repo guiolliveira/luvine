@@ -37,7 +37,11 @@ public class MailSenderService {
 
             Context context = new Context();
             context.setVariable("name", request.name());
-            context.setVariable("code", request.code());
+
+            String code = request.code();
+            String[] digits = code.split("");
+
+            context.setVariable("digits", digits);
 
             String html = templateEngine.process("email-template", context);
 

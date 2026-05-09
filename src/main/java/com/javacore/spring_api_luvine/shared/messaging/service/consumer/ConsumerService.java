@@ -14,7 +14,7 @@ public class ConsumerService {
 
     private final MailSenderService mailSenderService;
 
-    @RabbitListener(queues = RabbitMQDLQConfig.EMAIL_DLQ_QUEUE)
+    @RabbitListener(queues = RabbitMQDLQConfig.EMAIL_QUEUE)
     public void consumer(EmailMessageRequest request) {
         mailSenderService.sendEmail(new MailSenderRequest(
                 request.to(),

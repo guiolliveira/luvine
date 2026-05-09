@@ -25,7 +25,7 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
-    from-email: ${MAIL_USERNAME}
+    from-email: ${MAIL_FROM}
   data:
     redis:
       host: ${VALKEY_HOST}
