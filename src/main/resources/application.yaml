@@ -18,10 +18,21 @@ spring:
     private-key: classpath:security/private.pem
     public-key: classpath:security/public.pem
   mail:
-    host: smtp.gmail.com
+    host: smtp-relay.brevo.com
     port: 587
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
+    from-email: ${MAIL_USERNAME}
+  data:
+    redis:
+      host: ${VALKEY_HOST}
+      port: 6379
+      password: ${VALKEY_PASSWORD}
+  rabbitmq:
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASSWORD}
+    host: localhost
+    port: 5672
