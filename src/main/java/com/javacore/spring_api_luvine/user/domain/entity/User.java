@@ -80,6 +80,10 @@ public class User implements UserDetails {
         this.verificationEmailRequestCount++;
     }
 
+    public void resetEmailVerificationRequests() {
+        this.verificationEmailRequestCount = 0;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
