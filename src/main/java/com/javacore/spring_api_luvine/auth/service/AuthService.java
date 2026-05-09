@@ -81,8 +81,7 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
 
-        User user = userRepository.findByEmail(email.value())
-                .orElseThrow(InvalidCredentialsException::new);
+        User user = findUserByEmailOrThrow(email.value());
 
         if (!user.isEmailVerified()) {
             throw new EmailNotVerifiedException();
@@ -105,6 +104,7 @@ public class AuthService {
                 .orElseThrow(InvalidRefreshTokenException::new);
 
         if (token.isRevoked()) {
+            revokedAllUserTokens(token.getUser());
             throw new InvalidRefreshTokenException();
         }
 
@@ -126,5 +126,46 @@ public class AuthService {
         String newAccessToken = tokenService.generateAccessToken(token.getUser());
 
         return new LoginResponse(newAccessToken, newRefreshToken);
+    }
+
+    public MessageResponse verifyEmail(VerifyEmailRequest request) {
+        User user = findUserByEmailOrThrow(request.email());
+
+        if (!user.isEmailVerified()) {
+            throw new EmailAlreadyVerifiedException();
+        }
+
+        verificationService.validateCode(user.getId(), request.code());
+
+        return new MessageResponse("Email verificado com sucesso!");
+    }
+
+    public MessageResponse resendEmail(ResendEmailRequest request) {
+        User user = findUserByEmailOrThrow(request.email());
+
+        EmailVerificationCreationResult verification = verificationService.createCode(user);
+
+        producerService.producer(new EmailMessageRequest(
+                user.getEmail(),
+                user.getFirstName(),
+                verification.rawCode()
+        ));
+
+        return new MessageResponse("Email de verificação reenviado com sucesso!");
+    }
+
+    private User findUserByEmailOrThrow(String email) {
+        Email normalized = new Email(email);
+
+        return userRepository.findByEmail(normalized.value())
+                .orElseThrow(InvalidCredentialsException::new);
+    }
+
+    private void revokedAllUserTokens(User user) {
+        var tokens = refreshTokenRepository.findAllByUser(user);
+
+        for (var t : tokens) {
+            t.revoke();
+        }
     }
 }
