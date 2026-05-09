@@ -3,7 +3,7 @@ package com.javacore.spring_api_luvine.auth.service;
 import com.javacore.spring_api_luvine.auth.domain.entity.EmailVerification;
 import com.javacore.spring_api_luvine.auth.domain.exception.EmailAlreadyVerifiedException;
 import com.javacore.spring_api_luvine.auth.domain.exception.InvalidCodeException;
-import com.javacore.spring_api_luvine.auth.domain.exception.RateLimitExcedeedException;
+import com.javacore.spring_api_luvine.auth.domain.exception.RateLimitExceededException;
 import com.javacore.spring_api_luvine.auth.dto.EmailVerificationCreationResult;
 import com.javacore.spring_api_luvine.auth.repository.EmailVerificationRepository;
 import com.javacore.spring_api_luvine.shared.limiter.service.RateLimiterService;
@@ -46,14 +46,14 @@ public class EmailVerificationService {
             Instant nextAllowedTime = user.getLastVerificationEmailSentAt().plusSeconds(delaySeconds);
 
             if (now.isBefore(nextAllowedTime)) {
-                throw new RateLimitExcedeedException();
+                throw new RateLimitExceededException();
             }
         }
 
         var probe = rateLimiterService.tryConsume(user.getPublicId());
 
         if (!probe.isConsumed()) {
-            throw new RateLimitExcedeedException();
+            throw new RateLimitExceededException();
         }
 
         user.markVerificationEmailSent();
