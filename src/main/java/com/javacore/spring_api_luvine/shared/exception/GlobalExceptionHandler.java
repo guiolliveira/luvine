@@ -1,6 +1,7 @@
 package com.javacore.spring_api_luvine.shared.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,12 +13,16 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import java.util.List;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiError> handleBusinessException(BusinessException ex, HttpServletRequest request) {
         HttpStatus status = ex.getErrorCode().getStatus();
+
+        log.warn("event=business_exception errorCode={} status={} path={}",
+                ex.getErrorCode().name(), status.value(), request.getRequestURI());
 
         return buildError(status, ex.getMessage(), ex.getErrorCode().name(), null, request);
     }
@@ -31,21 +36,35 @@ public class GlobalExceptionHandler {
                 .stream()
                 .map(FieldError::getDefaultMessage)
                 .toList();
+
+        log.warn("event=validation_failed path={} fields={}", request.getRequestURI(), details);
+
         return buildError(HttpStatus.BAD_REQUEST, "Argumento Inválido", "ARGUMENT_NOT_VALID", details, request);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ApiError> handleTypeMisMatchException(HttpServletRequest request) {
+    public ResponseEntity<ApiError> handleTypeMisMatchException(
+            MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+
+        log.warn("event=argument_type_mismatch path={} param={}", request.getRequestURI(), ex.getName());
+
         return buildError(HttpStatus.BAD_REQUEST, "Parâmetro Inválido", "ARGUMENT_TYPE_MISMATCH", null, request);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiError> handleIntegrityViolationException(HttpServletRequest request) {
+    public ResponseEntity<ApiError> handleIntegrityViolationException(
+            DataIntegrityViolationException ex, HttpServletRequest request) {
+
+        log.warn("event=data_integrity_violation path={}", request.getRequestURI(), ex);
+
         return buildError(HttpStatus.BAD_REQUEST, "Erro de Violação", "INTEGRITY_VIOLATION", null, request);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleGenericException(HttpServletRequest request) {
+    public ResponseEntity<ApiError> handleGenericException(Exception ex, HttpServletRequest request) {
+        log.error("event=unhandled_exception path={} exceptionType={}",
+                request.getRequestURI(), ex.getClass().getSimpleName(), ex);
+
         return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Erro Inesperado", "INTERNAL_SERVER_ERROR", null, request);
     }
 
