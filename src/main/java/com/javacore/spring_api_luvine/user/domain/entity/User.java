@@ -46,6 +46,14 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean active;
 
+    @Column(nullable = false)
+    private boolean emailVerified;
+
+    private Instant lastVerificationEmailSentAt;
+
+    @Column(nullable = false)
+    private Integer verificationEmailRequestCount;
+
     private User(String email, String firstName, String lastName, String password) {
         this.publicId = UUID.randomUUID();
         this.email = email;
@@ -55,10 +63,21 @@ public class User implements UserDetails {
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         this.active = true;
+        this.emailVerified = false;
+        this.verificationEmailRequestCount = 0;
     }
 
     public static User create(String email, String firstName, String lastName, String password) {
         return new User(email, firstName, lastName, password);
+    }
+
+    public void markEmailAsVerified() {
+        this.emailVerified = true;
+    }
+
+    public void markVerificationEmailSent() {
+        this.lastVerificationEmailSentAt = Instant.now();
+        this.verificationEmailRequestCount++;
     }
 
     @Override
