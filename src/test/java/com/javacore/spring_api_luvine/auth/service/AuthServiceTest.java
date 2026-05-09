@@ -63,7 +63,7 @@ class AuthServiceTest {
     private static final String VALID_FIRST_NAME   = "User";
     private static final String VALID_LAST_NAME    = "Name";
     private static final String VALID_PASSWORD     = "password@123";
-    private static final String DEVICE_INFO        = "Brave/Linux";
+    private static final String DEVICE_INFO        = "Mozilla/5.0";
     private static final String IP_ADDRESS         = "192.168.0.1";
     private static final String ACCESS_TOKEN       = "header.payload.signature";
     private static final String REFRESH_TOKEN_RAW  = "raw-refresh-token-value";
