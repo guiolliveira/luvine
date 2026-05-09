@@ -42,7 +42,7 @@ public class TokenService {
                 .claim("jti", UUID.randomUUID().toString())
                 .claim("type", "access")
                 .issuedAt(now)
-                .expiresAt(now.plus(15, ChronoUnit.MICROS))
+                .expiresAt(now.plus(15, ChronoUnit.MINUTES))
                 .build();
 
         JwtEncoderParameters parameters = JwtEncoderParameters.from(
