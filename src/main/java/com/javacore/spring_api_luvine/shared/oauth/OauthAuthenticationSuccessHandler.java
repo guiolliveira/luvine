@@ -38,7 +38,7 @@ public class OauthAuthenticationSuccessHandler implements AuthenticationSuccessH
             String name = oAuth2User.getAttribute("name");
             String deviceInfo = request.getHeader("User-Agent");
 
-            String ipAddress = request.getHeader("X-Fowarded-For");
+            String ipAddress = request.getHeader("X-Forwarded-For");
             if (ipAddress == null) {
                 ipAddress = request.getRemoteAddr();
             }
