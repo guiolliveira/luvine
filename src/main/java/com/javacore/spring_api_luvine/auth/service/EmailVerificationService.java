@@ -125,7 +125,7 @@ public class EmailVerificationService {
     @Scheduled(cron = "0 0 * * * *")
     public void cleanExpiresCodes() {
         log.info("event=cleanup_expired_verification_codes_started");
-        verificationRepository.deleteExpiresCode(Instant.now());
+        verificationRepository.deleteExpiredCode(Instant.now());
         log.info("event=cleanup_expired_verification_codes_completed");
     }
 }

@@ -289,7 +289,7 @@ class EmailVerificationServiceTest {
         void cleanExpiresCodes_always_callsRepositoryWithCurrentInstant() {
             emailVerificationService.cleanExpiresCodes();
 
-            then(verificationRepository).should().deleteExpiresCode(any(Instant.class));
+            then(verificationRepository).should().deleteExpiredCode(any(Instant.class));
         }
     }
 }
