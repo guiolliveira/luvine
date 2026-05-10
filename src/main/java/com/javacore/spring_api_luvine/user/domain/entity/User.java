@@ -37,6 +37,9 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
+    private String phone;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -64,6 +67,7 @@ public class User implements UserDetails {
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
+        this.phone = "";
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         this.active = true;
