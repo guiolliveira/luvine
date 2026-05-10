@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -58,6 +60,30 @@ public class GlobalExceptionHandler {
         log.warn("event=data_integrity_violation path={}", request.getRequestURI(), ex);
 
         return buildError(HttpStatus.BAD_REQUEST, "Erro de Violação", "INTEGRITY_VIOLATION", null, request);
+    }
+
+    @ExceptionHandler(MissingRequestCookieException.class)
+    public ResponseEntity<ApiError> handleRequestCookieException(
+            MissingRequestCookieException ex, HttpServletRequest request) {
+
+        log.warn("event=missing_cookie cookieName={} path={}", ex.getCookieName(), request.getRequestURI());
+
+        return buildError(HttpStatus.BAD_REQUEST, "O cookie é obrigatório", "MISSING_REQUEST_COOKIE", null, request);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiError> handleAuthenticationException(
+            AuthenticationException ex, HttpServletRequest request) {
+
+        log.warn("event=authentication_failed message={} path={}", ex.getMessage(), request.getRequestURI());
+
+        return buildError(
+                HttpStatus.UNAUTHORIZED,
+                "Credenciais inválidas",
+                "AUTHENTICATION_UNAUTHORIZED",
+                null,
+                request
+        );
     }
 
     @ExceptionHandler(Exception.class)
