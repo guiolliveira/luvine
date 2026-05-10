@@ -5,6 +5,7 @@ import com.javacore.spring_api_luvine.auth.repository.RefreshTokenRepository;
 import com.javacore.spring_api_luvine.shared.util.TokenHash;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -19,6 +20,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TokenService {
@@ -29,6 +31,8 @@ public class TokenService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     public String generateAccessToken(User user) {
+        log.debug("event=access_token_generate publicId={}", user.getPublicId());
+
         Instant now = Instant.now();
 
         JwtClaimsSet claimsSet = JwtClaimsSet.builder()
@@ -38,17 +42,22 @@ public class TokenService {
                 .claim("jti", UUID.randomUUID().toString())
                 .claim("type", "access")
                 .issuedAt(now)
-                .expiresAt(now.plus(15, ChronoUnit.MICROS))
+                .expiresAt(now.plus(15, ChronoUnit.MINUTES))
                 .build();
 
         JwtEncoderParameters parameters = JwtEncoderParameters.from(
                 JwsHeader.with(() -> "RS256").build(), claimsSet
         );
-        return jwtEncoder.encode(parameters).getTokenValue();
+
+        String token = jwtEncoder.encode(parameters).getTokenValue();
+        log.debug("event=access_token_generated publicId={}", user.getPublicId());
+        return token;
     }
 
     @Transactional
     public String generateRefreshToken(User user, String deviceInfo, String ipAddress) {
+        log.debug("event=refresh_token_generate publicId={} ip={}", user.getPublicId(), ipAddress);
+
         String refreshToken = generateSecureToken();
 
         String info = deviceInfo != null ? deviceInfo.substring(0, Math.min(deviceInfo.length(), 255)) : null;
@@ -66,13 +75,16 @@ public class TokenService {
 
         refreshTokenRepository.save(token);
 
+        log.debug("event=refresh_token_generated publicId={} ip={}", user.getPublicId(), ipAddress);
         return refreshToken;
     }
 
     @Transactional
     @Scheduled(cron = "0 0 * * * *")
     public void cleanExpiresTokens() {
-        refreshTokenRepository.deleteExpiresToken(Instant.now());
+        log.info("event=cleanup_expired_refresh_tokens_started");
+        refreshTokenRepository.deleteExpiredToken(Instant.now());
+        log.info("event=cleanup_expired_refresh_tokens_completed");
     }
 
     private String generateSecureToken() {

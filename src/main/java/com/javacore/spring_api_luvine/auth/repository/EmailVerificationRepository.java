@@ -21,5 +21,5 @@ public interface EmailVerificationRepository extends JpaRepository<EmailVerifica
 
     @Modifying
     @Query("DELETE FROM EmailVerification e WHERE e.expiresAt < :now OR e.used = TRUE")
-    void deleteExpiresCode(@Param("now")Instant now);
+    void deleteExpiredCode(@Param("now")Instant now);
 }

@@ -18,7 +18,11 @@ spring:
     private-key: classpath:security/private.pem
     public-key: classpath:security/public.pem
   mail:
-    host: smtp-relay.brevo.com
+    # A documentação da Brevo informa smtp-relay.brevo.com,
+    # porém atualmente a validação TLS do Java falha porque o certificado
+    # retornado pelo servidor está associado ao domínio sendinblue.com.
+    # Por isso estou usando smtp-relay.sendinblue.com temporariamente.
+    host: smtp-relay.sendinblue.com
     port: 587
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
@@ -36,3 +40,13 @@ spring:
     password: ${RABBITMQ_PASSWORD}
     host: localhost
     port: 5672
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 903822593869-s9j0mjp46kb23t5rk3uba4a67aatacm9.apps.googleusercontent.com
+            client-secret: ${CLIENT_GOOGLE_SECRET}
+            scope:
+              - profile
+              - email
