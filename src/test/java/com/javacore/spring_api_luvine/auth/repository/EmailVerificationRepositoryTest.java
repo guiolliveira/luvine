@@ -39,21 +39,12 @@ class EmailVerificationRepositoryTest extends AbstractIntegrationTest {
         em.flush();
     }
 
-    // =========================================================================
-    // HELPERS
-    // =========================================================================
+    // --- HELPERS ---------------------------------------------------------------
 
-    /**
-     * Cria e persiste um {@link User} via factory method de produção.
-     */
     private User buildUser(String email) {
         return User.create(email, "John", "Doe", "hashed-password", UserProvider.LOCAL);
     }
 
-    /**
-     * Cria um {@link EmailVerification} válido (expira em 15 min) via factory
-     * method de produção e o persiste.
-     */
     private EmailVerification persistValidCode(User owner) {
         EmailVerification ev = EmailVerification.create(owner, "CODE-" + System.nanoTime());
         em.persist(ev);
@@ -61,10 +52,6 @@ class EmailVerificationRepositoryTest extends AbstractIntegrationTest {
         return ev;
     }
 
-    /**
-     * Cria e persiste um código já marcado como usado.
-     * O método {@code markEmailAsUsed()} é o mesmo usado em produção.
-     */
     private EmailVerification persistUsedCode(User owner) {
         EmailVerification ev = EmailVerification.create(owner, "USED-" + System.nanoTime());
         em.persist(ev);
@@ -74,14 +61,6 @@ class EmailVerificationRepositoryTest extends AbstractIntegrationTest {
         return ev;
     }
 
-    /**
-     * Cria e persiste um código com {@code expiresAt} no passado.
-     *
-     * <p>Como {@code expiresAt} é {@code updatable = false}, não é possível
-     * alterar o campo via JPA após a inserção. Usamos UPDATE nativo para
-     * forçar a expiração diretamente no banco — técnica legítima em testes
-     * de integração que validam queries baseadas em tempo.
-     */
     private EmailVerification persistExpiredCode(User owner) {
         EmailVerification ev = EmailVerification.create(owner, "EXP-" + System.nanoTime());
         em.persist(ev);
@@ -99,9 +78,7 @@ class EmailVerificationRepositoryTest extends AbstractIntegrationTest {
         return repository.findById(ev.getId()).orElseThrow();
     }
 
-    // =========================================================================
-    // markAllCodesUsedForUser()
-    // =========================================================================
+    // --- MARK ALL CODES USED FOR USER ---------------------------------------------------------------
 
     @Nested
     @DisplayName("markAllCodesUsedForUser()")
@@ -159,9 +136,7 @@ class EmailVerificationRepositoryTest extends AbstractIntegrationTest {
         }
     }
 
-    // =========================================================================
-    // deleteExpiredCode()
-    // =========================================================================
+    // --- DELETE EXPIRED CODE ---------------------------------------------------------------
 
     @Nested
     @DisplayName("deleteExpiredCode()")

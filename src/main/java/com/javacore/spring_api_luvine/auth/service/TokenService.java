@@ -83,7 +83,7 @@ public class TokenService {
     @Scheduled(cron = "0 0 * * * *")
     public void cleanExpiresTokens() {
         log.info("event=cleanup_expired_refresh_tokens_started");
-        refreshTokenRepository.deleteExpiresToken(Instant.now());
+        refreshTokenRepository.deleteExpiredToken(Instant.now());
         log.info("event=cleanup_expired_refresh_tokens_completed");
     }
 

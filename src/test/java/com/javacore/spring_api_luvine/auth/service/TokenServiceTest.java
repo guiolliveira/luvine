@@ -355,7 +355,7 @@ class TokenServiceTest {
 
             then(refreshTokenRepository)
                     .should()
-                    .deleteExpiresToken(any(Instant.class));
+                    .deleteExpiredToken(any(Instant.class));
         }
     }
 }
