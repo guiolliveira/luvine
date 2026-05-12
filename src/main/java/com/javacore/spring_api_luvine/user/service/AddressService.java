@@ -3,6 +3,7 @@ package com.javacore.spring_api_luvine.user.service;
 import com.javacore.spring_api_luvine.shared.dto.MessageResponse;
 import com.javacore.spring_api_luvine.user.domain.entity.Address;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
+import com.javacore.spring_api_luvine.user.domain.exception.AddressAlreadyExistsException;
 import com.javacore.spring_api_luvine.user.domain.exception.AddressInactiveException;
 import com.javacore.spring_api_luvine.user.domain.exception.AddressNotFoundException;
 import com.javacore.spring_api_luvine.user.domain.exception.UserSessionInvalidException;
@@ -16,12 +17,14 @@ import com.javacore.spring_api_luvine.user.mapper.UserMapper;
 import com.javacore.spring_api_luvine.user.repository.AddressRepository;
 import com.javacore.spring_api_luvine.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AddressService {
@@ -32,6 +35,8 @@ public class AddressService {
 
     @Transactional
     public AddressResponse createAddress(CurrentUser currentUser, AddressRequest request) {
+        log.info("event=create_address_attempt publicId={}", currentUser.publicId());
+
         Name firstName = new Name(request.firstName());
         Name lastName = new Name(request.lastName());
         Phone phone = new Phone(request.phone());
@@ -40,8 +45,22 @@ public class AddressService {
         User user = userRepository.findByPublicId(currentUser.publicId())
                 .orElseThrow(UserSessionInvalidException::new);
 
-        boolean hasNoDefault = !addressRepository.existsByUserPublicIdAndActiveTrue(currentUser.publicId());
+        boolean alreadyExists = addressRepository
+                .existsByUserPublicIdAndFirstNameAndLastNameAndCepAndNumberAndComplementAndActiveTrue(
+                        currentUser.publicId(),
+                        firstName,
+                        lastName,
+                        cep,
+                        request.number(),
+                        request.complement()
+                );
 
+        if (alreadyExists) {
+            log.warn("event=create_address_rejected reason=address_already_exists publicId={}", currentUser.publicId());
+            throw new AddressAlreadyExistsException();
+        }
+
+        boolean hasNoDefault = !addressRepository.existsByUserPublicIdAndActiveTrue(currentUser.publicId());
         boolean shouldBeDefault = hasNoDefault || request.defaultAddress();
 
         if (shouldBeDefault) {
@@ -66,11 +85,16 @@ public class AddressService {
 
         addressRepository.save(address);
 
+        log.info("event=address_created publicId={} addressPublicId={} default={}",
+                currentUser.publicId(), address.getPublicId(), shouldBeDefault);
+
         return userMapper.toAddressResponse(address);
     }
 
     @Transactional
     public MessageResponse deleteAddress(CurrentUser user, UUID addressPublicId) {
+        log.info("event=delete_address_attempt publicId={} addressPublicId={}", user.publicId(), addressPublicId);
+
         Address address = getOwnedAddress(user.publicId(), addressPublicId);
         boolean wasDefault = address.isDefaultAddress();
 
@@ -78,36 +102,58 @@ public class AddressService {
 
         if (wasDefault) {
             addressRepository.findFirstByUserPublicIdAndActiveTrueOrderByCreatedAtDesc(user.publicId())
-                    .ifPresent(Address::markAsDefault);
+                    .ifPresent(next -> {
+                        next.markAsDefault();
+                        log.info("event=default_address_reassigned publicId={} newDefaultAddressPublicId={}",
+                                user.publicId(), next.getPublicId());
+                    });
         }
+
+        log.info("event=address_deleted publicId={} addressPublicId={} wasDefault={}",
+                user.publicId(), addressPublicId, wasDefault);
 
         return new MessageResponse("Endereço deletado com sucesso!");
     }
 
     @Transactional
     public AddressResponse setDefaultAddress(CurrentUser user, UUID addressPublicId) {
+        log.info("event=set_default_address_attempt publicId={} addressPublicId={}", user.publicId(), addressPublicId);
+
         Address newDefault = getOwnedAddress(user.publicId(), addressPublicId);
 
         if (!newDefault.isActive()) {
+            log.warn("event=set_default_address_rejected reason=address_inactive publicId={} addressPublicId={}",
+                    user.publicId(), addressPublicId);
             throw new AddressInactiveException();
         }
 
         addressRepository.resetDefaultAddressForUser(user.publicId());
-
         newDefault.markAsDefault();
+
+        log.info("event=default_address_updated publicId={} addressPublicId={}", user.publicId(), addressPublicId);
+
         return userMapper.toAddressResponse(newDefault);
     }
 
     @Transactional(readOnly = true)
     public List<AddressResponse> findAllAddresses(CurrentUser user) {
-        return addressRepository.findAllByUserPublicIdAndActiveTrue(user.publicId())
+        log.debug("event=find_all_addresses publicId={}", user.publicId());
+
+        List<AddressResponse> addresses = addressRepository.findAllByUserPublicIdAndActiveTrue(user.publicId())
                 .stream()
                 .map(userMapper::toAddressResponse)
                 .toList();
+
+        log.debug("event=find_all_addresses_completed publicId={} count={}", user.publicId(), addresses.size());
+
+        return addresses;
     }
 
     private Address getOwnedAddress(UUID userPublicId, UUID addressPublicId) {
         return addressRepository.findByPublicIdAndUserPublicId(addressPublicId, userPublicId)
-                .orElseThrow(AddressNotFoundException::new);
+                .orElseThrow(() -> {
+                    log.warn("event=address_not_found publicId={} addressPublicId={}", userPublicId, addressPublicId);
+                    return new AddressNotFoundException();
+                });
     }
 }
