@@ -31,6 +31,9 @@ public class User implements UserDetails {
     @AttributeOverride(name = "value", column = @Column(name = "email", nullable = false, unique = true))
     private Email email;
 
+    @Column(unique = true)
+    private String cpf;
+
     @Embedded
     @AttributeOverride(name = "value", column = @Column(name = "firstName", nullable = false, length = 100))
     private Name firstName;
@@ -61,6 +64,12 @@ public class User implements UserDetails {
     @Column(nullable = false, updatable = false)
     private UserProvider userProvider;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserRole userRole;
+
+    private String avatarUrl;
+
     private Instant lastVerificationEmailSentAt;
 
     @Column(nullable = false)
@@ -69,6 +78,7 @@ public class User implements UserDetails {
     private User(Email email, Name firstName, Name lastName, String password, UserProvider userProvider) {
         this.publicId = UUID.randomUUID();
         this.email = email;
+        this.cpf = null;
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
@@ -78,6 +88,8 @@ public class User implements UserDetails {
         this.active = true;
         this.emailVerified = false;
         this.userProvider = userProvider;
+        this.userRole = UserRole.CUSTOMER;
+        this.avatarUrl = null;
         this.verificationEmailRequestCount = 0;
     }
 
