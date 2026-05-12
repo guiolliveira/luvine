@@ -7,6 +7,7 @@ import com.javacore.spring_api_luvine.user.domain.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -18,6 +19,7 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -35,12 +37,18 @@ public class TokenService {
 
         Instant now = Instant.now();
 
+        List<String> authorities = user.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
         JwtClaimsSet claimsSet = JwtClaimsSet.builder()
                 .issuer("Api-Luvine")
                 .subject(user.getEmail().value())
                 .claim("publicId", user.getPublicId().toString())
                 .claim("jti", UUID.randomUUID().toString())
                 .claim("type", "access")
+                .claim("authorities", authorities)
                 .issuedAt(now)
                 .expiresAt(now.plus(15, ChronoUnit.MINUTES))
                 .build();
