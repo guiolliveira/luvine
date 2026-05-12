@@ -1,0 +1,119 @@
+package com.javacore.spring_api_luvine.user.domain.entity;
+
+import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.Instant;
+import java.util.UUID;
+
+@Entity
+@Table(name = "addresses")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Address {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true, updatable = false)
+    private UUID publicId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "firstName", nullable = false, length = 100))
+    private Name firstName;
+
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "lastName", nullable = false, length = 100))
+    private Name lastName;
+
+    @Column(nullable = false, length = 8)
+    private String cep;
+
+    @Column(nullable = false)
+    private String street;
+
+    @Column(nullable = false, length = 20)
+    private String number;
+
+    @Column(length = 100)
+    private String complement;
+
+    @Column(nullable = false, length = 100)
+    private String neighborhood;
+
+    @Column(nullable = false, length = 100)
+    private String city;
+
+    @Column(nullable = false, length = 50)
+    private String state;
+
+    @Column(nullable = false, length = 100)
+    private String country;
+
+    @Column(nullable = false, length = 20)
+    private String phone;
+
+    @Column(nullable = false)
+    private boolean defaultAddress;
+
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @Column(nullable = false)
+    private boolean active;
+
+    private Address(
+            User user, Name firstName, Name lastName,
+            String cep, String street, String number,
+            String complement, String neighborhood, String city,
+            String state, String country, String phone,
+            boolean defaultAddress) {
+        this.publicId = UUID.randomUUID();
+        this.user = user;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.cep = cep;
+        this.street = street;
+        this.number = number;
+        this.complement = complement;
+        this.neighborhood = neighborhood;
+        this.city = city;
+        this.state = state;
+        this.country = country;
+        this.phone = phone;
+        this.defaultAddress = defaultAddress;
+        this.createdAt = Instant.now();
+        this.active = true;
+    }
+
+    public static Address create(
+            User user, Name firstName, Name lastName,
+            String cep, String street, String number,
+            String complement, String neighborhood, String city,
+            String state, String country, String phone,
+            boolean defaultAddress) {
+        return new Address(user, firstName, lastName, cep, street, number,
+                complement, neighborhood, city, state, country, phone, defaultAddress);
+    }
+
+    public void markAsDefault() {
+        this.defaultAddress = true;
+    }
+
+    public void markAsNotDefault() {
+        this.defaultAddress = false;
+    }
+
+    public void disable() {
+        this.defaultAddress = false;
+        this.active = false;
+    }
+}
