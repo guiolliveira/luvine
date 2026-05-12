@@ -1,5 +1,7 @@
 package com.javacore.spring_api_luvine.user.domain.entity;
 
+import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -25,14 +27,17 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true, updatable = false)
     private UUID publicId;
 
-    @Column(nullable = false, unique = true, updatable = false)
-    private String email;
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "email", nullable = false, unique = true))
+    private Email email;
 
-    @Column(nullable = false, length = 100)
-    private String firstName;
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "firstName", nullable = false, length = 100))
+    private Name firstName;
 
-    @Column(nullable = false, length = 100)
-    private String lastName;
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "lastName", nullable = false, length = 100))
+    private Name lastName;
 
     @Column(nullable = false)
     private String password;
@@ -61,7 +66,7 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Integer verificationEmailRequestCount;
 
-    private User(String email, String firstName, String lastName, String password, UserProvider userProvider) {
+    private User(Email email, Name firstName, Name lastName, String password, UserProvider userProvider) {
         this.publicId = UUID.randomUUID();
         this.email = email;
         this.firstName = firstName;
@@ -77,8 +82,8 @@ public class User implements UserDetails {
     }
 
     public static User create(
-            String email, String firstName,
-            String lastName, String password,
+            Email email, Name firstName,
+            Name lastName, String password,
             UserProvider userProvider) {
         return new User(email, firstName, lastName, password, userProvider);
     }
@@ -103,7 +108,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return getEmail();
+        return getEmail().value();
     }
 
     @Override

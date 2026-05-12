@@ -48,7 +48,7 @@ public class AuthService {
         Name firstName = new Name(request.firstName());
         Name lastName = new Name(request.lastName());
 
-        if (userRepository.existsByEmail(email.value())) {
+        if (userRepository.existsByEmail(email)) {
             log.warn("event=register_rejected reason=email_already_exists email={}", maskedEmail);
             throw new EmailAlreadyExistsException();
         }
@@ -59,9 +59,9 @@ public class AuthService {
         }
 
         User user = User.create(
-                email.value(),
-                firstName.value(),
-                lastName.value(),
+                email,
+                firstName,
+                lastName,
                 passwordEncoder.encode(request.password()),
                 UserProvider.LOCAL
         );
@@ -72,8 +72,8 @@ public class AuthService {
         EmailVerificationCreationResult verification = verificationService.createCode(user);
 
         producerService.producer(new EmailMessageRequest(
-                user.getEmail(),
-                user.getFirstName(),
+                user.getEmail().value(),
+                user.getFirstName().value(),
                 verification.rawCode()
         ));
 
@@ -185,8 +185,8 @@ public class AuthService {
         EmailVerificationCreationResult verification = verificationService.createCode(user);
 
         producerService.producer(new EmailMessageRequest(
-                user.getEmail(),
-                user.getFirstName(),
+                user.getEmail().value(),
+                user.getFirstName().value(),
                 verification.rawCode()
         ));
 
@@ -197,7 +197,7 @@ public class AuthService {
     private User findUserByEmailOrThrow(String email) {
         Email normalized = new Email(email);
 
-        return userRepository.findByEmail(normalized.value())
+        return userRepository.findByEmail(normalized)
                 .orElseThrow(InvalidCredentialsException::new);
     }
 

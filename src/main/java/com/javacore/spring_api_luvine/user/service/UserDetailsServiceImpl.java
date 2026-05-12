@@ -1,5 +1,6 @@
 package com.javacore.spring_api_luvine.user.service;
 
+import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
 import com.javacore.spring_api_luvine.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,7 +16,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByEmail(username)
+        return userRepository.findByEmail(new Email(username))
                 .orElseThrow(() -> new UsernameNotFoundException("Email ou senha incorretos"));
     }
 }

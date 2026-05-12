@@ -27,7 +27,7 @@ public class OauthService {
 
         Email normalizedEmail = new Email(email);
 
-        User user = userRepository.findByEmail(normalizedEmail.value())
+        User user = userRepository.findByEmail(normalizedEmail)
                 .map(existingUser -> {
                     if (existingUser.getUserProvider() != UserProvider.GOOGLE) {
                         log.warn("event=oauth_login_rejected reason=provider_conflict publicId={} email={}" +
@@ -49,9 +49,9 @@ public class OauthService {
                     String lastName = parts.length > 1 ? parts[parts.length - 1] : "";
 
                     User newUser = User.create(
-                            normalizedEmail.value(),
-                            firstName,
-                            lastName,
+                            normalizedEmail,
+                            new Name(firstName),
+                            new Name(lastName),
                             "",
                             UserProvider.GOOGLE
                     );

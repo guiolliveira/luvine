@@ -37,7 +37,7 @@ public class TokenService {
 
         JwtClaimsSet claimsSet = JwtClaimsSet.builder()
                 .issuer("Api-Luvine")
-                .subject(user.getEmail())
+                .subject(user.getEmail().value())
                 .claim("publicId", user.getPublicId().toString())
                 .claim("jti", UUID.randomUUID().toString())
                 .claim("type", "access")
