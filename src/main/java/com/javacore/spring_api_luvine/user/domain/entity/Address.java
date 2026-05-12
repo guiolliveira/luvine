@@ -85,13 +85,13 @@ public class Address {
         this.firstName = firstName;
         this.lastName = lastName;
         this.cep = cep;
-        this.street = street;
-        this.number = number;
-        this.complement = complement;
-        this.neighborhood = neighborhood;
-        this.city = city;
-        this.state = state;
-        this.country = country;
+        this.street = street != null ? street.trim() : null;
+        this.number = number != null ? number.trim() : null;
+        this.complement = complement != null ? complement.trim() : null;
+        this.neighborhood = neighborhood != null ? neighborhood.trim() : null;
+        this.city = city != null ? city.trim() : null;
+        this.state = state != null ? state.trim() : null;
+        this.country = country != null ? country.trim() : null;
         this.phone = phone;
         this.defaultAddress = defaultAddress;
         this.createdAt = Instant.now();
@@ -110,10 +110,6 @@ public class Address {
 
     public void markAsDefault() {
         this.defaultAddress = true;
-    }
-
-    public void markAsNotDefault() {
-        this.defaultAddress = false;
     }
 
     public void disable() {

@@ -5,6 +5,7 @@ import com.javacore.spring_api_luvine.auth.domain.exception.*;
 import com.javacore.spring_api_luvine.auth.dto.*;
 import com.javacore.spring_api_luvine.auth.mapper.AuthMapper;
 import com.javacore.spring_api_luvine.auth.repository.RefreshTokenRepository;
+import com.javacore.spring_api_luvine.shared.dto.MessageResponse;
 import com.javacore.spring_api_luvine.shared.messaging.dto.EmailMessageRequest;
 import com.javacore.spring_api_luvine.shared.messaging.service.producer.ProducerService;
 import com.javacore.spring_api_luvine.shared.util.EmailMask;

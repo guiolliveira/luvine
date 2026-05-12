@@ -2,6 +2,7 @@ package com.javacore.spring_api_luvine.auth.controller;
 
 import com.javacore.spring_api_luvine.auth.dto.*;
 import com.javacore.spring_api_luvine.auth.service.AuthService;
+import com.javacore.spring_api_luvine.shared.dto.MessageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
