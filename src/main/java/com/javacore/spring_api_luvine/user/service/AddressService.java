@@ -72,10 +72,11 @@ public class AddressService {
     @Transactional
     public MessageResponse deleteAddress(CurrentUser user, UUID addressPublicId) {
         Address address = getOwnedAddress(user.publicId(), addressPublicId);
+        boolean wasDefault = address.isDefaultAddress();
 
         address.disable();
 
-        if (address.isDefaultAddress()) {
+        if (wasDefault) {
             addressRepository.findFirstByUserPublicIdAndActiveTrueOrderByCreatedAtDesc(user.publicId())
                     .ifPresent(Address::markAsDefault);
         }
