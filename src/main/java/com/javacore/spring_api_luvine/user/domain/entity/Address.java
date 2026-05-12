@@ -1,5 +1,6 @@
 package com.javacore.spring_api_luvine.user.domain.entity;
 
+import com.javacore.spring_api_luvine.user.domain.valueObject.Cep;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -34,8 +35,9 @@ public class Address {
     @AttributeOverride(name = "value", column = @Column(name = "lastName", nullable = false, length = 100))
     private Name lastName;
 
-    @Column(nullable = false, length = 8)
-    private String cep;
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "cep", nullable = false, length = 8))
+    private Cep cep;
 
     @Column(nullable = false)
     private String street;
@@ -72,7 +74,7 @@ public class Address {
 
     private Address(
             User user, Name firstName, Name lastName,
-            String cep, String street, String number,
+            Cep cep, String street, String number,
             String complement, String neighborhood, String city,
             String state, String country, String phone,
             boolean defaultAddress) {
@@ -96,7 +98,7 @@ public class Address {
 
     public static Address create(
             User user, Name firstName, Name lastName,
-            String cep, String street, String number,
+            Cep cep, String street, String number,
             String complement, String neighborhood, String city,
             String state, String country, String phone,
             boolean defaultAddress) {
