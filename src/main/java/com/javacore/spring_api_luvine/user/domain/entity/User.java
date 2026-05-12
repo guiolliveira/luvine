@@ -31,7 +31,7 @@ public class User implements UserDetails {
     @AttributeOverride(name = "value", column = @Column(name = "email", nullable = false, unique = true))
     private Email email;
 
-    @Column(unique = true)
+    @Column(unique = true, length = 11)
     private String cpf;
 
     @Embedded
