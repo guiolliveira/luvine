@@ -1,6 +1,7 @@
 package com.javacore.spring_api_luvine.user.repository;
 
 import com.javacore.spring_api_luvine.user.domain.entity.Address;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Cep;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -17,6 +18,9 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
     Optional<Address> findByPublicIdAndUserPublicId(UUID addressPublicId, UUID userPublicId);
 
     boolean existsByUserPublicIdAndActiveTrue(UUID userPublicId);
+    boolean existsByUserPublicIdAndCepAndNumberAndComplementAndActiveTrue(
+            UUID userPublicId, Cep cep, String number, String complement
+    );
     List<Address> findAllByUserPublicIdAndActiveTrue(UUID userPublicId);
 
     @Modifying
