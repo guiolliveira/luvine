@@ -33,7 +33,7 @@ public record Email(@Column String value) {
         this.value = normalized;
     }
 
-    private String normalize(String email) {
+    private static String normalize(String email) {
         return email.trim().toLowerCase();
     }
 }

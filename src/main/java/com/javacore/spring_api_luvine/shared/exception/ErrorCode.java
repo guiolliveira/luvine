@@ -20,6 +20,7 @@ public enum ErrorCode {
     INVALID_NAME(HttpStatus.BAD_REQUEST),
     INVALID_EMAIL(HttpStatus.BAD_REQUEST),
     INVALID_CEP(HttpStatus.BAD_REQUEST),
+    INVALID_PHONE(HttpStatus.BAD_REQUEST),
 
     // SHARED
     TOKEN_HASH(HttpStatus.INTERNAL_SERVER_ERROR);

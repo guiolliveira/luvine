@@ -17,7 +17,7 @@ public record Name(@Column String value) {
         this.value = normalize(value);
     }
 
-    private String normalize(String name) {
+    private static String normalize(String name) {
         String[] words = name.trim().toLowerCase().split("\\s+");
 
         return Arrays
