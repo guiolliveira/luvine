@@ -3,6 +3,7 @@ package com.javacore.spring_api_luvine.auth.service;
 import com.javacore.spring_api_luvine.auth.domain.entity.RefreshToken;
 import com.javacore.spring_api_luvine.auth.repository.RefreshTokenRepository;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -50,7 +51,7 @@ class TokenServiceTest {
         User user = mock(User.class);
 
         given(user.getPublicId()).willReturn(UUID.randomUUID());
-        given(user.getEmail()).willReturn(EMAIL);
+        given(user.getEmail()).willReturn(new Email(EMAIL));
 
         return user;
     }

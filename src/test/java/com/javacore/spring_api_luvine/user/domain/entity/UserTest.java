@@ -1,5 +1,7 @@
 package com.javacore.spring_api_luvine.user.domain.entity;
 
+import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -19,11 +21,11 @@ class UserTest {
     private static final String PASSWORD   = "hashed-password";
 
     private User localUser() {
-        return User.create(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD, UserProvider.LOCAL);
+        return User.create(new Email(EMAIL), new Name(FIRST_NAME), new Name(LAST_NAME), PASSWORD, UserProvider.LOCAL);
     }
 
     private User googleUser() {
-        return User.create(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD, UserProvider.GOOGLE);
+        return User.create(new Email(EMAIL), new Name(FIRST_NAME), new Name(LAST_NAME), PASSWORD, UserProvider.GOOGLE);
     }
 
     // --- USER.CREATE() - FACTORY -------------------------------------------------------------
@@ -37,9 +39,9 @@ class UserTest {
         void shouldPersistAllScalarFields() {
             User user = localUser();
 
-            assertThat(user.getEmail()).isEqualTo(EMAIL);
-            assertThat(user.getFirstName()).isEqualTo(FIRST_NAME);
-            assertThat(user.getLastName()).isEqualTo(LAST_NAME);
+            assertThat(user.getEmail().value()).isEqualTo(EMAIL);
+            assertThat(user.getFirstName().value()).isEqualTo(new Name(FIRST_NAME).value());
+            assertThat(user.getLastName().value()).isEqualTo(new Name(LAST_NAME).value());
             assertThat(user.getPassword()).isEqualTo(PASSWORD);
         }
 
@@ -120,9 +122,6 @@ class UserTest {
         }
     }
 
-    // =========================================================================
-    // markEmailAsVerified()
-    // =========================================================================
     // --- MARK EMAIL AS VERIFIED -------------------------------------------------------------
 
     @Nested
@@ -152,7 +151,7 @@ class UserTest {
         @DisplayName("não deve alterar outros campos do usuário")
         void shouldNotAffectOtherFields() {
             User user = localUser();
-            String emailBefore = user.getEmail();
+            Email emailBefore = user.getEmail();
             boolean activeBefore = user.isActive();
 
             user.markEmailAsVerified();
@@ -163,9 +162,6 @@ class UserTest {
         }
     }
 
-    // =========================================================================
-    // markVerificationEmailSent()
-    // =========================================================================
     // --- MARK VERIFICATION EMAIL SENT -------------------------------------------------------------
 
     @Nested
@@ -212,7 +208,6 @@ class UserTest {
             user.markVerificationEmailSent();
             Instant first = user.getLastVerificationEmailSentAt();
 
-            // pequena pausa para garantir avanço do relógio
             Thread.sleep(5);
             user.markVerificationEmailSent();
             Instant second = user.getLastVerificationEmailSentAt();
@@ -307,7 +302,6 @@ class UserTest {
         void isEnabledShouldReflectIsActive() {
             User user = localUser();
 
-            // recém-criado: active = true
             assertThat(user.isEnabled()).isTrue();
             assertThat(user.isEnabled()).isEqualTo(user.isActive());
         }

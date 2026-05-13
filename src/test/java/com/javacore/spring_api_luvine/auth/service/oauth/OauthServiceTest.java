@@ -5,6 +5,7 @@ import com.javacore.spring_api_luvine.auth.dto.LoginResponse;
 import com.javacore.spring_api_luvine.auth.service.TokenService;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
 import com.javacore.spring_api_luvine.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -58,7 +59,7 @@ class OauthServiceTest {
         void loginWithGoogle_existingGoogleUser_returnsTokenPair() {
             User existingUser = mockGoogleUser();
 
-            given(userRepository.findByEmail(EMAIL)).willReturn(Optional.of(existingUser));
+            given(userRepository.findByEmail(new Email(EMAIL))).willReturn(Optional.of(existingUser));
             given(tokenService.generateRefreshToken(existingUser, DEVICE_INFO, IP_ADDRESS))
                     .willReturn(REFRESH_TOKEN);
             given(tokenService.generateAccessToken(existingUser)).willReturn(ACCESS_TOKEN);
@@ -72,7 +73,7 @@ class OauthServiceTest {
         @Test
         @DisplayName("deve criar novo usuário quando email não existe e retornar tokens")
         void loginWithGoogle_newUser_persistsAndReturnsTokenPair() {
-            given(userRepository.findByEmail(EMAIL)).willReturn(Optional.empty());
+            given(userRepository.findByEmail(new Email(EMAIL))).willReturn(Optional.empty());
             given(userRepository.save(any(User.class))).willAnswer(inv -> inv.getArgument(0));
             given(tokenService.generateRefreshToken(any(), anyString(), anyString()))
                     .willReturn(REFRESH_TOKEN);
@@ -88,7 +89,7 @@ class OauthServiceTest {
         @Test
         @DisplayName("deve criar novo usuário com email verificado")
         void loginWithGoogle_newUser_savesUserWithEmailVerified() {
-            given(userRepository.findByEmail(EMAIL)).willReturn(Optional.empty());
+            given(userRepository.findByEmail(new Email(EMAIL))).willReturn(Optional.empty());
             ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
             given(userRepository.save(captor.capture())).willAnswer(inv -> inv.getArgument(0));
             given(tokenService.generateRefreshToken(any(), any(), any())).willReturn(REFRESH_TOKEN);
@@ -102,7 +103,7 @@ class OauthServiceTest {
         @Test
         @DisplayName("deve criar novo usuário com provider GOOGLE")
         void loginWithGoogle_newUser_savesUserWithGoogleProvider() {
-            given(userRepository.findByEmail(EMAIL)).willReturn(Optional.empty());
+            given(userRepository.findByEmail(new Email(EMAIL))).willReturn(Optional.empty());
             ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
             given(userRepository.save(captor.capture())).willAnswer(inv -> inv.getArgument(0));
             given(tokenService.generateRefreshToken(any(), any(), any())).willReturn(REFRESH_TOKEN);
@@ -116,7 +117,7 @@ class OauthServiceTest {
         @Test
         @DisplayName("deve extrair firstName e lastName corretamente do nome completo")
         void loginWithGoogle_newUser_splitsNameCorrectly() {
-            given(userRepository.findByEmail(EMAIL)).willReturn(Optional.empty());
+            given(userRepository.findByEmail(new Email(EMAIL))).willReturn(Optional.empty());
             ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
             given(userRepository.save(captor.capture())).willAnswer(inv -> inv.getArgument(0));
             given(tokenService.generateRefreshToken(any(), any(), any())).willReturn(REFRESH_TOKEN);
@@ -125,14 +126,14 @@ class OauthServiceTest {
             oauthService.loginWithGoogle(EMAIL, "user name", DEVICE_INFO, IP_ADDRESS);
 
             User saved = captor.getValue();
-            assertThat(saved.getFirstName()).isEqualTo("User");
-            assertThat(saved.getLastName()).isEqualTo("Name");
+            assertThat(saved.getFirstName().value()).isEqualTo("User");
+            assertThat(saved.getLastName().value()).isEqualTo("Name");
         }
 
         @Test
         @DisplayName("deve usar firstName e lastName vazio quando nome tem apenas uma palavra")
         void loginWithGoogle_newUser_singleWordName_setsEmptyLastName() {
-            given(userRepository.findByEmail(EMAIL)).willReturn(Optional.empty());
+            given(userRepository.findByEmail(new Email(EMAIL))).willReturn(Optional.empty());
             ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
             given(userRepository.save(captor.capture())).willAnswer(inv -> inv.getArgument(0));
             given(tokenService.generateRefreshToken(any(), any(), any())).willReturn(REFRESH_TOKEN);
@@ -141,8 +142,8 @@ class OauthServiceTest {
             oauthService.loginWithGoogle(EMAIL, "user", DEVICE_INFO, IP_ADDRESS);
 
             User saved = captor.getValue();
-            assertThat(saved.getFirstName()).isEqualTo("User");
-            assertThat(saved.getLastName()).isBlank();
+            assertThat(saved.getFirstName().value()).isEqualTo("User");
+            assertThat(saved.getLastName().value()).isBlank();
         }
 
         @Test
@@ -152,7 +153,7 @@ class OauthServiceTest {
             given(localUser.getPublicId()).willReturn(UUID.randomUUID());
             given(localUser.getUserProvider()).willReturn(UserProvider.LOCAL);
 
-            given(userRepository.findByEmail(EMAIL)).willReturn(Optional.of(localUser));
+            given(userRepository.findByEmail(new Email(EMAIL))).willReturn(Optional.of(localUser));
 
             assertThatExceptionOfType(ProviderConflictException.class)
                     .isThrownBy(() -> oauthService.loginWithGoogle(EMAIL, NAME, DEVICE_INFO, IP_ADDRESS));
@@ -168,7 +169,7 @@ class OauthServiceTest {
             given(localUser.getPublicId()).willReturn(UUID.randomUUID());
             given(localUser.getUserProvider()).willReturn(UserProvider.LOCAL);
 
-            given(userRepository.findByEmail(EMAIL)).willReturn(Optional.of(localUser));
+            given(userRepository.findByEmail(new Email(EMAIL))).willReturn(Optional.of(localUser));
 
             assertThatExceptionOfType(ProviderConflictException.class)
                     .isThrownBy(() -> oauthService.loginWithGoogle(EMAIL, NAME, DEVICE_INFO, IP_ADDRESS));
@@ -181,13 +182,13 @@ class OauthServiceTest {
         void loginWithGoogle_upperCaseEmail_normalizesBeforeQuery() {
             User existingUser = mockGoogleUser();
 
-            given(userRepository.findByEmail("user@example.com")).willReturn(Optional.of(existingUser));
+            given(userRepository.findByEmail(new Email("USER@EXAMPLE.COM"))).willReturn(Optional.of(existingUser));
             given(tokenService.generateRefreshToken(any(), any(), any())).willReturn(REFRESH_TOKEN);
             given(tokenService.generateAccessToken(any())).willReturn(ACCESS_TOKEN);
 
             oauthService.loginWithGoogle("USER@EXAMPLE.COM", NAME, DEVICE_INFO, IP_ADDRESS);
 
-            then(userRepository).should().findByEmail("user@example.com");
+            then(userRepository).should().findByEmail(new Email("USER@EXAMPLE.COM"));
         }
 
         @Test
@@ -195,7 +196,7 @@ class OauthServiceTest {
         void loginWithGoogle_nullDeviceAndIp_doesNotThrow() {
             User existingUser = mockGoogleUser();
 
-            given(userRepository.findByEmail(EMAIL)).willReturn(Optional.of(existingUser));
+            given(userRepository.findByEmail(new Email(EMAIL))).willReturn(Optional.of(existingUser));
             given(tokenService.generateRefreshToken(existingUser, null, null)).willReturn(REFRESH_TOKEN);
             given(tokenService.generateAccessToken(existingUser)).willReturn(ACCESS_TOKEN);
 

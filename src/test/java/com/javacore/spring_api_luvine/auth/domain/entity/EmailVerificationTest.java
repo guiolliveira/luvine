@@ -2,6 +2,8 @@ package com.javacore.spring_api_luvine.auth.domain.entity;
 
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,7 +22,7 @@ class EmailVerificationTest {
     private static final String CODE = "ABC123";
 
     private User anyUser() {
-        return User.create("user@luvine.com", "Ana", "Silva", "hash", UserProvider.LOCAL);
+        return User.create(new Email("user@luvine.com"), new Name("Ana"), new Name("Silva"), "hash", UserProvider.LOCAL);
     }
 
     private EmailVerification newVerification() {
@@ -109,9 +111,6 @@ class EmailVerificationTest {
         }
     }
 
-    // =========================================================================
-    // markEmailAsUsed()
-    // =========================================================================
     // --- MARK EMAIL AS USED ---------------------------------------------------------------
 
     @Nested
@@ -198,7 +197,6 @@ class EmailVerificationTest {
 
             Instant expectedExpiry = ev.getCreatedAt().plus(15, ChronoUnit.MINUTES);
 
-            // tolerância de 1 segundo para cobrir qualquer drift de relógio
             assertThat(ev.getExpiresAt())
                     .isCloseTo(expectedExpiry, within(1, ChronoUnit.SECONDS));
         }
@@ -216,16 +214,13 @@ class EmailVerificationTest {
             User user = anyUser();
             EmailVerification ev = EmailVerification.create(user, CODE);
 
-            // 1. código recém-emitido: não usado, dentro do prazo
             assertThat(ev.isUsed()).isFalse();
             assertThat(ev.getExpiresAt()).isAfter(Instant.now());
             assertThat(ev.getVerificationCode()).isEqualTo(CODE);
             assertThat(ev.getUser()).isSameAs(user);
 
-            // 2. usuário consome o código
             ev.markEmailAsUsed();
 
-            // 3. estado final: marcado como usado, demais campos inalterados
             assertThat(ev.isUsed()).isTrue();
             assertThat(ev.getVerificationCode()).isEqualTo(CODE);
             assertThat(ev.getExpiresAt()).isAfter(Instant.now());
@@ -234,8 +229,8 @@ class EmailVerificationTest {
         @Test
         @DisplayName("dois usuários distintos devem ter verificações independentes")
         void twoUsersShouldHaveIndependentVerifications() {
-            User userA = User.create("a@exemple.com", "A", "A", "h", UserProvider.LOCAL);
-            User userB = User.create("b@exemple.com", "B", "B", "h", UserProvider.LOCAL);
+            User userA = User.create(new Email("a@exemple.com"), new Name("A"), new Name("A"), "h", UserProvider.LOCAL);
+            User userB = User.create(new Email("b@exemple.com"), new Name("B"), new Name("B"), "h", UserProvider.LOCAL);
 
             EmailVerification evA = EmailVerification.create(userA, "CODE-A");
             EmailVerification evB = EmailVerification.create(userB, "CODE-B");

@@ -2,6 +2,8 @@ package com.javacore.spring_api_luvine.auth.domain.entity;
 
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,7 +24,7 @@ class RefreshTokenTest {
     private static final String IP_ADDRESS  = "192.168.0.1";
 
     private User anyUser() {
-        return User.create("user@example.com", "User", "Name", "hash", UserProvider.LOCAL);
+        return User.create(new Email("user@example.com"), new Name("User"), new Name("Name"), "hash", UserProvider.LOCAL);
     }
 
     private RefreshToken newToken() {
@@ -332,8 +334,8 @@ class RefreshTokenTest {
         @Test
         @DisplayName("tokens de usuários distintos são independentes entre si")
         void tokensShouldBeIndependentPerUser() {
-            User userA = User.create("a@example.com", "A", "A", "h", UserProvider.LOCAL);
-            User userB = User.create("b@example.com", "B", "B", "h", UserProvider.LOCAL);
+            User userA = User.create(new Email("a@example.com"), new Name("A"), new Name("A"), "h", UserProvider.LOCAL);
+            User userB = User.create(new Email("b@example.com"), new Name("B"), new Name("B"), "h", UserProvider.LOCAL);
 
             RefreshToken rtA = RefreshToken.create(userA, "token-a", DEVICE_INFO, IP_ADDRESS);
             RefreshToken rtB = RefreshToken.create(userB, "token-b", DEVICE_INFO, IP_ADDRESS);
