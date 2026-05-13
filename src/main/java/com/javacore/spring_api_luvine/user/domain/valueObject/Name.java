@@ -1,11 +1,14 @@
 package com.javacore.spring_api_luvine.user.domain.valueObject;
 
 import com.javacore.spring_api_luvine.user.domain.exception.InvalidNameException;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public record Name(String value) {
+@Embeddable
+public record Name(@Column String value) {
     public Name(String value) {
         if (value == null || value.isBlank()) {
             throw new InvalidNameException();
@@ -14,7 +17,7 @@ public record Name(String value) {
         this.value = normalize(value);
     }
 
-    private String normalize(String name) {
+    private static String normalize(String name) {
         String[] words = name.trim().toLowerCase().split("\\s+");
 
         return Arrays

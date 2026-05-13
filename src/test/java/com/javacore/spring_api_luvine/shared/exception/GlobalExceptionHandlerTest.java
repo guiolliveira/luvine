@@ -1,5 +1,6 @@
 package com.javacore.spring_api_luvine.shared.exception;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -7,97 +8,94 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.*;
 
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @DisplayName("GlobalExceptionHandler")
-@WebMvcTest(controllers = GlobalExceptionHandlerTest.FakeController.class)
+@WebMvcTest(
+        controllers = GlobalExceptionHandlerTest.TestControllersConfig.FakeController.class
+)
 @AutoConfigureMockMvc(addFilters = false)
-@Import({GlobalExceptionHandler.class, GlobalExceptionHandlerTest.FakeServiceConfig.class})
+@Import(GlobalExceptionHandler.class)
 class GlobalExceptionHandlerTest {
 
     @Autowired
     MockMvc mockMvc;
 
-    @Autowired
-    FakeController.FakeService fakeService;
+    @MockitoBean
+    TestControllersConfig.FakeController.FakeService fakeService;
 
     // --- INFRAESTRUTURA DE TESTE --------------------------------------------------------------
 
-    @TestConfiguration
-    static class FakeServiceConfig {
-
-        // Instância compartilhada entre o Spring e os métodos de teste
-        static final FakeController.FakeService INSTANCE =
-                mock(FakeController.FakeService.class);
-
-        @Bean
-        FakeController.FakeService fakeService() {
-            return INSTANCE;
-        }
+    @BeforeEach
+    void setUp() {
+        reset(fakeService);
     }
 
-    @RestController
-    @RequestMapping("/fake")
-    static class FakeController {
+    @TestConfiguration
+    static class TestControllersConfig {
 
-        private final FakeService fakeService;
+        @RestController
+        @RequestMapping("/fake")
+        static class FakeController {
 
-        FakeController(FakeService fakeService) {
-            this.fakeService = fakeService;
-        }
+            private final FakeService fakeService;
 
-        @GetMapping("/business")
-        public void business() {
-            fakeService.throwBusiness();
-        }
+            FakeController(FakeService fakeService) {
+                this.fakeService = fakeService;
+            }
 
-        @PostMapping("/validation")
-        public void validation(@RequestBody @jakarta.validation.Valid FakeDTO dto) { }
+            @GetMapping("/business")
+            public void business() {
+                fakeService.throwBusiness();
+            }
 
-        @GetMapping("/type-mismatch")
-        public void typeMismatch(@RequestParam Integer id) { }
+            @PostMapping("/validation")
+            public void validation(@RequestBody @jakarta.validation.Valid FakeDTO dto) { }
 
-        @GetMapping("/integrity")
-        public void integrity() {
-            fakeService.throwIntegrity();
-        }
+            @GetMapping("/type-mismatch")
+            public void typeMismatch(@RequestParam Integer id) { }
 
-        @PostMapping("/refresh")
-        public void missingCookie(@CookieValue("refreshToken") String token) { }
+            @GetMapping("/integrity")
+            public void integrity() {
+                fakeService.throwIntegrity();
+            }
 
-        @GetMapping("/auth")
-        public void authentication() {
-            fakeService.throwAuthentication();
-        }
+            @PostMapping("/refresh")
+            public void missingCookie(@CookieValue("refreshToken") String token) { }
 
-        @GetMapping("/generic")
-        public void generic() {
-            fakeService.throwGeneric();
-        }
+            @GetMapping("/auth")
+            public void authentication() {
+                fakeService.throwAuthentication();
+            }
 
-        record FakeDTO(
-                @jakarta.validation.constraints.NotBlank(message = "Campo é obrigatório")
-                String campo
-        ) { }
+            @GetMapping("/generic")
+            public void generic() {
+                fakeService.throwGeneric();
+            }
 
-        interface FakeService {
-            void throwBusiness();
-            void throwIntegrity();
-            void throwAuthentication();
-            void throwGeneric();
+            record FakeDTO(
+                    @jakarta.validation.constraints.NotBlank(message = "Campo é obrigatório")
+                    String campo
+            ) { }
+
+            interface FakeService {
+                void throwBusiness();
+                void throwIntegrity();
+                void throwAuthentication();
+                void throwGeneric();
+            }
         }
     }
 

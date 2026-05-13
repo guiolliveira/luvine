@@ -1,0 +1,27 @@
+ALTER TABLE users
+ADD COLUMN cpf VARCHAR(11) UNIQUE,
+ADD COLUMN user_provider VARCHAR(20) NOT NULL,
+ADD COLUMN user_role VARCHAR(20) NOT NULL DEFAULT 'CUSTOMER',
+ADD COLUMN avatar_url VARCHAR(255);
+
+CREATE TABLE addresses(
+    id BIGSERIAL PRIMARY KEY,
+    public_id UUID UNIQUE NOT NULL,
+    user_id BIGINT NOT NULL REFERENCES users(id),
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    cep VARCHAR(8) NOT NULL,
+    street VARCHAR(255) NOT NULL,
+    number VARCHAR(20) NOT NULL,
+    complement VARCHAR(100),
+    neighborhood VARCHAR(100) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    state VARCHAR(50) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    default_address BOOLEAN NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    active BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE INDEX idx_address_user_id ON addresses(user_id);

@@ -4,6 +4,8 @@ import com.javacore.spring_api_luvine.auth.domain.entity.RefreshToken;
 import com.javacore.spring_api_luvine.testcontainers.AbstractIntegrationTest;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -41,7 +43,7 @@ class RefreshTokenRepositoryTest extends AbstractIntegrationTest {
     // --- HELPERS --------------------------------------------------------------
 
     private User buildUser(String email) {
-        return User.create(email, "User", "Name", "hashed", UserProvider.LOCAL);
+        return User.create(new Email(email), new Name("User"), new Name("Name"), "hashed", UserProvider.LOCAL);
     }
 
     private RefreshToken persistToken(User owner, boolean revoked, Instant expiresAt) {

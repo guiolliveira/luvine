@@ -1,8 +1,11 @@
 package com.javacore.spring_api_luvine.user.domain.valueObject;
 
 import com.javacore.spring_api_luvine.user.domain.exception.InvalidEmailException;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
-public record Email(String value) {
+@Embeddable
+public record Email(@Column String value) {
     public Email(String value) {
         if (value == null) {
             throw new InvalidEmailException();
@@ -30,7 +33,7 @@ public record Email(String value) {
         this.value = normalized;
     }
 
-    private String normalize(String email) {
+    private static String normalize(String email) {
         return email.trim().toLowerCase();
     }
 }

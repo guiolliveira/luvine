@@ -5,10 +5,13 @@ import com.javacore.spring_api_luvine.auth.domain.exception.*;
 import com.javacore.spring_api_luvine.auth.dto.*;
 import com.javacore.spring_api_luvine.auth.mapper.AuthMapper;
 import com.javacore.spring_api_luvine.auth.repository.RefreshTokenRepository;
+import com.javacore.spring_api_luvine.shared.dto.MessageResponse;
 import com.javacore.spring_api_luvine.shared.messaging.dto.EmailMessageRequest;
 import com.javacore.spring_api_luvine.shared.messaging.service.producer.ProducerService;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
 import com.javacore.spring_api_luvine.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -59,37 +62,37 @@ class AuthServiceTest {
 
     // --- HELPERS ------------------------------------------------------------------
 
-    private static final String VALID_EMAIL        = "user@example.com";
-    private static final String VALID_FIRST_NAME   = "User";
-    private static final String VALID_LAST_NAME    = "Name";
-    private static final String VALID_PASSWORD     = "password@123";
-    private static final String DEVICE_INFO        = "Mozilla/5.0";
-    private static final String IP_ADDRESS         = "192.168.0.1";
-    private static final String ACCESS_TOKEN       = "header.payload.signature";
-    private static final String REFRESH_TOKEN_RAW  = "raw-refresh-token-value";
+    private static final String VALID_EMAIL = "user@example.com";
+    private static final String VALID_FIRST_NAME = "User";
+    private static final String VALID_LAST_NAME = "Name";
+    private static final String VALID_PASSWORD = "password@123";
+    private static final String DEVICE_INFO = "Mozilla/5.0";
+    private static final String IP_ADDRESS = "192.168.0.1";
+    private static final String ACCESS_TOKEN = "header.payload.signature";
+    private static final String REFRESH_TOKEN_RAW = "raw-refresh-token-value";
+
+    private Email email() {
+        return new Email(VALID_EMAIL);
+    }
+
+    private Name firstName() {
+        return new Name(VALID_FIRST_NAME);
+    }
+
+    private Name lastName() {
+        return new Name(VALID_LAST_NAME);
+    }
 
     private User buildVerifiedUser() {
         User user = User.create(
-                VALID_EMAIL,
-                VALID_FIRST_NAME,
-                VALID_LAST_NAME,
+                email(),
+                firstName(),
+                lastName(),
                 "encoded-password",
                 UserProvider.LOCAL
         );
+
         user.markEmailAsVerified();
-        return user;
-    }
-
-    private User buildPersistedUnverifiedUser() {
-        User user = User.create(
-                VALID_EMAIL,
-                VALID_FIRST_NAME,
-                VALID_LAST_NAME,
-                "encoded-password",
-                UserProvider.LOCAL
-        );
-
-        ReflectionTestUtils.setField(user, "id", 1L);
 
         return user;
     }
@@ -104,9 +107,25 @@ class AuthServiceTest {
         );
     }
 
+    private User buildPersistedUnverifiedUser() {
+        User user = User.create(
+                email(),
+                firstName(),
+                lastName(),
+                "encoded-password",
+                UserProvider.LOCAL
+        );
+
+        ReflectionTestUtils.setField(user, "id", 1L);
+
+        return user;
+    }
 
     private LoginRequest validLoginRequest() {
-        return new LoginRequest(VALID_EMAIL, VALID_PASSWORD);
+        return new LoginRequest(
+                VALID_EMAIL,
+                VALID_PASSWORD
+        );
     }
 
     // --- REGISTER ------------------------------------------------------------------
@@ -121,7 +140,7 @@ class AuthServiceTest {
             RegisterRequest request = validRegisterRequest();
             User savedUser = buildPersistedUnverifiedUser();
 
-            given(userRepository.existsByEmail(VALID_EMAIL)).willReturn(false);
+            given(userRepository.existsByEmail(new Email(VALID_EMAIL))).willReturn(false);
             given(passwordEncoder.encode(VALID_PASSWORD)).willReturn("encoded-password");
             given(userRepository.save(any(User.class))).willReturn(savedUser);
 
@@ -131,7 +150,7 @@ class AuthServiceTest {
 
             RegisterResponse expectedResponse = new RegisterResponse(
                     UUID.randomUUID(), VALID_EMAIL, VALID_FIRST_NAME, VALID_LAST_NAME,
-                    Instant.now(), true
+                    Instant.now(), true, UserProvider.LOCAL
             );
             given(authMapper.toRegisterResponse(any(User.class))).willReturn(expectedResponse);
 
@@ -155,7 +174,7 @@ class AuthServiceTest {
         @DisplayName("deve lançar EmailAlreadyExistsException quando email já cadastrado")
         void register_emailAlreadyExists_throwsEmailAlreadyExistsException() {
             RegisterRequest request = validRegisterRequest();
-            given(userRepository.existsByEmail(VALID_EMAIL)).willReturn(true);
+            given(userRepository.existsByEmail(new Email(VALID_EMAIL))).willReturn(true);
 
             assertThatExceptionOfType(EmailAlreadyExistsException.class)
                     .isThrownBy(() -> authService.register(request));
@@ -171,7 +190,7 @@ class AuthServiceTest {
                     VALID_EMAIL, VALID_FIRST_NAME, VALID_LAST_NAME,
                     "password@123", "password@456"
             );
-            given(userRepository.existsByEmail(VALID_EMAIL)).willReturn(false);
+            given(userRepository.existsByEmail(new Email(VALID_EMAIL))).willReturn(false);
 
             assertThatExceptionOfType(PasswordMisMatchException.class)
                     .isThrownBy(() -> authService.register(request));
@@ -201,24 +220,24 @@ class AuthServiceTest {
                     VALID_PASSWORD, VALID_PASSWORD
             );
 
-            given(userRepository.existsByEmail("user@example.com")).willReturn(false);
+            given(userRepository.existsByEmail(new Email("USER@EXAMPLE.COM"))).willReturn(false);
             given(passwordEncoder.encode(any())).willReturn("encoded");
             given(verificationService.createCode(any())).willReturn(
                     new EmailVerificationCreationResult(null, "000000"));
             given(authMapper.toRegisterResponse(any())).willReturn(
                     new RegisterResponse(UUID.randomUUID(), "user@example.com",
-                            VALID_FIRST_NAME, VALID_LAST_NAME, Instant.now(), true));
+                            VALID_FIRST_NAME, VALID_LAST_NAME, Instant.now(), true, UserProvider.LOCAL));
 
             authService.register(request);
 
-            then(userRepository).should().existsByEmail("user@example.com");
+            then(userRepository).should().existsByEmail(new Email("USER@EXAMPLE.COM"));
         }
 
         @Test
         @DisplayName("não deve publicar email quando verificationService lança exceção")
         void register_verificationServiceThrows_doesNotPublishEmail() {
             RegisterRequest request = validRegisterRequest();
-            given(userRepository.existsByEmail(VALID_EMAIL)).willReturn(false);
+            given(userRepository.existsByEmail(new Email(VALID_EMAIL))).willReturn(false);
             given(passwordEncoder.encode(any())).willReturn("encoded");
             given(verificationService.createCode(any()))
                     .willThrow(new RateLimitExceededException());
@@ -243,7 +262,7 @@ class AuthServiceTest {
             User user = buildVerifiedUser();
 
             given(authenticationManager.authenticate(any())).willReturn(null);
-            given(userRepository.findByEmail(VALID_EMAIL)).willReturn(Optional.of(user));
+            given(userRepository.findByEmail(new Email(VALID_EMAIL))).willReturn(Optional.of(user));
             given(tokenService.generateRefreshToken(user, DEVICE_INFO, IP_ADDRESS))
                     .willReturn(REFRESH_TOKEN_RAW);
             given(tokenService.generateAccessToken(user)).willReturn(ACCESS_TOKEN);
@@ -276,7 +295,7 @@ class AuthServiceTest {
             User unverifiedUser = buildPersistedUnverifiedUser();
 
             given(authenticationManager.authenticate(any())).willReturn(null);
-            given(userRepository.findByEmail(VALID_EMAIL)).willReturn(Optional.of(unverifiedUser));
+            given(userRepository.findByEmail(new Email(VALID_EMAIL))).willReturn(Optional.of(unverifiedUser));
 
             assertThatExceptionOfType(EmailNotVerifiedException.class)
                     .isThrownBy(() -> authService.login(request, DEVICE_INFO, IP_ADDRESS));
@@ -289,13 +308,16 @@ class AuthServiceTest {
         void login_oauthUser_throwsProviderConflictException() {
             LoginRequest request = validLoginRequest();
             User oauthUser = User.create(
-                    VALID_EMAIL, VALID_FIRST_NAME, VALID_LAST_NAME,
-                    "", UserProvider.GOOGLE
+                    email(),
+                    firstName(),
+                    lastName(),
+                    "",
+                    UserProvider.GOOGLE
             );
             oauthUser.markEmailAsVerified();
 
             given(authenticationManager.authenticate(any())).willReturn(null);
-            given(userRepository.findByEmail(VALID_EMAIL)).willReturn(Optional.of(oauthUser));
+            given(userRepository.findByEmail(new Email(VALID_EMAIL))).willReturn(Optional.of(oauthUser));
 
             assertThatExceptionOfType(ProviderConflictException.class)
                     .isThrownBy(() -> authService.login(request, DEVICE_INFO, IP_ADDRESS));
@@ -306,7 +328,7 @@ class AuthServiceTest {
         void login_userNotFound_throwsInvalidCredentialsException() {
             LoginRequest request = validLoginRequest();
             given(authenticationManager.authenticate(any())).willReturn(null);
-            given(userRepository.findByEmail(VALID_EMAIL)).willReturn(Optional.empty());
+            given(userRepository.findByEmail(new Email(VALID_EMAIL))).willReturn(Optional.empty());
 
             assertThatExceptionOfType(InvalidCredentialsException.class)
                     .isThrownBy(() -> authService.login(request, DEVICE_INFO, IP_ADDRESS));
@@ -319,7 +341,7 @@ class AuthServiceTest {
             User user = buildVerifiedUser();
 
             given(authenticationManager.authenticate(any())).willReturn(null);
-            given(userRepository.findByEmail(VALID_EMAIL)).willReturn(Optional.of(user));
+            given(userRepository.findByEmail(new Email(VALID_EMAIL))).willReturn(Optional.of(user));
             given(tokenService.generateRefreshToken(any(), any(), any())).willReturn(REFRESH_TOKEN_RAW);
             given(tokenService.generateAccessToken(any())).willReturn(ACCESS_TOKEN);
 
@@ -340,7 +362,7 @@ class AuthServiceTest {
             User user = buildVerifiedUser();
 
             given(authenticationManager.authenticate(any())).willReturn(null);
-            given(userRepository.findByEmail(VALID_EMAIL)).willReturn(Optional.of(user));
+            given(userRepository.findByEmail(new Email(VALID_EMAIL))).willReturn(Optional.of(user));
             given(tokenService.generateRefreshToken(user, null, null)).willReturn(REFRESH_TOKEN_RAW);
             given(tokenService.generateAccessToken(user)).willReturn(ACCESS_TOKEN);
 
@@ -479,7 +501,7 @@ class AuthServiceTest {
             VerifyEmailRequest request = new VerifyEmailRequest(VALID_EMAIL, "123456");
             User user = buildPersistedUnverifiedUser();
 
-            given(userRepository.findByEmail(VALID_EMAIL)).willReturn(Optional.of(user));
+            given(userRepository.findByEmail(new Email(VALID_EMAIL))).willReturn(Optional.of(user));
             willDoNothing().given(verificationService).validateCode(anyLong(), anyString());
 
             MessageResponse response = authService.verifyEmail(request);
@@ -494,7 +516,7 @@ class AuthServiceTest {
             VerifyEmailRequest request = new VerifyEmailRequest(VALID_EMAIL, "123456");
             User verifiedUser = buildVerifiedUser();
 
-            given(userRepository.findByEmail(VALID_EMAIL)).willReturn(Optional.of(verifiedUser));
+            given(userRepository.findByEmail(new Email(VALID_EMAIL))).willReturn(Optional.of(verifiedUser));
 
             assertThatExceptionOfType(EmailAlreadyVerifiedException.class)
                     .isThrownBy(() -> authService.verifyEmail(request));
@@ -506,7 +528,7 @@ class AuthServiceTest {
         @DisplayName("deve lançar InvalidCredentialsException quando usuário não encontrado")
         void verifyEmail_userNotFound_throwsInvalidCredentialsException() {
             VerifyEmailRequest request = new VerifyEmailRequest(VALID_EMAIL, "123456");
-            given(userRepository.findByEmail(VALID_EMAIL)).willReturn(Optional.empty());
+            given(userRepository.findByEmail(new Email(VALID_EMAIL))).willReturn(Optional.empty());
 
             assertThatExceptionOfType(InvalidCredentialsException.class)
                     .isThrownBy(() -> authService.verifyEmail(request));
@@ -518,7 +540,7 @@ class AuthServiceTest {
             VerifyEmailRequest request = new VerifyEmailRequest(VALID_EMAIL, "999999");
             User user = buildPersistedUnverifiedUser();
 
-            given(userRepository.findByEmail(VALID_EMAIL)).willReturn(Optional.of(user));
+            given(userRepository.findByEmail(new Email(VALID_EMAIL))).willReturn(Optional.of(user));
             willThrow(new InvalidCodeException())
                     .given(verificationService).validateCode(anyLong(), eq("999999"));
 
@@ -539,7 +561,7 @@ class AuthServiceTest {
             ResendEmailRequest request = new ResendEmailRequest(VALID_EMAIL);
             User user = buildPersistedUnverifiedUser();
 
-            given(userRepository.findByEmail(VALID_EMAIL)).willReturn(Optional.of(user));
+            given(userRepository.findByEmail(new Email(VALID_EMAIL))).willReturn(Optional.of(user));
             given(verificationService.createCode(user))
                     .willReturn(new EmailVerificationCreationResult(null, "654321"));
 
@@ -560,7 +582,7 @@ class AuthServiceTest {
         @DisplayName("deve lançar InvalidCredentialsException quando usuário não encontrado")
         void resendEmail_userNotFound_throwsInvalidCredentialsException() {
             ResendEmailRequest request = new ResendEmailRequest(VALID_EMAIL);
-            given(userRepository.findByEmail(VALID_EMAIL)).willReturn(Optional.empty());
+            given(userRepository.findByEmail(new Email(VALID_EMAIL))).willReturn(Optional.empty());
 
             assertThatExceptionOfType(InvalidCredentialsException.class)
                     .isThrownBy(() -> authService.resendEmail(request));
@@ -574,7 +596,7 @@ class AuthServiceTest {
             ResendEmailRequest request = new ResendEmailRequest(VALID_EMAIL);
             User user = buildPersistedUnverifiedUser();
 
-            given(userRepository.findByEmail(VALID_EMAIL)).willReturn(Optional.of(user));
+            given(userRepository.findByEmail(new Email(VALID_EMAIL))).willReturn(Optional.of(user));
             given(verificationService.createCode(user))
                     .willThrow(new RateLimitExceededException());
 
@@ -590,7 +612,7 @@ class AuthServiceTest {
             ResendEmailRequest request = new ResendEmailRequest(VALID_EMAIL);
             User verifiedUser = buildVerifiedUser();
 
-            given(userRepository.findByEmail(VALID_EMAIL)).willReturn(Optional.of(verifiedUser));
+            given(userRepository.findByEmail(new Email(VALID_EMAIL))).willReturn(Optional.of(verifiedUser));
             given(verificationService.createCode(verifiedUser))
                     .willReturn(new EmailVerificationCreationResult(null, "111111"));
 
@@ -609,18 +631,17 @@ class AuthServiceTest {
             @Test
             @DisplayName("deve normalizar email (trim + lowercase) antes de buscar no repositório")
             void findUser_emailWithSpacesAndUpperCase_normalizesBeforeQuery() {
-
                 LoginRequest request = new LoginRequest("  USER@EXAMPLE.COM  ", VALID_PASSWORD);
 
                 given(authenticationManager.authenticate(any())).willReturn(null);
-                given(userRepository.findByEmail("user@example.com"))
+                given(userRepository.findByEmail(new Email("  USER@EXAMPLE.COM  ")))
                         .willReturn(Optional.of(buildVerifiedUser()));
                 given(tokenService.generateAccessToken(any())).willReturn(ACCESS_TOKEN);
                 given(tokenService.generateRefreshToken(any(), any(), any())).willReturn(REFRESH_TOKEN_RAW);
 
                 authService.login(request, DEVICE_INFO, IP_ADDRESS);
 
-                then(userRepository).should().findByEmail("user@example.com");
+                then(userRepository).should().findByEmail(new Email("  USER@EXAMPLE.COM  "));
             }
         }
     }
