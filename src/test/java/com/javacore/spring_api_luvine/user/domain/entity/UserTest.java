@@ -5,6 +5,7 @@ import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.time.Instant;
 
@@ -15,10 +16,10 @@ class UserTest {
 
     // --- FIXTURE -------------------------------------------------------------
 
-    private static final String EMAIL      = "user@example.com";
+    private static final String EMAIL = "user@example.com";
     private static final String FIRST_NAME = "user";
-    private static final String LAST_NAME  = "name";
-    private static final String PASSWORD   = "hashed-password";
+    private static final String LAST_NAME = "name";
+    private static final String PASSWORD = "hashed-password";
 
     private User localUser() {
         return User.create(new Email(EMAIL), new Name(FIRST_NAME), new Name(LAST_NAME), PASSWORD, UserProvider.LOCAL);
@@ -292,9 +293,13 @@ class UserTest {
         }
 
         @Test
-        @DisplayName("getAuthorities() deve retornar lista vazia")
-        void getAuthoritiesShouldReturnEmptyList() {
-            assertThat(localUser().getAuthorities()).isEmpty();
+        @DisplayName("getAuthorities() deve retornar as authorities do role do usuário")
+        void getAuthoritiesShouldReturnUserRoleAuthorities() {
+            User user = localUser();
+
+            assertThat(user.getAuthorities())
+                    .extracting(GrantedAuthority::getAuthority)
+                    .containsExactly("ROLE_CUSTOMER");
         }
 
         @Test
