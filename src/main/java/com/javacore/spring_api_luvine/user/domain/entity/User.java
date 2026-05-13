@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.Instant;
@@ -31,9 +32,6 @@ public class User implements UserDetails {
     @AttributeOverride(name = "value", column = @Column(name = "email", nullable = false, unique = true))
     private Email email;
 
-    @Column(unique = true, length = 11)
-    private String cpf;
-
     @Embedded
     @AttributeOverride(name = "value", column = @Column(name = "firstName", nullable = false, length = 100))
     private Name firstName;
@@ -44,9 +42,6 @@ public class User implements UserDetails {
 
     @Column(nullable = false)
     private String password;
-
-    @Column(nullable = false)
-    private String phone;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
@@ -78,11 +73,9 @@ public class User implements UserDetails {
     private User(Email email, Name firstName, Name lastName, String password, UserProvider userProvider) {
         this.publicId = UUID.randomUUID();
         this.email = email;
-        this.cpf = null;
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
-        this.phone = "";
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         this.active = true;
@@ -113,9 +106,18 @@ public class User implements UserDetails {
         this.verificationEmailRequestCount = 0;
     }
 
+    public void touch() {
+        this.updatedAt = Instant.now();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return userRole == null
+                ? List.of()
+                : userRole.getAuthorities()
+                .stream()
+                .map(auth -> new SimpleGrantedAuthority(auth.name()))
+                .toList();
     }
 
     @Override
