@@ -38,15 +38,14 @@ public class MailSenderService {
             Context context = new Context();
             context.setVariable("name", request.name());
 
-            String code = request.code();
-            String[] digits = code.split("");
+            if (request.variables() != null) {
+                request.variables().forEach(context::setVariable);
+            }
 
-            context.setVariable("digits", digits);
-
-            String html = templateEngine.process("email-template", context);
+            String html = templateEngine.process(request.templateName(), context);
 
             helper.setTo(request.to());
-            helper.setSubject("Email de Verificação");
+            helper.setSubject(request.subject());
             helper.setText(html, true);
             helper.setFrom(properties.fromEmail(), "Luvine");
 
