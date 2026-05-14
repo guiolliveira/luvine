@@ -1,6 +1,7 @@
 package com.javacore.spring_api_luvine.auth.repository;
 
 import com.javacore.spring_api_luvine.auth.domain.entity.PasswordResetToken;
+import com.javacore.spring_api_luvine.user.domain.entity.User;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -17,7 +18,11 @@ import java.util.UUID;
 public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, UUID> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<PasswordResetToken> findByTokenAndUsedFalse(String token);
+    Optional<PasswordResetToken> findByTokenAndUsedFalseAndRevokedFalse(String token);
+
+    @Modifying
+    @Query("UPDATE PasswordResetToken p SET p.user = :user WHERE p.used = FALSE AND p.revoked = FALSE")
+    void revokeAllUserTokens(@Param("user")User user);
 
     @Modifying
     @Query("DELETE FROM PasswordResetToken p WHERE p.expiresAt < :now OR p.used = TRUE")

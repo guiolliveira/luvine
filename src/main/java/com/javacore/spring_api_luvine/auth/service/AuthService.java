@@ -217,6 +217,8 @@ public class AuthService {
                         throw new EmailNotVerifiedException();
                     }
 
+                    passwordResetTokenRepository.revokeAllUserTokens(user);
+
                     String rawCode = passwordResetTokenService
                             .generatePasswordResetToken(user, deviceInfo, ipAddress);
 
@@ -250,7 +252,7 @@ public class AuthService {
 
         String tokenHash = TokenHash.hash(request.token());
 
-        var token = passwordResetTokenRepository.findByTokenAndUsedFalse(tokenHash)
+        var token = passwordResetTokenRepository.findByTokenAndUsedFalseAndRevokedFalse(tokenHash)
                 .filter(t -> t.getExpiresAt().isAfter(Instant.now()))
                 .orElseThrow(() -> {
                     log.warn("event=reset_password_rejected reason=invalid_or_expired_token");
