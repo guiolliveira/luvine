@@ -237,7 +237,9 @@ public class AuthService {
             throw new PasswordMisMatchException();
         }
 
-        var token = passwordResetTokenRepository.findByTokenAndUsedFalse(request.token())
+        String tokenHash = TokenHash.hash(request.token());
+
+        var token = passwordResetTokenRepository.findByTokenAndUsedFalse(tokenHash)
                 .filter(t -> t.getExpiresAt().isAfter(Instant.now()))
                 .orElseThrow(InvalidTokenException::new);
 
