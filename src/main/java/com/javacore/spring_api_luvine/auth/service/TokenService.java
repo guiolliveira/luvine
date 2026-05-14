@@ -2,6 +2,7 @@ package com.javacore.spring_api_luvine.auth.service;
 
 import com.javacore.spring_api_luvine.auth.domain.entity.RefreshToken;
 import com.javacore.spring_api_luvine.auth.repository.RefreshTokenRepository;
+import com.javacore.spring_api_luvine.shared.util.RequestInfo;
 import com.javacore.spring_api_luvine.shared.util.TokenHash;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +30,6 @@ public class TokenService {
 
     private final JwtEncoder jwtEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
-
-    private static final SecureRandom RANDOM = new SecureRandom();
 
     public String generateAccessToken(User user) {
         log.debug("event=access_token_generate publicId={}", user.getPublicId());
@@ -66,19 +65,13 @@ public class TokenService {
     public String generateRefreshToken(User user, String deviceInfo, String ipAddress) {
         log.debug("event=refresh_token_generate publicId={} ip={}", user.getPublicId(), ipAddress);
 
-        String refreshToken = generateSecureToken();
-
-        String info = deviceInfo != null ? deviceInfo.substring(0, Math.min(deviceInfo.length(), 255)) : null;
-
-        if (ipAddress != null && ipAddress.contains(",")) {
-            ipAddress = ipAddress.split(",")[0].trim();
-        }
+        String refreshToken = TokenHash.generateSecureToken();
 
         RefreshToken token = RefreshToken.create(
                 user,
                 TokenHash.hash(refreshToken),
-                info,
-                ipAddress
+                RequestInfo.truncateDeviceInfo(deviceInfo),
+                RequestInfo.normalizeIp(ipAddress)
         );
 
         refreshTokenRepository.save(token);
@@ -93,11 +86,5 @@ public class TokenService {
         log.info("event=cleanup_expired_refresh_tokens_started");
         refreshTokenRepository.deleteExpiredToken(Instant.now());
         log.info("event=cleanup_expired_refresh_tokens_completed");
-    }
-
-    private String generateSecureToken() {
-        byte[] bytes = new byte[64];
-        RANDOM.nextBytes(bytes);
-        return Base64.getEncoder().withoutPadding().encodeToString(bytes);
     }
 }

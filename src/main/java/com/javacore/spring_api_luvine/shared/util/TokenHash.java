@@ -4,11 +4,14 @@ import com.javacore.spring_api_luvine.shared.exception.TokenHashException;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.util.Base64;
 
 public final class TokenHash {
 
     private TokenHash() {}
+
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     public static String hash(String token) {
         try {
@@ -18,5 +21,11 @@ public final class TokenHash {
         } catch (Exception ex) {
             throw new TokenHashException();
         }
+    }
+
+    public static String generateSecureToken() {
+        byte[] bytes = new byte[64];
+        RANDOM.nextBytes(bytes);
+        return Base64.getEncoder().withoutPadding().encodeToString(bytes);
     }
 }
