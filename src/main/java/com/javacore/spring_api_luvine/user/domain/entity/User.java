@@ -63,8 +63,6 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private UserRole userRole;
 
-    private String avatarUrl;
-
     private Instant lastVerificationEmailSentAt;
 
     @Column(nullable = false)
@@ -82,7 +80,6 @@ public class User implements UserDetails {
         this.emailVerified = false;
         this.userProvider = userProvider;
         this.userRole = UserRole.CUSTOMER;
-        this.avatarUrl = null;
         this.verificationEmailRequestCount = 0;
     }
 
