@@ -1,6 +1,5 @@
 package com.javacore.spring_api_luvine.user.service;
 
-import com.javacore.spring_api_luvine.shared.dto.MessageResponse;
 import com.javacore.spring_api_luvine.user.domain.entity.Address;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.exception.AddressAlreadyExistsException;
@@ -92,7 +91,7 @@ public class AddressService {
     }
 
     @Transactional
-    public MessageResponse deleteAddress(CurrentUser user, UUID addressPublicId) {
+    public void deleteAddress(CurrentUser user, UUID addressPublicId) {
         log.info("event=delete_address_attempt publicId={} addressPublicId={}", user.publicId(), addressPublicId);
 
         Address address = getOwnedAddress(user.publicId(), addressPublicId);
@@ -111,8 +110,6 @@ public class AddressService {
 
         log.info("event=address_deleted publicId={} addressPublicId={} wasDefault={}",
                 user.publicId(), addressPublicId, wasDefault);
-
-        return new MessageResponse("Endereço deletado com sucesso!");
     }
 
     @Transactional
