@@ -18,7 +18,7 @@ public enum UserRole {
         this.authorities = authorities;
     }
 
-    private boolean hasHigherAuthorityTan(UserRole other) {
+    public boolean hasHigherAuthorityTan(UserRole other) {
         return this.hierarchy > other.hierarchy;
     }
 }
