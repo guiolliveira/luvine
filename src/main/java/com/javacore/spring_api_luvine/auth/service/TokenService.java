@@ -16,10 +16,8 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
@@ -84,7 +82,7 @@ public class TokenService {
     @Scheduled(cron = "0 0 * * * *")
     public void cleanExpiresTokens() {
         log.info("event=cleanup_expired_refresh_tokens_started");
-        refreshTokenRepository.deleteExpiredToken(Instant.now());
+        refreshTokenRepository.deleteInvalidTokens(Instant.now());
         log.info("event=cleanup_expired_refresh_tokens_completed");
     }
 }

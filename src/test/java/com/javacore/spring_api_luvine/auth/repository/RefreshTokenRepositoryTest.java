@@ -81,7 +81,7 @@ class RefreshTokenRepositoryTest extends AbstractIntegrationTest {
         void shouldDeleteExpiredTokens() {
             RefreshToken expired = persistToken(user, false, Instant.now().minusSeconds(60));
 
-            repository.deleteExpiredToken(Instant.now());
+            repository.deleteInvalidTokens(Instant.now());
             em.clear();
 
             assertThat(repository.findById(expired.getId())).isEmpty();
@@ -92,7 +92,7 @@ class RefreshTokenRepositoryTest extends AbstractIntegrationTest {
         void shouldDeleteRevokedTokensRegardlessOfExpiry() {
             RefreshToken revoked = persistToken(user, true, Instant.now().plusSeconds(300));
 
-            repository.deleteExpiredToken(Instant.now());
+            repository.deleteInvalidTokens(Instant.now());
             em.clear();
 
             assertThat(repository.findById(revoked.getId())).isEmpty();
@@ -103,7 +103,7 @@ class RefreshTokenRepositoryTest extends AbstractIntegrationTest {
         void shouldNotDeleteValidAndNotRevokedToken() {
             RefreshToken valid = persistToken(user, false, Instant.now().plusSeconds(300));
 
-            repository.deleteExpiredToken(Instant.now());
+            repository.deleteInvalidTokens(Instant.now());
             em.clear();
 
             assertThat(repository.findById(valid.getId())).isPresent();
@@ -116,7 +116,7 @@ class RefreshTokenRepositoryTest extends AbstractIntegrationTest {
             RefreshToken revoked = persistToken(user, true, Instant.now().plusSeconds(300));
             RefreshToken valid   = persistToken(user, false, Instant.now().plusSeconds(300));
 
-            repository.deleteExpiredToken(Instant.now());
+            repository.deleteInvalidTokens(Instant.now());
             em.clear();
 
             assertThat(repository.findById(expired.getId())).isEmpty();
@@ -127,7 +127,7 @@ class RefreshTokenRepositoryTest extends AbstractIntegrationTest {
         @Test
         @DisplayName("não deve lançar exceção quando não houver tokens para deletar")
         void shouldNotThrowWhenNoTokensToDelete() {
-            assertDoesNotThrow(() -> repository.deleteExpiredToken(Instant.now()));
+            assertDoesNotThrow(() -> repository.deleteInvalidTokens(Instant.now()));
         }
     }
 }
