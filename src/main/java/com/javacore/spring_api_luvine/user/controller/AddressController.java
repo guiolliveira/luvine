@@ -23,7 +23,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/addresses")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
+@PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN', 'SUPER_ADMIN')")
 @Tag(name = "endereços", description = "Endpoints para gerenciamento de endereços do usuário")
 public class AddressController {
 
