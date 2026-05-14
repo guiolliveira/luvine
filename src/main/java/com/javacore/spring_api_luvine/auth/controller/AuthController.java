@@ -114,6 +114,14 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Esqueci minha senha", description =
+            "Envia um link de recuperação de senha para o email informado, caso esteja cadastrado e verificado")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Solicitação processada — email enviado se o endereço" +
+                    " for válido"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+            @ApiResponse(responseCode = "429", description = "Muitas tentativas, tente mais tarde")
+    })
     @PostMapping("/forgot-password")
     public ResponseEntity<Void> forgotPassword(
             @RequestBody @Valid ForgotPasswordRequest request, HttpServletRequest httpRequest) {
@@ -129,6 +137,13 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Redefinir senha", description =
+            "Redefine a senha do usuário a partir do token enviado por email")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Senha redefinida com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Senhas não coincidem ou dados inválidos"),
+            @ApiResponse(responseCode = "401", description = "Token inválido ou expirado")
+    })
     @PostMapping("/reset-password")
     public ResponseEntity<Void> resetPassword(@RequestBody @Valid UpdatePasswordRequest request) {
         authService.resetPassword(request);
