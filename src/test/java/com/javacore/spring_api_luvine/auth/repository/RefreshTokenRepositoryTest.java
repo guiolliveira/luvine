@@ -70,6 +70,70 @@ class RefreshTokenRepositoryTest extends AbstractIntegrationTest {
         return token;
     }
 
+    // --- revokeAllUserTokens --------------------------------------------------
+
+    @Nested
+    @DisplayName("revokeAllUserTokens()")
+    class RevokeAllUserTokens {
+
+        @Test
+        @DisplayName("deve revogar todos os tokens ativos do usuário")
+        void shouldRevokeAllActiveTokensOfUser() {
+            RefreshToken token1 = persistToken(user, false, Instant.now().plusSeconds(300));
+            RefreshToken token2 = persistToken(user, false, Instant.now().plusSeconds(300));
+
+            repository.revokeAllUserTokens(user);
+            em.clear();
+
+            assertThat(repository.findById(token1.getId()).orElseThrow().isRevoked()).isTrue();
+            assertThat(repository.findById(token2.getId()).orElseThrow().isRevoked()).isTrue();
+        }
+
+        @Test
+        @DisplayName("não deve afetar tokens já revogados")
+        void shouldNotAffectAlreadyRevokedTokens() {
+            RefreshToken revoked = persistToken(user, true, Instant.now().plusSeconds(300));
+
+            repository.revokeAllUserTokens(user);
+            em.clear();
+
+            assertThat(repository.findById(revoked.getId()).orElseThrow().isRevoked()).isTrue();
+        }
+
+        @Test
+        @DisplayName("não deve revogar tokens de outro usuário")
+        void shouldNotRevokeTokensOfAnotherUser() {
+            User otherUser = em.persist(buildUser("other@example.com"));
+            em.flush();
+
+            RefreshToken otherToken = persistToken(otherUser, false, Instant.now().plusSeconds(300));
+
+            repository.revokeAllUserTokens(user);
+            em.clear();
+
+            assertThat(repository.findById(otherToken.getId()).orElseThrow().isRevoked()).isFalse();
+        }
+
+        @Test
+        @DisplayName("não deve lançar exceção quando o usuário não possuir tokens ativos")
+        void shouldNotThrowWhenUserHasNoActiveTokens() {
+            assertDoesNotThrow(() -> repository.revokeAllUserTokens(user));
+        }
+
+        @Test
+        @DisplayName("deve revogar apenas os tokens ativos, preservando os já revogados intocados")
+        void shouldRevokeOnlyActiveTokensAndLeaveRevokedUntouched() {
+            RefreshToken active  = persistToken(user, false, Instant.now().plusSeconds(300));
+            RefreshToken revoked = persistToken(user, true,  Instant.now().plusSeconds(300));
+
+            repository.revokeAllUserTokens(user);
+            em.clear();
+
+            assertThat(repository.findById(active.getId()).orElseThrow().isRevoked()).isTrue();
+            assertThat(repository.findById(revoked.getId()).orElseThrow().isRevoked()).isTrue();
+        }
+    }
+
     // --- deletedExpiresToken --------------------------------------------------
 
     @Nested
