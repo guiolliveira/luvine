@@ -29,7 +29,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -362,17 +361,14 @@ class AuthServiceTest {
             RefreshToken revokedToken = buildActiveToken(user);
             revokedToken.revoke();
 
-            RefreshToken otherToken1 = buildActiveToken(user);
-            RefreshToken otherToken2 = buildActiveToken(user);
-
             given(refreshTokenRepository.findByToken(anyString())).willReturn(Optional.of(revokedToken));
-            given(refreshTokenRepository.findAllByUser(user)).willReturn(List.of(otherToken1, otherToken2));
 
             assertThatExceptionOfType(InvalidTokenException.class)
                     .isThrownBy(() -> authService.refresh(REFRESH_TOKEN_RAW));
 
-            assertThat(otherToken1.isRevoked()).isTrue();
-            assertThat(otherToken2.isRevoked()).isTrue();
+            then(refreshTokenRepository).should().revokeAllUserTokens(user);
+            then(tokenService).should(never()).generateAccessToken(any());
+            then(tokenService).should(never()).generateRefreshToken(any(), any(), any());
         }
 
         @Test
@@ -587,7 +583,7 @@ class AuthServiceTest {
 
             given(token.getExpiresAt()).willReturn(Instant.now().plus(1, ChronoUnit.HOURS));
             given(token.getUser()).willReturn(user);
-            given(passwordResetTokenRepository.findByTokenAndUsedFalse(anyString()))
+            given(passwordResetTokenRepository.findByTokenAndUsedFalseAndRevokedFalse(anyString()))
                     .willReturn(Optional.of(token));
             given(passwordEncoder.encode("newPassword@123")).willReturn("encoded-new-password");
 
@@ -607,17 +603,17 @@ class AuthServiceTest {
             assertThatExceptionOfType(PasswordMisMatchException.class)
                     .isThrownBy(() -> authService.resetPassword(request));
 
-            then(passwordResetTokenRepository).should(never()).findByTokenAndUsedFalse(any());
+            then(passwordResetTokenRepository).should(never()).findByTokenAndUsedFalseAndRevokedFalse(any());
         }
 
         @Test
-        @DisplayName("deve lançar InvalidTokenException quando token não encontrado ou já usado")
+        @DisplayName("deve lançar InvalidTokenException quando token não encontrado ou já usado/revogado")
         void resetPassword_tokenNotFound_throwsInvalidTokenException() {
             UpdatePasswordRequest request = new UpdatePasswordRequest(
                     "invalid-token", "newPassword@123", "newPassword@123"
             );
 
-            given(passwordResetTokenRepository.findByTokenAndUsedFalse(anyString()))
+            given(passwordResetTokenRepository.findByTokenAndUsedFalseAndRevokedFalse(anyString()))
                     .willReturn(Optional.empty());
 
             assertThatExceptionOfType(InvalidTokenException.class)
@@ -633,7 +629,7 @@ class AuthServiceTest {
 
             var expiredToken = mock(com.javacore.spring_api_luvine.auth.domain.entity.PasswordResetToken.class);
             given(expiredToken.getExpiresAt()).willReturn(Instant.now().minus(1, ChronoUnit.HOURS));
-            given(passwordResetTokenRepository.findByTokenAndUsedFalse(anyString()))
+            given(passwordResetTokenRepository.findByTokenAndUsedFalseAndRevokedFalse(anyString()))
                     .willReturn(Optional.of(expiredToken));
 
             assertThatExceptionOfType(InvalidTokenException.class)
