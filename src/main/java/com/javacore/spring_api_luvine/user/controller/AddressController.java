@@ -1,6 +1,5 @@
 package com.javacore.spring_api_luvine.user.controller;
 
-import com.javacore.spring_api_luvine.shared.dto.MessageResponse;
 import com.javacore.spring_api_luvine.user.dto.AddressRequest;
 import com.javacore.spring_api_luvine.user.dto.AddressResponse;
 import com.javacore.spring_api_luvine.user.dto.CurrentUser;
@@ -38,7 +37,8 @@ public class AddressController {
     @PostMapping
     public ResponseEntity<AddressResponse> create(
             @AuthenticationPrincipal CurrentUser user, @RequestBody @Valid AddressRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(addressService.createAddress(user, request));
+        AddressResponse addressResponse = addressService.createAddress(user, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(addressResponse);
     }
 
     @Operation(summary = "Listar endereços", description = "Retorna todos os endereços ativos do usuário autenticado")
@@ -48,7 +48,8 @@ public class AddressController {
     })
     @GetMapping
     public ResponseEntity<List<AddressResponse>> findAllAddresses(@AuthenticationPrincipal CurrentUser user) {
-        return ResponseEntity.ok(addressService.findAllAddresses(user));
+        List<AddressResponse> addressResponse = addressService.findAllAddresses(user);
+        return ResponseEntity.ok(addressResponse);
     }
 
     @Operation(summary = "Definir endereço padrão", description =
@@ -61,7 +62,8 @@ public class AddressController {
     @PatchMapping("/{publicId}/default")
     public ResponseEntity<AddressResponse> setDefaultAddress(
             @AuthenticationPrincipal CurrentUser user, @PathVariable UUID publicId) {
-        return ResponseEntity.ok(addressService.setDefaultAddress(user, publicId));
+        AddressResponse addressResponse = addressService.setDefaultAddress(user, publicId);
+        return ResponseEntity.ok(addressResponse);
     }
 
     @Operation(summary = "Deletar endereço", description = "Desativa o endereço informado do usuário autenticado")
@@ -70,8 +72,9 @@ public class AddressController {
             @ApiResponse(responseCode = "404", description = "Endereço não encontrado")
     })
     @DeleteMapping("/{publicId}/delete")
-    public ResponseEntity<MessageResponse> delete(
+    public ResponseEntity<Void> delete(
             @AuthenticationPrincipal CurrentUser user, @PathVariable UUID publicId) {
-        return ResponseEntity.ok(addressService.deleteAddress(user, publicId));
+        addressService.deleteAddress(user, publicId);
+        return ResponseEntity.noContent().build();
     }
 }
