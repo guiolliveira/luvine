@@ -443,7 +443,7 @@ class AuthServiceTest {
         void refresh_tokenNotFound_throwsInvalidRefreshTokenException() {
             given(refreshTokenRepository.findByToken(anyString())).willReturn(Optional.empty());
 
-            assertThatExceptionOfType(InvalidRefreshTokenException.class)
+            assertThatExceptionOfType(InvalidTokenException.class)
                     .isThrownBy(() -> authService.refresh(REFRESH_TOKEN_RAW));
         }
 
@@ -462,7 +462,7 @@ class AuthServiceTest {
             given(refreshTokenRepository.findAllByUser(user))
                     .willReturn(List.of(otherToken1, otherToken2));
 
-            assertThatExceptionOfType(InvalidRefreshTokenException.class)
+            assertThatExceptionOfType(InvalidTokenException.class)
                     .isThrownBy(() -> authService.refresh(REFRESH_TOKEN_RAW));
 
             assertThat(otherToken1.isRevoked()).isTrue();
@@ -481,7 +481,7 @@ class AuthServiceTest {
             given(expiredToken.getExpiresAt()).willReturn(Instant.now().minus(7, ChronoUnit.DAYS));
             given(expiredToken.getUser()).willReturn(user);
 
-            assertThatExceptionOfType(InvalidRefreshTokenException.class)
+            assertThatExceptionOfType(InvalidTokenException.class)
                     .isThrownBy(() -> authService.refresh(REFRESH_TOKEN_RAW));
 
             then(tokenService).should(never()).generateAccessToken(any());

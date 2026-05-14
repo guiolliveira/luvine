@@ -89,6 +89,7 @@ public class EmailVerificationService {
 
         EmailVerification verification =
                 verificationRepository.findFirstByUserIdAndUsedFalseOrderByCreatedAtDesc(userId)
+                        .filter(v -> v.getExpiresAt().isAfter(Instant.now()))
                         .orElseThrow(() -> {
                             log.warn("event=verification_code_rejected reason=no_active_code userId={}", userId);
                             return new InvalidCodeException();
@@ -100,11 +101,6 @@ public class EmailVerificationService {
         }
 
         User user = verification.getUser();
-
-        if (verification.getExpiresAt().isBefore(Instant.now())) {
-            log.warn("event=verification_code_rejected reason=code_expired publicId={}", user.getPublicId());
-            throw new InvalidCodeException();
-        }
 
         if (user.isEmailVerified()) {
             log.warn("event=verification_code_rejected reason=email_already_verified publicId={}", user.getPublicId());
