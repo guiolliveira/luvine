@@ -93,6 +93,26 @@ public class User implements UserDetails {
         return new User(email, firstName, lastName, password, userProvider);
     }
 
+    public void changeFirstName(Name newFirstName) {
+        this.firstName = newFirstName;
+        touch();
+    }
+
+    public void changeLastName(Name newLastName) {
+        this.lastName = newLastName;
+        touch();
+    }
+
+    public void changePassword(String newPassword) {
+        this.password = newPassword;
+        touch();
+    }
+
+    public void changeRole(UserRole newRole) {
+        this.userRole = newRole;
+        touch();
+    }
+
     public void markEmailAsVerified() {
         this.emailVerified = true;
     }
