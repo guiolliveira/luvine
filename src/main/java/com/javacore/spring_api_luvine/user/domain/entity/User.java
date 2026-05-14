@@ -63,8 +63,6 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private UserRole userRole;
 
-    private String avatarUrl;
-
     private Instant lastVerificationEmailSentAt;
 
     @Column(nullable = false)
@@ -82,7 +80,6 @@ public class User implements UserDetails {
         this.emailVerified = false;
         this.userProvider = userProvider;
         this.userRole = UserRole.CUSTOMER;
-        this.avatarUrl = null;
         this.verificationEmailRequestCount = 0;
     }
 
@@ -91,6 +88,26 @@ public class User implements UserDetails {
             Name lastName, String password,
             UserProvider userProvider) {
         return new User(email, firstName, lastName, password, userProvider);
+    }
+
+    public void changeFirstName(Name newFirstName) {
+        this.firstName = newFirstName;
+        touch();
+    }
+
+    public void changeLastName(Name newLastName) {
+        this.lastName = newLastName;
+        touch();
+    }
+
+    public void changePassword(String newPassword) {
+        this.password = newPassword;
+        touch();
+    }
+
+    public void changeRole(UserRole newRole) {
+        this.userRole = newRole;
+        touch();
     }
 
     public void markEmailAsVerified() {

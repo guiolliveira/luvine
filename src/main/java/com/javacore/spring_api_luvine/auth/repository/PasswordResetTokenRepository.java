@@ -1,6 +1,6 @@
 package com.javacore.spring_api_luvine.auth.repository;
 
-import com.javacore.spring_api_luvine.auth.domain.entity.RefreshToken;
+import com.javacore.spring_api_luvine.auth.domain.entity.PasswordResetToken;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,15 +15,17 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID> {
+public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, UUID> {
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<RefreshToken> findByToken(String token);
+    Optional<PasswordResetToken> findByTokenAndUsedFalseAndRevokedFalse(String token);
 
     @Modifying
-    @Query("UPDATE RefreshToken t SET t.revoked = TRUE WHERE t.user = :user AND t.revoked = FALSE")
+    @Query("UPDATE PasswordResetToken p SET p.revoked = TRUE" +
+            " WHERE p.user = :user AND p.used = FALSE AND p.revoked = FALSE")
     void revokeAllUserTokens(@Param("user")User user);
 
     @Modifying
-    @Query("DELETE FROM RefreshToken t WHERE t.expiresAt < :now OR t.revoked = TRUE")
+    @Query("DELETE FROM PasswordResetToken p WHERE p.expiresAt < :now OR p.used = TRUE")
     void deleteInvalidTokens(@Param("now")Instant now);
 }

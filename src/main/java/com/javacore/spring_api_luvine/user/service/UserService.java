@@ -1,0 +1,104 @@
+package com.javacore.spring_api_luvine.user.service;
+
+import com.javacore.spring_api_luvine.user.domain.entity.User;
+import com.javacore.spring_api_luvine.user.domain.exception.*;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
+import com.javacore.spring_api_luvine.user.dto.CurrentUser;
+import com.javacore.spring_api_luvine.user.dto.ProfileResponse;
+import com.javacore.spring_api_luvine.user.dto.UpdateProfileRequest;
+import com.javacore.spring_api_luvine.user.dto.UpdateRoleRequest;
+import com.javacore.spring_api_luvine.user.mapper.UserMapper;
+import com.javacore.spring_api_luvine.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class UserService {
+
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
+
+    @Transactional(readOnly = true)
+    public ProfileResponse findProfile(CurrentUser currentUser) {
+        log.info("event=find_profile_attempt publicId={}", currentUser.publicId());
+
+        User user = findByPublicIdOrThrow(currentUser.publicId());
+
+        log.info("event=find_profile_success publicId={}", user.getPublicId());
+        return userMapper.toProfileResponse(user);
+    }
+
+    @Transactional
+    public void updateProfile(CurrentUser currentUser, UpdateProfileRequest request) {
+        log.info("event=update_profile_attempt publicId={}", currentUser.publicId());
+
+        User user = findByPublicIdOrThrow(currentUser.publicId());
+
+        if (request.newFirstName() != null) {
+            if (user.getFirstName().value().equals(request.newFirstName())) {
+                log.warn("event=update_profile_rejected reason=unchanged_first_name publicId={}", user.getPublicId());
+                throw new UnchangedValueException();
+            }
+
+            user.changeFirstName(new Name(request.newFirstName()));
+            log.info("event=update_profile_first_name_changed publicId={}", user.getPublicId());
+        }
+
+        if (request.newLastName() != null) {
+            if (user.getLastName().value().equals(request.newLastName())) {
+                log.warn("event=update_profile_rejected reason=unchanged_last_name publicId={}", user.getPublicId());
+                throw new UnchangedValueException();
+            }
+
+            user.changeLastName(new Name(request.newLastName()));
+            log.info("event=update_profile_last_name_changed publicId={}", user.getPublicId());
+        }
+
+        log.info("event=update_profile_success publicId={}", user.getPublicId());
+    }
+
+    @Transactional
+    public void updateRole(CurrentUser currentUser, UUID targetPublicId, UpdateRoleRequest request) {
+        log.info("event=update_role_attempt actorPublicId={} targetPublicId={} role={}",
+                currentUser.publicId(), targetPublicId, request.role());
+
+        if (currentUser.publicId().equals(targetPublicId)) {
+            log.warn("event=update_role_rejected reason=self_promotion actorPublicId={}", currentUser.publicId());
+            throw new SelfPromotionNotAllowedException();
+        }
+
+        User actor = findByPublicIdOrThrow(currentUser.publicId());
+        User targetUser = findByPublicIdOrThrow(targetPublicId);
+
+        if (!actor.getUserRole().hasHigherAuthorityTan(targetUser.getUserRole())) {
+            log.warn("event=update_role_rejected reason=insufficient_authority " +
+                            "actorPublicId={} actorRole={} targetPublicId={} targetRole={}",
+                    actor.getPublicId(), actor.getUserRole(), targetUser.getPublicId(), targetUser.getUserRole());
+            throw new InsufficientPromotionsException();
+        }
+
+        if (targetUser.getUserRole() == request.role()) {
+            log.warn("event=update_role_rejected reason=role_already_assigned targetPublicId={} role={}",
+                    targetUser.getPublicId(), request.role());
+            throw new RoleAlreadyAssignedException();
+        }
+
+        targetUser.changeRole(request.role());
+        log.info("event=update_role_success actorPublicId={} targetPublicId={} newRole={}",
+                actor.getPublicId(), targetUser.getPublicId(), request.role());
+    }
+
+    private User findByPublicIdOrThrow(UUID publicId) {
+        return userRepository.findByPublicId(publicId)
+                .orElseThrow(() -> {
+                    log.warn("event=user_not_found publicId={}", publicId);
+                    return new UserSessionInvalidException();
+                });
+    }
+}

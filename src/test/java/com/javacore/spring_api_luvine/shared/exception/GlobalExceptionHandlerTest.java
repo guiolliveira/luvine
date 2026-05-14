@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -80,6 +81,11 @@ class GlobalExceptionHandlerTest {
                 fakeService.throwAuthentication();
             }
 
+            @GetMapping("/authorization")
+            public void authorization() {
+                fakeService.throwAuthorization();
+            }
+
             @GetMapping("/generic")
             public void generic() {
                 fakeService.throwGeneric();
@@ -94,6 +100,7 @@ class GlobalExceptionHandlerTest {
                 void throwBusiness();
                 void throwIntegrity();
                 void throwAuthentication();
+                void throwAuthorization();
                 void throwGeneric();
             }
         }
@@ -105,10 +112,6 @@ class GlobalExceptionHandlerTest {
     @DisplayName("handleBusinessException()")
     class HandleBusinessException {
 
-        /**
-         * Cria uma {@link BusinessException} anônima com o {@link ErrorCode} informado
-         * para isolar o teste da existência de subclasses concretas.
-         */
         private BusinessException businessExceptionWith(ErrorCode code) {
             return new BusinessException("Erro de teste", code) { };
         }
@@ -393,6 +396,53 @@ class GlobalExceptionHandlerTest {
         }
     }
 
+    // --- AUTHORIZATION DENIED EXCEPTION --------------------------------------------------------------
+
+    @Nested
+    @DisplayName("handleAuthorizationDeniedException()")
+    class HandleAuthorizationDeniedException {
+
+        @Test
+        @DisplayName("deve retornar 403 para AuthorizationDeniedException")
+        void shouldReturn403ForAuthorizationDeniedException() throws Exception {
+            doThrow(new AuthorizationDeniedException("acesso negado"))
+                    .when(fakeService).throwAuthorization();
+
+            mockMvc.perform(get("/fake/authorization"))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("deve retornar errorCode AUTHORIZATION_DENIED")
+        void shouldReturnAuthorizationDeniedErrorCode() throws Exception {
+            doThrow(new AuthorizationDeniedException("acesso negado"))
+                    .when(fakeService).throwAuthorization();
+
+            mockMvc.perform(get("/fake/authorization"))
+                    .andExpect(jsonPath("$.errorCode").value("AUTHORIZATION_DENIED"));
+        }
+
+        @Test
+        @DisplayName("deve retornar a mensagem fixa 'Acesso Negado'")
+        void shouldReturnFixedAccessDeniedMessage() throws Exception {
+            doThrow(new AuthorizationDeniedException("mensagem interna"))
+                    .when(fakeService).throwAuthorization();
+
+            mockMvc.perform(get("/fake/authorization"))
+                    .andExpect(jsonPath("$.message").value("Acesso Negado"));
+        }
+
+        @Test
+        @DisplayName("deve incluir path correto para falha de autorização")
+        void shouldIncludeCorrectPathForAuthorizationFailure() throws Exception {
+            doThrow(new AuthorizationDeniedException("acesso negado"))
+                    .when(fakeService).throwAuthorization();
+
+            mockMvc.perform(get("/fake/authorization"))
+                    .andExpect(jsonPath("$.path").value("/fake/authorization"));
+        }
+    }
+
     // --- GENERIC EXCEPTION --------------------------------------------------------------
 
     @Nested
@@ -422,7 +472,6 @@ class GlobalExceptionHandlerTest {
         @Test
         @DisplayName("deve retornar a mensagem 'Erro Inesperado' sem expor detalhes internos")
         void shouldReturnGenericMessageWithoutInternalDetails() throws Exception {
-            // Detalhes da exceção não devem vazar para o cliente
             doThrow(new RuntimeException("stack trace sensível aqui"))
                     .when(fakeService).throwGeneric();
 
@@ -464,10 +513,6 @@ class GlobalExceptionHandlerTest {
         @Test
         @DisplayName("campo details não deve conter erros de campo quando não há validação")
         void detailsShouldBeNullOrAbsentWhenNoFieldErrors() throws Exception {
-            // O handler passa details=null. Dependendo de @JsonInclude no ApiError,
-            // o campo pode estar ausente, null, ou serializado como [].
-            // Para garantir ausência total: adicione @JsonInclude(NON_NULL) no ApiError.
-            // Este teste aceita as três formas toleradas.
             doThrow(new RuntimeException("erro"))
                     .when(fakeService).throwGeneric();
 
@@ -479,7 +524,7 @@ class GlobalExceptionHandlerTest {
                         boolean emptyArr = body.contains("\"details\":[]");
                         if (!absent && !nullVal && !emptyArr) {
                             throw new AssertionError(
-                                    "Campo \'details\' deveria ser null, ausente ou [] mas foi: " + body);
+                                    "Campo 'details' deveria ser null, ausente ou [] mas foi: " + body);
                         }
                     });
         }

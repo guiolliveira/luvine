@@ -1,6 +1,5 @@
 package com.javacore.spring_api_luvine.user.service;
 
-import com.javacore.spring_api_luvine.shared.dto.MessageResponse;
 import com.javacore.spring_api_luvine.user.domain.entity.Address;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
@@ -32,6 +31,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
@@ -52,20 +52,20 @@ class AddressServiceTest {
 
     // --- HELPERS ------------------------------------------------------------------
 
-    private static final UUID USER_PUBLIC_ID   = UUID.randomUUID();
+    private static final UUID USER_PUBLIC_ID    = UUID.randomUUID();
     private static final UUID ADDRESS_PUBLIC_ID = UUID.randomUUID();
 
-    private static final String FIRST_NAME = "João";
-    private static final String LAST_NAME = "Silva";
-    private static final String PHONE = "11987654321";
-    private static final String CEP = "01310100";
-    private static final String STREET = "Avenida Paulista";
-    private static final String NUMBER = "1000";
-    private static final String COMPLEMENT = "Apto 42";
+    private static final String FIRST_NAME   = "João";
+    private static final String LAST_NAME    = "Silva";
+    private static final String PHONE        = "11987654321";
+    private static final String CEP          = "01310100";
+    private static final String STREET       = "Avenida Paulista";
+    private static final String NUMBER       = "1000";
+    private static final String COMPLEMENT   = "Apto 42";
     private static final String NEIGHBORHOOD = "Bela Vista";
-    private static final String CITY = "São Paulo";
-    private static final String STATE = "São Paulo";
-    private static final String COUNTRY = "Brasil";
+    private static final String CITY         = "São Paulo";
+    private static final String STATE        = "São Paulo";
+    private static final String COUNTRY      = "Brasil";
 
     private CurrentUser currentUser() {
         return new CurrentUser(USER_PUBLIC_ID);
@@ -73,35 +73,15 @@ class AddressServiceTest {
 
     private AddressRequest validRequest() {
         return new AddressRequest(
-                FIRST_NAME,
-                LAST_NAME,
-                CEP,
-                STREET,
-                NUMBER,
-                COMPLEMENT,
-                NEIGHBORHOOD,
-                CITY,
-                STATE,
-                COUNTRY,
-                PHONE,
-                false
+                FIRST_NAME, LAST_NAME, CEP, STREET, NUMBER, COMPLEMENT,
+                NEIGHBORHOOD, CITY, STATE, COUNTRY, PHONE, false
         );
     }
 
     private AddressRequest validRequestAsDefault() {
         return new AddressRequest(
-                FIRST_NAME,
-                LAST_NAME,
-                CEP,
-                STREET,
-                NUMBER,
-                COMPLEMENT,
-                NEIGHBORHOOD,
-                CITY,
-                STATE,
-                COUNTRY,
-                PHONE,
-                true
+                FIRST_NAME, LAST_NAME, CEP, STREET, NUMBER, COMPLEMENT,
+                NEIGHBORHOOD, CITY, STATE, COUNTRY, PHONE, true
         );
     }
 
@@ -145,8 +125,7 @@ class AddressServiceTest {
 
             AddressResponse response = addressService.createAddress(currentUser(), validRequest());
 
-            assertThat(response).isNotNull();
-            assertThat(response).isEqualTo(expectedResponse);
+            assertThat(response).isNotNull().isEqualTo(expectedResponse);
             then(addressRepository).should().save(any(Address.class));
         }
 
@@ -263,16 +242,16 @@ class AddressServiceTest {
     class DeleteAddress {
 
         @Test
-        @DisplayName("deve deletar endereço com sucesso e retornar mensagem")
-        void deleteAddress_existingAddress_returnsSuccessMessage() {
+        @DisplayName("deve deletar endereço com sucesso")
+        void deleteAddress_existingAddress_disablesAddress() {
             Address address = buildAddress();
 
             given(addressRepository.findByPublicIdAndUserPublicId(ADDRESS_PUBLIC_ID, USER_PUBLIC_ID))
                     .willReturn(Optional.of(address));
 
-            MessageResponse response = addressService.deleteAddress(currentUser(), ADDRESS_PUBLIC_ID);
+            assertThatNoException()
+                    .isThrownBy(() -> addressService.deleteAddress(currentUser(), ADDRESS_PUBLIC_ID));
 
-            assertThat(response.message()).isEqualTo("Endereço deletado com sucesso!");
             then(address).should().disable();
         }
 
@@ -326,7 +305,7 @@ class AddressServiceTest {
             given(addressRepository.findFirstByUserPublicIdAndActiveTrueOrderByCreatedAtDesc(USER_PUBLIC_ID))
                     .willReturn(Optional.empty());
 
-            org.assertj.core.api.Assertions.assertThatNoException()
+            assertThatNoException()
                     .isThrownBy(() -> addressService.deleteAddress(currentUser(), ADDRESS_PUBLIC_ID));
         }
     }
@@ -342,18 +321,13 @@ class AddressServiceTest {
         void setDefaultAddress_activeAddress_returnsAddressResponse() {
             Address address = buildAddress();
             given(address.isActive()).willReturn(true);
-
             AddressResponse expectedResponse = mock(AddressResponse.class);
 
-            given(addressRepository.findByPublicIdAndUserPublicId(
-                    ADDRESS_PUBLIC_ID, USER_PUBLIC_ID))
+            given(addressRepository.findByPublicIdAndUserPublicId(ADDRESS_PUBLIC_ID, USER_PUBLIC_ID))
                     .willReturn(Optional.of(address));
+            given(userMapper.toAddressResponse(address)).willReturn(expectedResponse);
 
-            given(userMapper.toAddressResponse(address))
-                    .willReturn(expectedResponse);
-
-            AddressResponse response =
-                    addressService.setDefaultAddress(currentUser(), ADDRESS_PUBLIC_ID);
+            AddressResponse response = addressService.setDefaultAddress(currentUser(), ADDRESS_PUBLIC_ID);
 
             assertThat(response).isEqualTo(expectedResponse);
         }

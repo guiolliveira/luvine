@@ -4,8 +4,8 @@ import com.javacore.spring_api_luvine.auth.domain.entity.RefreshToken;
 import com.javacore.spring_api_luvine.auth.domain.exception.*;
 import com.javacore.spring_api_luvine.auth.dto.*;
 import com.javacore.spring_api_luvine.auth.mapper.AuthMapper;
+import com.javacore.spring_api_luvine.auth.repository.PasswordResetTokenRepository;
 import com.javacore.spring_api_luvine.auth.repository.RefreshTokenRepository;
-import com.javacore.spring_api_luvine.shared.dto.MessageResponse;
 import com.javacore.spring_api_luvine.shared.messaging.dto.EmailMessageRequest;
 import com.javacore.spring_api_luvine.shared.messaging.service.producer.ProducerService;
 import com.javacore.spring_api_luvine.shared.util.EmailMask;
@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -39,6 +40,8 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final EmailVerificationService verificationService;
     private final ProducerService producerService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final PasswordResetTokenService passwordResetTokenService;
 
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
@@ -72,10 +75,16 @@ public class AuthService {
 
         EmailVerificationCreationResult verification = verificationService.createCode(user);
 
+        Map<String, Object> variables = Map.of(
+                "digits", verification.rawCode().split("")
+        );
+
         producerService.producer(new EmailMessageRequest(
                 user.getEmail().value(),
                 user.getFirstName().value(),
-                verification.rawCode()
+                "Email de Verificação",
+                "email-verification-template",
+                variables
         ));
 
         log.info("event=register_completed publicId={} email={}", user.getPublicId(), maskedEmail);
@@ -125,21 +134,17 @@ public class AuthService {
         String tokenHash = TokenHash.hash(refreshToken);
 
         RefreshToken token = refreshTokenRepository.findByToken(tokenHash)
+                .filter(t -> t.getExpiresAt().isAfter(Instant.now()))
                 .orElseThrow(() -> {
                     log.warn("event=token_refresh_rejected reason=token_not_found");
-                    return new InvalidRefreshTokenException();
+                    return new InvalidTokenException();
                 });
 
         if (token.isRevoked()) {
             log.warn("event=token_refresh_rejected reason=token_revoked publicId={} — revoking all user tokens",
                     token.getUser().getPublicId());
-            revokedAllUserTokens(token.getUser());
-            throw new InvalidRefreshTokenException();
-        }
-
-        if (token.getExpiresAt().isBefore(Instant.now())) {
-            log.warn("event=token_refresh_rejected reason=token_expired publicId={}", token.getUser().getPublicId());
-            throw new InvalidRefreshTokenException();
+            refreshTokenRepository.revokeAllUserTokens(token.getUser());
+            throw new InvalidTokenException();
         }
 
         token.revoke();
@@ -159,7 +164,7 @@ public class AuthService {
         return new LoginResponse(newAccessToken, newRefreshToken);
     }
 
-    public MessageResponse verifyEmail(VerifyEmailRequest request) {
+    public void verifyEmail(VerifyEmailRequest request) {
         String maskedEmail = EmailMask.mask(request.email());
         log.info("event=email_verification_attempt email={}", maskedEmail);
 
@@ -174,10 +179,9 @@ public class AuthService {
         verificationService.validateCode(user.getId(), request.code());
 
         log.info("event=email_verified publicId={} email={}", user.getPublicId(), maskedEmail);
-        return new MessageResponse("Email verificado com sucesso!");
     }
 
-    public MessageResponse resendEmail(ResendEmailRequest request) {
+    public void resendEmail(ResendEmailRequest request) {
         String maskedEmail = EmailMask.mask(request.email());
         log.info("event=resend_verification_email_attempt email={}", maskedEmail);
 
@@ -185,14 +189,83 @@ public class AuthService {
 
         EmailVerificationCreationResult verification = verificationService.createCode(user);
 
+        Map<String, Object> variables = Map.of(
+                "digits", verification.rawCode().split("")
+        );
+
         producerService.producer(new EmailMessageRequest(
                 user.getEmail().value(),
                 user.getFirstName().value(),
-                verification.rawCode()
+                "Email de Verificação",
+                "email-verification-template",
+                variables
         ));
 
         log.info("event=resend_verification_email_queued publicId={} email={}", user.getPublicId(), maskedEmail);
-        return new MessageResponse("Email de verificação reenviado com sucesso!");
+    }
+
+    @Transactional
+    public void processForgotPassword(ForgotPasswordRequest request, String deviceInfo, String ipAddress) {
+        String maskedEmail = EmailMask.mask(request.email());
+        log.info("event=forgot_password_attempt email={}", maskedEmail);
+
+        userRepository.findByEmail(new Email(request.email()))
+                .ifPresent(user -> {
+                    if (!user.isEmailVerified()) {
+                        log.warn("event=forgot_password_rejected reason=email_not_verified publicId={} email={}",
+                                user.getPublicId(), maskedEmail);
+                        throw new EmailNotVerifiedException();
+                    }
+
+                    passwordResetTokenRepository.revokeAllUserTokens(user);
+
+                    String rawCode = passwordResetTokenService
+                            .generatePasswordResetToken(user, deviceInfo, ipAddress);
+
+                    Map<String, Object> variables = Map.of(
+                            "recoveryLink", "http://localhost:8080/reset-password?token=" + rawCode
+                    );
+
+                    producerService.producer(new EmailMessageRequest(
+                            user.getEmail().value(),
+                            user.getFirstName().value(),
+                            "Recupere a sua Conta",
+                            "password-reset-template",
+                            variables
+                    ));
+
+                    log.info("event=forgot_password_email_queued publicId={} email={}",
+                            user.getPublicId(), maskedEmail);
+                });
+
+        log.info("event=forgot_password_processed email={}", maskedEmail);
+    }
+
+    @Transactional
+    public void resetPassword(UpdatePasswordRequest request) {
+        log.info("event=reset_password_attempt");
+
+        if (!request.newPassword().equals(request.confirmPassword())) {
+            log.warn("event=reset_password_rejected reason=password_mismatch");
+            throw new PasswordMisMatchException();
+        }
+
+        String tokenHash = TokenHash.hash(request.token());
+
+        var token = passwordResetTokenRepository.findByTokenAndUsedFalseAndRevokedFalse(tokenHash)
+                .filter(t -> t.getExpiresAt().isAfter(Instant.now()))
+                .orElseThrow(() -> {
+                    log.warn("event=reset_password_rejected reason=invalid_or_expired_token");
+                    return new InvalidTokenException();
+                });
+
+        User user = token.getUser();
+        user.changePassword(passwordEncoder.encode(request.newPassword()));
+
+        token.markAsUsed();
+        passwordResetTokenRepository.save(token);
+
+        log.info("event=reset_password_success publicId={}", user.getPublicId());
     }
 
     private User findUserByEmailOrThrow(String email) {
@@ -200,15 +273,5 @@ public class AuthService {
 
         return userRepository.findByEmail(normalized)
                 .orElseThrow(InvalidCredentialsException::new);
-    }
-
-    private void revokedAllUserTokens(User user) {
-        var tokens = refreshTokenRepository.findAllByUser(user);
-
-        for (var t : tokens) {
-            t.revoke();
-        }
-
-        log.warn("event=all_tokens_revoked publicId={} count={}", user.getPublicId(), tokens.size());
     }
 }

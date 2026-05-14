@@ -25,8 +25,10 @@ public class ConsumerService {
         try {
             mailSenderService.sendEmail(new MailSenderRequest(
                     request.to(),
+                    request.name(),
                     request.subject(),
-                    request.body()
+                    request.templateName(),
+                    request.variables()
             ));
             log.info("event=message_processed queue={} to={}", RabbitMQDLQConfig.EMAIL_QUEUE, maskedEmail);
         } catch (Exception ex) {
