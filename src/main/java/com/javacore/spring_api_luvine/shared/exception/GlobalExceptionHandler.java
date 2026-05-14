@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -84,6 +85,15 @@ public class GlobalExceptionHandler {
                 null,
                 request
         );
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ApiError> handleAuthorizationDeniedException(
+            AuthorizationDeniedException ex, HttpServletRequest request) {
+
+        log.warn("event=authorization_failed message={} path={}", ex.getMessage(), request.getRequestURI());
+
+        return buildError(HttpStatus.FORBIDDEN, "Acesso Negado", "AUTHORIZATION_DENIED", null, request);
     }
 
     @ExceptionHandler(Exception.class)
