@@ -206,9 +206,14 @@ public class AuthService {
 
     @Transactional
     public void processForgotPassword(ForgotPasswordRequest request, String deviceInfo, String ipAddress) {
+        String maskedEmail = EmailMask.mask(request.email());
+        log.info("event=forgot_password_attempt email={}", maskedEmail);
+
         userRepository.findByEmail(new Email(request.email()))
                 .ifPresent(user -> {
                     if (!user.isEmailVerified()) {
+                        log.warn("event=forgot_password_rejected reason=email_not_verified publicId={} email={}",
+                                user.getPublicId(), maskedEmail);
                         throw new EmailNotVerifiedException();
                     }
 
@@ -226,14 +231,20 @@ public class AuthService {
                             "password-reset-template",
                             variables
                     ));
+
+                    log.info("event=forgot_password_email_queued publicId={} email={}",
+                            user.getPublicId(), maskedEmail);
                 });
 
-        log.info("event=forgot_password_processed email={}", EmailMask.mask(request.email()));
+        log.info("event=forgot_password_processed email={}", maskedEmail);
     }
 
     @Transactional
     public void resetPassword(UpdatePasswordRequest request) {
+        log.info("event=reset_password_attempt");
+
         if (!request.newPassword().equals(request.confirmPassword())) {
+            log.warn("event=reset_password_rejected reason=password_mismatch");
             throw new PasswordMisMatchException();
         }
 
@@ -241,13 +252,18 @@ public class AuthService {
 
         var token = passwordResetTokenRepository.findByTokenAndUsedFalse(tokenHash)
                 .filter(t -> t.getExpiresAt().isAfter(Instant.now()))
-                .orElseThrow(InvalidTokenException::new);
+                .orElseThrow(() -> {
+                    log.warn("event=reset_password_rejected reason=invalid_or_expired_token");
+                    return new InvalidTokenException();
+                });
 
         User user = token.getUser();
         user.changePassword(passwordEncoder.encode(request.newPassword()));
 
         token.markAsUsed();
         passwordResetTokenRepository.save(token);
+
+        log.info("event=reset_password_success publicId={}", user.getPublicId());
     }
 
     private User findUserByEmailOrThrow(String email) {
