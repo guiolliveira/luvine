@@ -2,7 +2,6 @@ package com.javacore.spring_api_luvine.auth.controller;
 
 import com.javacore.spring_api_luvine.auth.dto.*;
 import com.javacore.spring_api_luvine.auth.service.AuthService;
-import com.javacore.spring_api_luvine.shared.dto.MessageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -99,9 +98,9 @@ public class AuthController {
             @ApiResponse(responseCode = "409", description = "Email já verificado")
     })
     @PostMapping("/verify-email")
-    public ResponseEntity<MessageResponse> verifyEmail(@RequestBody @Valid VerifyEmailRequest request) {
-        MessageResponse response = authService.verifyEmail(request);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<Void> verifyEmail(@RequestBody @Valid VerifyEmailRequest request) {
+        authService.verifyEmail(request);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Reenviar email de verificação", description = "Reenvia o código para o email informado")
@@ -110,8 +109,29 @@ public class AuthController {
             @ApiResponse(responseCode = "429", description = "Muitas tentativas, tente mais tarde")
     })
     @PostMapping("/resend-email")
-    public ResponseEntity<MessageResponse> resendEmail(@RequestBody @Valid ResendEmailRequest request) {
-        MessageResponse response = authService.resendEmail(request);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<Void> resendEmail(@RequestBody @Valid ResendEmailRequest request) {
+        authService.resendEmail(request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(
+            @RequestBody @Valid ForgotPasswordRequest request, HttpServletRequest httpRequest) {
+
+        String deviceInfo = httpRequest.getHeader("User-Agent");
+
+        String ipAddress = httpRequest.getHeader("X-Forwarded-For");
+        if (ipAddress == null) {
+            ipAddress = httpRequest.getRemoteAddr();
+        }
+
+        authService.processForgotPassword(request, deviceInfo, ipAddress);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody @Valid UpdatePasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.noContent().build();
     }
 }
