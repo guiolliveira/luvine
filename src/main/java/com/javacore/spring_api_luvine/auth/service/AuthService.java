@@ -143,7 +143,7 @@ public class AuthService {
         if (token.isRevoked()) {
             log.warn("event=token_refresh_rejected reason=token_revoked publicId={} — revoking all user tokens",
                     token.getUser().getPublicId());
-            revokedAllUserTokens(token.getUser());
+            refreshTokenRepository.revokeAllUserTokens(token.getUser());
             throw new InvalidTokenException();
         }
 
@@ -271,15 +271,5 @@ public class AuthService {
 
         return userRepository.findByEmail(normalized)
                 .orElseThrow(InvalidCredentialsException::new);
-    }
-
-    private void revokedAllUserTokens(User user) {
-        var tokens = refreshTokenRepository.findAllByUser(user);
-
-        for (var t : tokens) {
-            t.revoke();
-        }
-
-        log.warn("event=all_tokens_revoked publicId={} count={}", user.getPublicId(), tokens.size());
     }
 }

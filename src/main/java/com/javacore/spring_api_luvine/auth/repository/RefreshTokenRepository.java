@@ -20,7 +20,9 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<RefreshToken> findByToken(String token);
 
-    List<RefreshToken> findAllByUser(User user);
+    @Modifying
+    @Query("UPDATE RefreshToken t SET t.revoked = TRUE WHERE t.user = :user AND t.revoked = FALSE")
+    void revokeAllUserTokens(@Param("@")User user);
 
     @Modifying
     @Query("DELETE FROM RefreshToken t WHERE t.expiresAt < :now OR t.revoked = TRUE")

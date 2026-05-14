@@ -36,6 +36,8 @@ public class PasswordResetToken {
     @Column(nullable = false)
     private boolean used;
 
+    private boolean revoked;
+
     @Column(nullable = false)
     private String deviceInfo;
 
@@ -48,6 +50,7 @@ public class PasswordResetToken {
         this.createdAt = Instant.now();
         this.expiresAt = this.createdAt.plus(15, ChronoUnit.MINUTES);
         this.used = false;
+        this.revoked = false;
         this.deviceInfo = deviceInfo;
         this.ipAddress = ipAddress;
     }
