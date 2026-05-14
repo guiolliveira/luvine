@@ -5,7 +5,6 @@ import com.javacore.spring_api_luvine.auth.domain.exception.*;
 import com.javacore.spring_api_luvine.auth.dto.*;
 import com.javacore.spring_api_luvine.auth.mapper.AuthMapper;
 import com.javacore.spring_api_luvine.auth.repository.RefreshTokenRepository;
-import com.javacore.spring_api_luvine.shared.dto.MessageResponse;
 import com.javacore.spring_api_luvine.shared.messaging.dto.EmailMessageRequest;
 import com.javacore.spring_api_luvine.shared.messaging.service.producer.ProducerService;
 import com.javacore.spring_api_luvine.shared.util.EmailMask;
@@ -25,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -72,10 +72,16 @@ public class AuthService {
 
         EmailVerificationCreationResult verification = verificationService.createCode(user);
 
+        Map<String, Object> variables = Map.of(
+                "digits", verification.rawCode().split("")
+        );
+
         producerService.producer(new EmailMessageRequest(
                 user.getEmail().value(),
                 user.getFirstName().value(),
-                verification.rawCode()
+                "Email de Verificação",
+                "email-verification-template",
+                variables
         ));
 
         log.info("event=register_completed publicId={} email={}", user.getPublicId(), maskedEmail);
@@ -159,7 +165,7 @@ public class AuthService {
         return new LoginResponse(newAccessToken, newRefreshToken);
     }
 
-    public MessageResponse verifyEmail(VerifyEmailRequest request) {
+    public void verifyEmail(VerifyEmailRequest request) {
         String maskedEmail = EmailMask.mask(request.email());
         log.info("event=email_verification_attempt email={}", maskedEmail);
 
@@ -174,10 +180,9 @@ public class AuthService {
         verificationService.validateCode(user.getId(), request.code());
 
         log.info("event=email_verified publicId={} email={}", user.getPublicId(), maskedEmail);
-        return new MessageResponse("Email verificado com sucesso!");
     }
 
-    public MessageResponse resendEmail(ResendEmailRequest request) {
+    public void resendEmail(ResendEmailRequest request) {
         String maskedEmail = EmailMask.mask(request.email());
         log.info("event=resend_verification_email_attempt email={}", maskedEmail);
 
@@ -185,14 +190,19 @@ public class AuthService {
 
         EmailVerificationCreationResult verification = verificationService.createCode(user);
 
+        Map<String, Object> variables = Map.of(
+                "digits", verification.rawCode().split("")
+        );
+
         producerService.producer(new EmailMessageRequest(
                 user.getEmail().value(),
                 user.getFirstName().value(),
-                verification.rawCode()
+                "Recupere sua Conta",
+                "password-reset-template",
+                variables
         ));
 
         log.info("event=resend_verification_email_queued publicId={} email={}", user.getPublicId(), maskedEmail);
-        return new MessageResponse("Email de verificação reenviado com sucesso!");
     }
 
     private User findUserByEmailOrThrow(String email) {
