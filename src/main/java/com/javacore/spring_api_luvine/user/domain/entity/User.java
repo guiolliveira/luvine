@@ -42,7 +42,8 @@ public class User implements UserDetails {
     @AttributeOverride(name = "value", column = @Column(name = "last_name", nullable = false, length = 100))
     private PersonName lastName;
 
-    @Column(nullable = false)
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "password", nullable = false))
     private Password password;
 
     @Column(nullable = false, updatable = false)
@@ -152,6 +153,11 @@ public class User implements UserDetails {
     @Override
     public String getUsername() {
         return getEmail().value();
+    }
+
+    @Override
+    public String getPassword() {
+        return this.password.value();
     }
 
     @Override
