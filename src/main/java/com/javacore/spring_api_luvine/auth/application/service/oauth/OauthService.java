@@ -12,7 +12,10 @@ import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
 import com.javacore.spring_api_luvine.user.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -21,6 +24,7 @@ public class OauthService {
 
     private final UserRepository userRepository;
     private final TokenService tokenService;
+    private final PasswordEncoder passwordEncoder;
 
     public LoginResponse loginWithGoogle(String email, String name, String deviceInfo, String ipAddress) {
         String maskedEmail = EmailMask.mask(email);
@@ -43,7 +47,12 @@ public class OauthService {
                 .orElseGet(() -> {
                     log.info("event=oauth_new_user_signup provider=GOOGLE email={}", maskedEmail);
 
-                    PersonName normalizedFullName = new PersonName(name);
+                    String sanitizedName = name
+                            .replaceAll("[^\\p{L}\\s]", "")
+                            .replaceAll("\\s+", "")
+                            .trim();
+
+                    PersonName normalizedFullName = new PersonName(sanitizedName);
 
                     String[] parts = normalizedFullName.value().split(" ");
                     String firstName = parts[0];
@@ -53,7 +62,7 @@ public class OauthService {
                             normalizedEmail,
                             new PersonName(firstName),
                             new PersonName(lastName),
-                            new Password(""),
+                            new Password(passwordEncoder.encode(UUID.randomUUID().toString())),
                             UserProvider.GOOGLE
                     );
 
