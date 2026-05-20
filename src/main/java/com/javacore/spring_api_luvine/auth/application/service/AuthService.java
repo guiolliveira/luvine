@@ -40,46 +40,6 @@ public class AuthService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordResetTokenService passwordResetTokenService;
 
-    public void verifyEmail(VerifyEmailRequest request) {
-        String maskedEmail = EmailMask.mask(request.email());
-        log.info("event=email_verification_attempt email={}", maskedEmail);
-
-        User user = findUserByEmailOrThrow(request.email());
-
-        if (user.isEmailVerified()) {
-            log.warn("event=email_verification_rejected reason=already_verified publicId={} email={}",
-                    user.getPublicId(), maskedEmail);
-            throw new EmailAlreadyVerifiedException();
-        }
-
-        verificationService.validateCode(user.getId(), request.code());
-
-        log.info("event=email_verified publicId={} email={}", user.getPublicId(), maskedEmail);
-    }
-
-    public void resendEmail(ResendEmailRequest request) {
-        String maskedEmail = EmailMask.mask(request.email());
-        log.info("event=resend_verification_email_attempt email={}", maskedEmail);
-
-        User user = findUserByEmailOrThrow(request.email());
-
-        EmailVerificationCreationResult verification = verificationService.createCode(user);
-
-        Map<String, Object> variables = Map.of(
-                "digits", verification.rawCode().split("")
-        );
-
-        producerService.producer(new EmailMessageRequest(
-                user.getEmail().value(),
-                user.getFirstName().value(),
-                "Email de Verificação",
-                "email-verification-template",
-                variables
-        ));
-
-        log.info("event=resend_verification_email_queued publicId={} email={}", user.getPublicId(), maskedEmail);
-    }
-
     @Transactional
     public void processForgotPassword(ForgotPasswordRequest request, String deviceInfo, String ipAddress) {
         String maskedEmail = EmailMask.mask(request.email());
