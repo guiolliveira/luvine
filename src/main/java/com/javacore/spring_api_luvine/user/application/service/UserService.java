@@ -2,7 +2,7 @@ package com.javacore.spring_api_luvine.user.application.service;
 
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.exception.*;
-import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
+import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
 import com.javacore.spring_api_luvine.user.application.dto.CurrentUser;
 import com.javacore.spring_api_luvine.user.application.dto.ProfileResponse;
 import com.javacore.spring_api_luvine.user.application.dto.UpdateProfileRequest;
@@ -45,12 +45,12 @@ public class UserService {
         User user = findByPublicIdOrThrow(currentUser.publicId());
 
         if (request.newFirstName() != null) {
-            user.changeFirstName(new Name(request.newFirstName()));
+            user.changeFirstName(new PersonName(request.newFirstName()));
             log.info("event=update_profile_first_name_changed publicId={}", user.getPublicId());
         }
 
         if (request.newLastName() != null) {
-            user.changeLastName(new Name(request.newLastName()));
+            user.changeLastName(new PersonName(request.newLastName()));
             log.info("event=update_profile_last_name_changed publicId={}", user.getPublicId());
         }
 

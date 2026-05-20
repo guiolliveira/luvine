@@ -3,7 +3,7 @@ package com.javacore.spring_api_luvine.auth.domain.entity;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
-import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
+import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ class EmailVerificationTest {
     private static final String CODE = "ABC123";
 
     private User anyUser() {
-        return User.create(new Email("user@luvine.com"), new Name("Ana"), new Name("Silva"), "hash", UserProvider.LOCAL);
+        return User.create(new Email("user@luvine.com"), new PersonName("Ana"), new PersonName("Silva"), "hash", UserProvider.LOCAL);
     }
 
     private EmailVerification newVerification() {
@@ -229,8 +229,8 @@ class EmailVerificationTest {
         @Test
         @DisplayName("dois usuários distintos devem ter verificações independentes")
         void twoUsersShouldHaveIndependentVerifications() {
-            User userA = User.create(new Email("a@exemple.com"), new Name("A"), new Name("A"), "h", UserProvider.LOCAL);
-            User userB = User.create(new Email("b@exemple.com"), new Name("B"), new Name("B"), "h", UserProvider.LOCAL);
+            User userA = User.create(new Email("a@exemple.com"), new PersonName("A"), new PersonName("A"), "h", UserProvider.LOCAL);
+            User userB = User.create(new Email("b@exemple.com"), new PersonName("B"), new PersonName("B"), "h", UserProvider.LOCAL);
 
             EmailVerification evA = EmailVerification.create(userA, "CODE-A");
             EmailVerification evB = EmailVerification.create(userB, "CODE-B");

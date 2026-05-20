@@ -6,7 +6,7 @@ import com.javacore.spring_api_luvine.auth.infrastructure.repository.PasswordRes
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
-import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
+import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -40,8 +40,8 @@ class PasswordResetTokenServiceTest {
     private User buildUser() {
         return User.create(
                 new Email("user@example.com"),
-                new Name("João"),
-                new Name("Silva"),
+                new PersonName("João"),
+                new PersonName("Silva"),
                 "hashed-password",
                 UserProvider.LOCAL
         );

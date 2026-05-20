@@ -8,8 +8,8 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Embeddable
-public record Name(@Column String value) {
-    public Name(String value) {
+public record PersonName(@Column String value) {
+    public PersonName(String value) {
         if (value == null || value.isBlank()) {
             throw new InvalidNameException();
         }

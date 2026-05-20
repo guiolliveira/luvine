@@ -2,7 +2,8 @@ package com.javacore.spring_api_luvine.user.domain.entity;
 
 import com.javacore.spring_api_luvine.user.domain.exception.UnchangedValueException;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
-import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Password;
+import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -35,14 +36,14 @@ public class User implements UserDetails {
 
     @Embedded
     @AttributeOverride(name = "value", column = @Column(name = "first_name", nullable = false, length = 100))
-    private Name firstName;
+    private PersonName firstName;
 
     @Embedded
     @AttributeOverride(name = "value", column = @Column(name = "last_name", nullable = false, length = 100))
-    private Name lastName;
+    private PersonName lastName;
 
     @Column(nullable = false)
-    private String password;
+    private Password password;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
@@ -69,7 +70,9 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Integer verificationEmailRequestCount;
 
-    private User(Email email, Name firstName, Name lastName, String password, UserProvider userProvider) {
+    private User(
+            Email email, PersonName firstName, PersonName lastName,
+            Password password, UserProvider userProvider) {
         this.publicId = UUID.randomUUID();
         this.email = email;
         this.firstName = firstName;
@@ -85,13 +88,13 @@ public class User implements UserDetails {
     }
 
     public static User create(
-            Email email, Name firstName,
-            Name lastName, String password,
+            Email email, PersonName firstName,
+            PersonName lastName, Password password,
             UserProvider userProvider) {
         return new User(email, firstName, lastName, password, userProvider);
     }
 
-    public void changeFirstName(Name newFirstName) {
+    public void changeFirstName(PersonName newFirstName) {
         if (this.firstName.equals(newFirstName)) {
             throw new UnchangedValueException();
         }
@@ -100,7 +103,7 @@ public class User implements UserDetails {
         touch();
     }
 
-    public void changeLastName(Name newLastName) {
+    public void changeLastName(PersonName newLastName) {
         if (this.lastName.equals(newLastName)) {
             throw new UnchangedValueException();
         }
@@ -109,7 +112,7 @@ public class User implements UserDetails {
         touch();
     }
 
-    public void changePassword(String newPassword) {
+    public void changePassword(Password newPassword) {
         this.password = newPassword;
         touch();
     }

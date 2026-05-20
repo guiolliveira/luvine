@@ -6,7 +6,7 @@ import com.javacore.spring_api_luvine.common.exception.ErrorCode;
 public class InvalidNameException extends BusinessException {
     public InvalidNameException() {
         super(
-                "Nome é inválido",
+                "O nome informado é inválido",
                 ErrorCode.INVALID_NAME
         );
     }

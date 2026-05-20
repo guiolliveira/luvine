@@ -7,7 +7,7 @@ import com.javacore.spring_api_luvine.user.domain.exception.AddressInactiveExcep
 import com.javacore.spring_api_luvine.user.domain.exception.AddressNotFoundException;
 import com.javacore.spring_api_luvine.user.domain.exception.UserSessionInvalidException;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Cep;
-import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
+import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Phone;
 import com.javacore.spring_api_luvine.user.application.dto.AddressRequest;
 import com.javacore.spring_api_luvine.user.application.dto.AddressResponse;
@@ -36,8 +36,8 @@ public class AddressService {
     public AddressResponse createAddress(CurrentUser currentUser, AddressRequest request) {
         log.info("event=create_address_attempt publicId={}", currentUser.publicId());
 
-        Name firstName = new Name(request.firstName());
-        Name lastName = new Name(request.lastName());
+        PersonName firstName = new PersonName(request.firstName());
+        PersonName lastName = new PersonName(request.lastName());
         Phone phone = new Phone(request.phone());
         Cep cep = new Cep(request.cep());
 

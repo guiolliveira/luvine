@@ -10,7 +10,7 @@ import com.javacore.spring_api_luvine.user.domain.exception.AddressNotFoundExcep
 import com.javacore.spring_api_luvine.user.domain.exception.UserSessionInvalidException;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Cep;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
-import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
+import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Phone;
 import com.javacore.spring_api_luvine.user.application.dto.AddressRequest;
 import com.javacore.spring_api_luvine.user.application.dto.AddressResponse;
@@ -89,8 +89,8 @@ class AddressServiceTest {
     private User buildUser() {
         return User.create(
                 new Email("user@example.com"),
-                new Name("João"),
-                new Name("Silva"),
+                new PersonName("João"),
+                new PersonName("Silva"),
                 "hashed-password",
                 UserProvider.LOCAL
         );
@@ -227,8 +227,8 @@ class AddressServiceTest {
             then(addressRepository).should().save(captor.capture());
             Address saved = captor.getValue();
 
-            assertThat(saved.getFirstName()).isEqualTo(new Name(FIRST_NAME));
-            assertThat(saved.getLastName()).isEqualTo(new Name(LAST_NAME));
+            assertThat(saved.getFirstName()).isEqualTo(new PersonName(FIRST_NAME));
+            assertThat(saved.getLastName()).isEqualTo(new PersonName(LAST_NAME));
             assertThat(saved.getPhone()).isEqualTo(new Phone(PHONE));
             assertThat(saved.getCep()).isEqualTo(new Cep(CEP));
             assertThat(saved.getCity()).isEqualTo(CITY);

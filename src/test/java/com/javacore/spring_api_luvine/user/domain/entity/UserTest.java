@@ -1,7 +1,7 @@
 package com.javacore.spring_api_luvine.user.domain.entity;
 
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
-import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
+import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,11 +22,11 @@ class UserTest {
     private static final String PASSWORD = "hashed-password";
 
     private User localUser() {
-        return User.create(new Email(EMAIL), new Name(FIRST_NAME), new Name(LAST_NAME), PASSWORD, UserProvider.LOCAL);
+        return User.create(new Email(EMAIL), new PersonName(FIRST_NAME), new PersonName(LAST_NAME), PASSWORD, UserProvider.LOCAL);
     }
 
     private User googleUser() {
-        return User.create(new Email(EMAIL), new Name(FIRST_NAME), new Name(LAST_NAME), PASSWORD, UserProvider.GOOGLE);
+        return User.create(new Email(EMAIL), new PersonName(FIRST_NAME), new PersonName(LAST_NAME), PASSWORD, UserProvider.GOOGLE);
     }
 
     // --- USER.CREATE() - FACTORY -------------------------------------------------------------
@@ -41,8 +41,8 @@ class UserTest {
             User user = localUser();
 
             assertThat(user.getEmail().value()).isEqualTo(EMAIL);
-            assertThat(user.getFirstName().value()).isEqualTo(new Name(FIRST_NAME).value());
-            assertThat(user.getLastName().value()).isEqualTo(new Name(LAST_NAME).value());
+            assertThat(user.getFirstName().value()).isEqualTo(new PersonName(FIRST_NAME).value());
+            assertThat(user.getLastName().value()).isEqualTo(new PersonName(LAST_NAME).value());
             assertThat(user.getPassword()).isEqualTo(PASSWORD);
         }
 

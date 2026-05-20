@@ -15,7 +15,7 @@ import com.javacore.spring_api_luvine.common.messaging.service.producer.Producer
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
-import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
+import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
 import com.javacore.spring_api_luvine.user.infrastructure.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -76,8 +76,8 @@ class AuthServiceTest {
     private static final String REFRESH_TOKEN_RAW  = "raw-refresh-token-value";
 
     private Email email() { return new Email(VALID_EMAIL); }
-    private Name firstName() { return new Name(VALID_FIRST_NAME); }
-    private Name lastName()  { return new Name(VALID_LAST_NAME); }
+    private PersonName firstName() { return new PersonName(VALID_FIRST_NAME); }
+    private PersonName lastName()  { return new PersonName(VALID_LAST_NAME); }
 
     private User buildVerifiedUser() {
         User user = User.create(email(), firstName(), lastName(), "encoded-password", UserProvider.LOCAL);

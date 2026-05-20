@@ -2,7 +2,7 @@ package com.javacore.spring_api_luvine.user.domain.entity;
 
 import com.javacore.spring_api_luvine.user.domain.valueObject.Cep;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
-import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
+import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Phone;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -33,8 +33,8 @@ class AddressTest {
     private User anyUser() {
         return User.create(
                 new Email("user@example.com"),
-                new Name("João"),
-                new Name("Silva"),
+                new PersonName("João"),
+                new PersonName("Silva"),
                 "hashed-password",
                 UserProvider.LOCAL
         );
@@ -43,7 +43,7 @@ class AddressTest {
     private Address defaultAddress() {
         return Address.create(
                 anyUser(),
-                new Name(FIRST_NAME), new Name(LAST_NAME),
+                new PersonName(FIRST_NAME), new PersonName(LAST_NAME),
                 new Cep(CEP), STREET, NUMBER, COMPLEMENT,
                 NEIGHBORHOOD, CITY, STATE, COUNTRY,
                 new Phone(PHONE), true
@@ -53,7 +53,7 @@ class AddressTest {
     private Address nonDefaultAddress() {
         return Address.create(
                 anyUser(),
-                new Name(FIRST_NAME), new Name(LAST_NAME),
+                new PersonName(FIRST_NAME), new PersonName(LAST_NAME),
                 new Cep(CEP), STREET, NUMBER, COMPLEMENT,
                 NEIGHBORHOOD, CITY, STATE, COUNTRY,
                 new Phone(PHONE), false
@@ -71,8 +71,8 @@ class AddressTest {
         void shouldPersistAllScalarFields() {
             Address address = defaultAddress();
 
-            assertThat(address.getFirstName()).isEqualTo(new Name(FIRST_NAME));
-            assertThat(address.getLastName()).isEqualTo(new Name(LAST_NAME));
+            assertThat(address.getFirstName()).isEqualTo(new PersonName(FIRST_NAME));
+            assertThat(address.getLastName()).isEqualTo(new PersonName(LAST_NAME));
             assertThat(address.getCep()).isEqualTo(new Cep(CEP));
             assertThat(address.getPhone()).isEqualTo(new Phone(PHONE));
             assertThat(address.getStreet()).isEqualTo(STREET);
@@ -90,7 +90,7 @@ class AddressTest {
             User user = anyUser();
             Address address = Address.create(
                     user,
-                    new Name(FIRST_NAME), new Name(LAST_NAME),
+                    new PersonName(FIRST_NAME), new PersonName(LAST_NAME),
                     new Cep(CEP), STREET, NUMBER, COMPLEMENT,
                     NEIGHBORHOOD, CITY, STATE, COUNTRY,
                     new Phone(PHONE), false
@@ -155,7 +155,7 @@ class AddressTest {
         void shouldTrimStringFields() {
             Address address = Address.create(
                     anyUser(),
-                    new Name(FIRST_NAME), new Name(LAST_NAME),
+                    new PersonName(FIRST_NAME), new PersonName(LAST_NAME),
                     new Cep(CEP),
                     "  " + STREET + "  ",
                     "  " + NUMBER + "  ",
@@ -181,7 +181,7 @@ class AddressTest {
         void shouldAcceptNullComplement() {
             Address address = Address.create(
                     anyUser(),
-                    new Name(FIRST_NAME), new Name(LAST_NAME),
+                    new PersonName(FIRST_NAME), new PersonName(LAST_NAME),
                     new Cep(CEP), STREET, NUMBER, null,
                     NEIGHBORHOOD, CITY, STATE, COUNTRY,
                     new Phone(PHONE), false
@@ -327,11 +327,11 @@ class AddressTest {
         void twoAddressesShouldBeIndependent() {
             User user = anyUser();
 
-            Address address1 = Address.create(user, new Name(FIRST_NAME), new Name(LAST_NAME),
+            Address address1 = Address.create(user, new PersonName(FIRST_NAME), new PersonName(LAST_NAME),
                     new Cep(CEP), STREET, "100", null, NEIGHBORHOOD, CITY, STATE, COUNTRY,
                     new Phone(PHONE), true);
 
-            Address address2 = Address.create(user, new Name(FIRST_NAME), new Name(LAST_NAME),
+            Address address2 = Address.create(user, new PersonName(FIRST_NAME), new PersonName(LAST_NAME),
                     new Cep(CEP), STREET, "200", null, NEIGHBORHOOD, CITY, STATE, COUNTRY,
                     new Phone(PHONE), false);
 

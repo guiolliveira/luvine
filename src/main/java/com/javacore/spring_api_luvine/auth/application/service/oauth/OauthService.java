@@ -7,7 +7,8 @@ import com.javacore.spring_api_luvine.common.util.EmailMask;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
-import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Password;
+import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
 import com.javacore.spring_api_luvine.user.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +43,7 @@ public class OauthService {
                 .orElseGet(() -> {
                     log.info("event=oauth_new_user_signup provider=GOOGLE email={}", maskedEmail);
 
-                    Name normalizedFullName = new Name(name);
+                    PersonName normalizedFullName = new PersonName(name);
 
                     String[] parts = normalizedFullName.value().split(" ");
                     String firstName = parts[0];
@@ -50,9 +51,9 @@ public class OauthService {
 
                     User newUser = User.create(
                             normalizedEmail,
-                            new Name(firstName),
-                            new Name(lastName),
-                            "",
+                            new PersonName(firstName),
+                            new PersonName(lastName),
+                            new Password(""),
                             UserProvider.GOOGLE
                     );
 

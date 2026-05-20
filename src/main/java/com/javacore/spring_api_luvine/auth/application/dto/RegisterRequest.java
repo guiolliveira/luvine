@@ -22,7 +22,7 @@ public record RegisterRequest(
 
         @NotBlank(message = "Informe a sua senha")
         @Size(min = 8, message = "Senha deve conter ao menos 8 caracteres")
-        @Pattern(regexp = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$",
+        @Pattern(regexp = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$",
                 message = "Senha é inválida")
         String password,
 

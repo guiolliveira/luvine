@@ -6,7 +6,7 @@ import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
 import com.javacore.spring_api_luvine.user.domain.entity.UserRole;
 import com.javacore.spring_api_luvine.user.domain.exception.*;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
-import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
+import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
 import com.javacore.spring_api_luvine.user.application.dto.CurrentUser;
 import com.javacore.spring_api_luvine.user.application.dto.ProfileResponse;
 import com.javacore.spring_api_luvine.user.application.dto.UpdateProfileRequest;
@@ -53,8 +53,8 @@ class UserServiceTest {
     private User buildUser() {
         return User.create(
                 new Email("user@example.com"),
-                new Name("João"),
-                new Name("Silva"),
+                new PersonName("João"),
+                new PersonName("Silva"),
                 "hashed-password",
                 UserProvider.LOCAL
         );
@@ -126,7 +126,7 @@ class UserServiceTest {
 
             assertThatNoException().isThrownBy(() -> userService.updateProfile(currentUser(), request));
 
-            assertThat(user.getFirstName()).isEqualTo(new Name("NovoNome"));
+            assertThat(user.getFirstName()).isEqualTo(new PersonName("NovoNome"));
         }
 
         @Test
@@ -139,7 +139,7 @@ class UserServiceTest {
 
             assertThatNoException().isThrownBy(() -> userService.updateProfile(currentUser(), request));
 
-            assertThat(user.getLastName()).isEqualTo(new Name("NovoSobrenome"));
+            assertThat(user.getLastName()).isEqualTo(new PersonName("NovoSobrenome"));
         }
 
         @Test
@@ -152,8 +152,8 @@ class UserServiceTest {
 
             userService.updateProfile(currentUser(), request);
 
-            assertThat(user.getFirstName()).isEqualTo(new Name("NovoNome"));
-            assertThat(user.getLastName()).isEqualTo(new Name("NovoSobrenome"));
+            assertThat(user.getFirstName()).isEqualTo(new PersonName("NovoNome"));
+            assertThat(user.getLastName()).isEqualTo(new PersonName("NovoSobrenome"));
         }
 
         @Test
@@ -190,8 +190,8 @@ class UserServiceTest {
 
             assertThatNoException().isThrownBy(() -> userService.updateProfile(currentUser(), request));
 
-            assertThat(user.getFirstName()).isEqualTo(new Name("João"));
-            assertThat(user.getLastName()).isEqualTo(new Name("Silva"));
+            assertThat(user.getFirstName()).isEqualTo(new PersonName("João"));
+            assertThat(user.getLastName()).isEqualTo(new PersonName("Silva"));
         }
 
         @Test

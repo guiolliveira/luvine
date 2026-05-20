@@ -1,6 +1,5 @@
 package com.javacore.spring_api_luvine.auth.application.service;
 
-import com.javacore.spring_api_luvine.application.dto.*;
 import com.javacore.spring_api_luvine.auth.application.dto.*;
 import com.javacore.spring_api_luvine.auth.domain.entity.RefreshToken;
 import com.javacore.spring_api_luvine.auth.domain.exception.*;
@@ -14,7 +13,8 @@ import com.javacore.spring_api_luvine.common.util.TokenHash;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
-import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Password;
+import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
 import com.javacore.spring_api_luvine.user.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,15 +50,16 @@ public class AuthService {
         log.info("event=register_attempt email={}", maskedEmail);
 
         Email email = new Email(request.email());
-        Name firstName = new Name(request.firstName());
-        Name lastName = new Name(request.lastName());
+        PersonName firstName = new PersonName(request.firstName());
+        PersonName lastName = new PersonName(request.lastName());
+        Password password = new Password(request.password());
 
         if (userRepository.existsByEmail(email)) {
             log.warn("event=register_rejected reason=email_already_exists email={}", maskedEmail);
             throw new EmailAlreadyExistsException();
         }
 
-        if (!request.password().equals(request.confirmPassword())) {
+        if (!password.value().equals(request.confirmPassword())) {
             log.warn("event=register_rejected reason=password_mismatch email={}", maskedEmail);
             throw new PasswordMisMatchException();
         }
@@ -67,7 +68,7 @@ public class AuthService {
                 email,
                 firstName,
                 lastName,
-                passwordEncoder.encode(request.password()),
+                new Password(passwordEncoder.encode(password.value())),
                 UserProvider.LOCAL
         );
 
@@ -246,7 +247,9 @@ public class AuthService {
     public void resetPassword(UpdatePasswordRequest request) {
         log.info("event=reset_password_attempt");
 
-        if (!request.newPassword().equals(request.confirmPassword())) {
+        Password newPassword = new Password(request.newPassword());
+
+        if (!newPassword.value().equals(request.confirmPassword())) {
             log.warn("event=reset_password_rejected reason=password_mismatch");
             throw new PasswordMisMatchException();
         }
@@ -261,7 +264,7 @@ public class AuthService {
                 });
 
         User user = token.getUser();
-        user.changePassword(passwordEncoder.encode(request.newPassword()));
+        user.changePassword(new Password(passwordEncoder.encode(newPassword.value())));
 
         token.markAsUsed();
         passwordResetTokenRepository.save(token);

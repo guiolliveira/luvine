@@ -6,7 +6,7 @@ import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Cep;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
-import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
+import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Phone;
 import com.javacore.spring_api_luvine.user.infrastructure.repository.AddressRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,13 +45,13 @@ class AddressRepositoryTest extends AbstractIntegrationTest {
     // --- HELPERS -------------------------------------------------------------
 
     private User buildUser(String email) {
-        return User.create(new Email(email), new Name("João"), new Name("Silva"), "hashed", UserProvider.LOCAL);
+        return User.create(new Email(email), new PersonName("João"), new PersonName("Silva"), "hashed", UserProvider.LOCAL);
     }
 
     private Address persistAddress(User owner, boolean defaultAddress) {
         Address address = Address.create(
                 owner,
-                new Name("João"), new Name("Silva"),
+                new PersonName("João"), new PersonName("Silva"),
                 new Cep("01310100"),
                 "Avenida Paulista", "1000", "Apto 42",
                 "Bela Vista", "São Paulo", "SP", "Brasil",
