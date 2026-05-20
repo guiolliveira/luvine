@@ -1,7 +1,8 @@
 package com.javacore.spring_api_luvine.auth.service;
 
+import com.javacore.spring_api_luvine.auth.application.service.TokenService;
 import com.javacore.spring_api_luvine.auth.domain.entity.RefreshToken;
-import com.javacore.spring_api_luvine.auth.repository.RefreshTokenRepository;
+import com.javacore.spring_api_luvine.auth.infrastructure.repository.RefreshTokenRepository;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
 import org.junit.jupiter.api.DisplayName;

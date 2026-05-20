@@ -8,6 +8,7 @@ import com.javacore.spring_api_luvine.user.domain.valueObject.Cep;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Phone;
+import com.javacore.spring_api_luvine.user.infrastructure.repository.AddressRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

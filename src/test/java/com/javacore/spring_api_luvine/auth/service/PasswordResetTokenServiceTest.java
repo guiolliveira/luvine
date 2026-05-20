@@ -1,7 +1,8 @@
 package com.javacore.spring_api_luvine.auth.service;
 
+import com.javacore.spring_api_luvine.auth.application.service.PasswordResetTokenService;
 import com.javacore.spring_api_luvine.auth.domain.entity.PasswordResetToken;
-import com.javacore.spring_api_luvine.auth.repository.PasswordResetTokenRepository;
+import com.javacore.spring_api_luvine.auth.infrastructure.repository.PasswordResetTokenRepository;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;

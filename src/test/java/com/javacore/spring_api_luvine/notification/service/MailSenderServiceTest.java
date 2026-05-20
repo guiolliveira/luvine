@@ -1,7 +1,8 @@
 package com.javacore.spring_api_luvine.notification.service;
 
-import com.javacore.spring_api_luvine.notification.config.MailSenderProperties;
-import com.javacore.spring_api_luvine.notification.dto.MailSenderRequest;
+import com.javacore.spring_api_luvine.notification.infrastructure.config.MailSenderProperties;
+import com.javacore.spring_api_luvine.notification.application.dto.MailSenderRequest;
+import com.javacore.spring_api_luvine.notification.infrastructure.provider.MailSenderService;
 import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

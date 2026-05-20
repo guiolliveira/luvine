@@ -1,5 +1,6 @@
 package com.javacore.spring_api_luvine.user.service;
 
+import com.javacore.spring_api_luvine.user.application.service.AddressService;
 import com.javacore.spring_api_luvine.user.domain.entity.Address;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
@@ -11,12 +12,12 @@ import com.javacore.spring_api_luvine.user.domain.valueObject.Cep;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Phone;
-import com.javacore.spring_api_luvine.user.dto.AddressRequest;
-import com.javacore.spring_api_luvine.user.dto.AddressResponse;
-import com.javacore.spring_api_luvine.user.dto.CurrentUser;
-import com.javacore.spring_api_luvine.user.mapper.UserMapper;
-import com.javacore.spring_api_luvine.user.repository.AddressRepository;
-import com.javacore.spring_api_luvine.user.repository.UserRepository;
+import com.javacore.spring_api_luvine.user.application.dto.AddressRequest;
+import com.javacore.spring_api_luvine.user.application.dto.AddressResponse;
+import com.javacore.spring_api_luvine.user.application.dto.CurrentUser;
+import com.javacore.spring_api_luvine.user.application.mapper.UserMapper;
+import com.javacore.spring_api_luvine.user.infrastructure.repository.AddressRepository;
+import com.javacore.spring_api_luvine.user.infrastructure.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

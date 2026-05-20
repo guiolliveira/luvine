@@ -1,17 +1,18 @@
 package com.javacore.spring_api_luvine.user.service;
 
+import com.javacore.spring_api_luvine.user.application.service.UserService;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
 import com.javacore.spring_api_luvine.user.domain.entity.UserRole;
 import com.javacore.spring_api_luvine.user.domain.exception.*;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
-import com.javacore.spring_api_luvine.user.dto.CurrentUser;
-import com.javacore.spring_api_luvine.user.dto.ProfileResponse;
-import com.javacore.spring_api_luvine.user.dto.UpdateProfileRequest;
-import com.javacore.spring_api_luvine.user.dto.UpdateRoleRequest;
-import com.javacore.spring_api_luvine.user.mapper.UserMapper;
-import com.javacore.spring_api_luvine.user.repository.UserRepository;
+import com.javacore.spring_api_luvine.user.application.dto.CurrentUser;
+import com.javacore.spring_api_luvine.user.application.dto.ProfileResponse;
+import com.javacore.spring_api_luvine.user.application.dto.UpdateProfileRequest;
+import com.javacore.spring_api_luvine.user.application.dto.UpdateRoleRequest;
+import com.javacore.spring_api_luvine.user.application.mapper.UserMapper;
+import com.javacore.spring_api_luvine.user.infrastructure.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

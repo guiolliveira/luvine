@@ -1,6 +1,7 @@
 package com.javacore.spring_api_luvine.auth.repository;
 
 import com.javacore.spring_api_luvine.auth.domain.entity.RefreshToken;
+import com.javacore.spring_api_luvine.auth.infrastructure.repository.RefreshTokenRepository;
 import com.javacore.spring_api_luvine.testcontainers.AbstractIntegrationTest;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;

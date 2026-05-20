@@ -1,15 +1,16 @@
 package com.javacore.spring_api_luvine.auth.service;
 
+import com.javacore.spring_api_luvine.auth.application.service.EmailVerificationService;
 import com.javacore.spring_api_luvine.auth.domain.entity.EmailVerification;
 import com.javacore.spring_api_luvine.auth.domain.exception.EmailAlreadyVerifiedException;
 import com.javacore.spring_api_luvine.auth.domain.exception.InvalidCodeException;
 import com.javacore.spring_api_luvine.auth.domain.exception.RateLimitExceededException;
-import com.javacore.spring_api_luvine.auth.dto.EmailVerificationCreationResult;
-import com.javacore.spring_api_luvine.auth.repository.EmailVerificationRepository;
-import com.javacore.spring_api_luvine.shared.limiter.service.RateLimiterService;
-import com.javacore.spring_api_luvine.shared.util.GenerateCode;
+import com.javacore.spring_api_luvine.auth.application.dto.EmailVerificationCreationResult;
+import com.javacore.spring_api_luvine.auth.infrastructure.repository.EmailVerificationRepository;
+import com.javacore.spring_api_luvine.common.limiter.service.RateLimiterService;
+import com.javacore.spring_api_luvine.common.util.GenerateCode;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
-import com.javacore.spring_api_luvine.user.repository.UserRepository;
+import com.javacore.spring_api_luvine.user.infrastructure.repository.UserRepository;
 import io.github.bucket4j.ConsumptionProbe;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
