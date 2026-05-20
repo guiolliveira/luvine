@@ -1,5 +1,6 @@
 package com.javacore.spring_api_luvine.user.domain.entity;
 
+import com.javacore.spring_api_luvine.user.domain.exception.UnchangedValueException;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
 import jakarta.persistence.*;
@@ -91,11 +92,19 @@ public class User implements UserDetails {
     }
 
     public void changeFirstName(Name newFirstName) {
+        if (this.firstName.equals(newFirstName)) {
+            throw new UnchangedValueException();
+        }
+
         this.firstName = newFirstName;
         touch();
     }
 
     public void changeLastName(Name newLastName) {
+        if (this.lastName.equals(newLastName)) {
+            throw new UnchangedValueException();
+        }
+
         this.lastName = newLastName;
         touch();
     }

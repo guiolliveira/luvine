@@ -45,21 +45,11 @@ public class UserService {
         User user = findByPublicIdOrThrow(currentUser.publicId());
 
         if (request.newFirstName() != null) {
-            if (user.getFirstName().value().equals(request.newFirstName())) {
-                log.warn("event=update_profile_rejected reason=unchanged_first_name publicId={}", user.getPublicId());
-                throw new UnchangedValueException();
-            }
-
             user.changeFirstName(new Name(request.newFirstName()));
             log.info("event=update_profile_first_name_changed publicId={}", user.getPublicId());
         }
 
         if (request.newLastName() != null) {
-            if (user.getLastName().value().equals(request.newLastName())) {
-                log.warn("event=update_profile_rejected reason=unchanged_last_name publicId={}", user.getPublicId());
-                throw new UnchangedValueException();
-            }
-
             user.changeLastName(new Name(request.newLastName()));
             log.info("event=update_profile_last_name_changed publicId={}", user.getPublicId());
         }
