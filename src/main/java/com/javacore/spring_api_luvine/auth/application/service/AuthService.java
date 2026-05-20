@@ -35,47 +35,9 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailVerificationService verificationService;
     private final ProducerService producerService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordResetTokenService passwordResetTokenService;
-
-    @Transactional
-    public void processForgotPassword(ForgotPasswordRequest request, String deviceInfo, String ipAddress) {
-        String maskedEmail = EmailMask.mask(request.email());
-        log.info("event=forgot_password_attempt email={}", maskedEmail);
-
-        userRepository.findByEmail(new Email(request.email()))
-                .ifPresent(user -> {
-                    if (!user.isEmailVerified()) {
-                        log.warn("event=forgot_password_rejected reason=email_not_verified publicId={} email={}",
-                                user.getPublicId(), maskedEmail);
-                        throw new EmailNotVerifiedException();
-                    }
-
-                    passwordResetTokenRepository.revokeAllUserTokens(user);
-
-                    String rawCode = passwordResetTokenService
-                            .generatePasswordResetToken(user, deviceInfo, ipAddress);
-
-                    Map<String, Object> variables = Map.of(
-                            "recoveryLink", "http://localhost:8080/reset-password?token=" + rawCode
-                    );
-
-                    producerService.producer(new EmailMessageRequest(
-                            user.getEmail().value(),
-                            user.getFirstName().value(),
-                            "Recupere a sua Conta",
-                            "password-reset-template",
-                            variables
-                    ));
-
-                    log.info("event=forgot_password_email_queued publicId={} email={}",
-                            user.getPublicId(), maskedEmail);
-                });
-
-        log.info("event=forgot_password_processed email={}", maskedEmail);
-    }
 
     @Transactional
     public void resetPassword(UpdatePasswordRequest request) {
