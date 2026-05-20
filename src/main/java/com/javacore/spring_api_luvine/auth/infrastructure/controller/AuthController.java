@@ -1,5 +1,6 @@
 package com.javacore.spring_api_luvine.auth.infrastructure.controller;
 
+import com.javacore.spring_api_luvine.auth.application.UseCase.*;
 import com.javacore.spring_api_luvine.auth.application.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,7 +20,13 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "autenticação", description = "Endpoints de autenticação e gerenciamento de sessão")
 public class AuthController {
 
-    private final AuthService authService;
+    private final RegisterUserUseCase register;
+    private final LoginUseCase login;
+    private final RefreshTokenUseCase refresh;
+    private final VerifyEmailUseCase verifyEmail;
+    private final ResendEmailUseCase resendEmail;
+    private final ForgotPasswordUseCase forgotPassword;
+    private final ResetPasswordUseCase resetPassword;
 
     @Operation(summary = "Registrar usuário", description = "Cria uma nova conta e envia email de verificação")
     @ApiResponses({
@@ -29,7 +36,7 @@ public class AuthController {
     })
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@RequestBody @Valid RegisterRequest request) {
-        RegisterResponse response = authService.register(request);
+        RegisterResponse response = register.execute(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -50,7 +57,7 @@ public class AuthController {
             ipAddress = httpRequest.getRemoteAddr();
         }
 
-        LoginResponse loginResponse = authService.login(request, deviceInfo, ipAddress);
+        LoginResponse loginResponse = login.execute(request, deviceInfo, ipAddress);
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", loginResponse.refreshToken())
                 .httpOnly(true)
@@ -72,9 +79,9 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Refresh token inválido ou expirado")
     })
     @PostMapping("/refresh")
-    public ResponseEntity<LoginResponse> refresh(@CookieValue("refreshToken") String refreshToken) {
+    public ResponseEntity<LoginResponse> refresh(@CookieValue(value = "refreshToken") RefreshTokenRequest request) {
 
-        LoginResponse loginResponse = authService.refresh(refreshToken);
+        LoginResponse loginResponse = refresh.execute(request);
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", loginResponse.refreshToken())
                 .httpOnly(true)
@@ -98,7 +105,7 @@ public class AuthController {
     })
     @PostMapping("/verify-email")
     public ResponseEntity<Void> verifyEmail(@RequestBody @Valid VerifyEmailRequest request) {
-        authService.verifyEmail(request);
+        verifyEmail.execute(request);
         return ResponseEntity.noContent().build();
     }
 
@@ -109,7 +116,7 @@ public class AuthController {
     })
     @PostMapping("/resend-email")
     public ResponseEntity<Void> resendEmail(@RequestBody @Valid ResendEmailRequest request) {
-        authService.resendEmail(request);
+        resendEmail.execute(request);
         return ResponseEntity.noContent().build();
     }
 
@@ -132,7 +139,7 @@ public class AuthController {
             ipAddress = httpRequest.getRemoteAddr();
         }
 
-        authService.processForgotPassword(request, deviceInfo, ipAddress);
+        forgotPassword.execute(request, deviceInfo, ipAddress);
         return ResponseEntity.noContent().build();
     }
 
@@ -145,7 +152,7 @@ public class AuthController {
     })
     @PostMapping("/reset-password")
     public ResponseEntity<Void> resetPassword(@RequestBody @Valid UpdatePasswordRequest request) {
-        authService.resetPassword(request);
+        resetPassword.execute(request);
         return ResponseEntity.noContent().build();
     }
 }
