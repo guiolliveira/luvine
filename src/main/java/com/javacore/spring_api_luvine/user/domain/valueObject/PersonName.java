@@ -14,7 +14,13 @@ public record PersonName(@Column String value) {
             throw new InvalidNameException();
         }
 
-        this.value = normalize(value);
+        String normalized = normalize(value);
+
+        if (!isValid(normalized)) {
+            throw new InvalidNameException();
+        }
+
+        this.value = normalized;
     }
 
     private static String normalize(String name) {
@@ -24,5 +30,12 @@ public record PersonName(@Column String value) {
                 .stream(words)
                 .map(word -> word.substring(0, 1).toUpperCase() + word.substring(1))
                 .collect(Collectors.joining(" "));
+    }
+
+    private static boolean isValid(String name) {
+        return !name.isBlank()
+                && name.length() >= 2
+                && name.length() <= 100
+                && name.matches("^[\\p{L} ]+$");
     }
 }

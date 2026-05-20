@@ -47,7 +47,7 @@ public class OauthService {
 
                     String[] parts = normalizedFullName.value().split(" ");
                     String firstName = parts[0];
-                    String lastName = parts.length > 1 ? parts[parts.length - 1] : "";
+                    String lastName = parts.length > 1 ? parts[parts.length - 1] : firstName;
 
                     User newUser = User.create(
                             normalizedEmail,
