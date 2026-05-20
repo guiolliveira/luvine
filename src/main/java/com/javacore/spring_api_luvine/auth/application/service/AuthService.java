@@ -36,49 +36,11 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
-    private final AuthenticationManager authenticationManager;
     private final RefreshTokenRepository refreshTokenRepository;
     private final EmailVerificationService verificationService;
     private final ProducerService producerService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordResetTokenService passwordResetTokenService;
-
-    public LoginResponse login(LoginRequest request, String deviceInfo, String ipAddress) {
-        String maskedEmail = EmailMask.mask(request.email());
-        log.info("event=login_attempt email={} ip={}", maskedEmail, ipAddress);
-
-        Email email = new Email(request.email());
-
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                    email.value(),
-                    request.password()
-            ));
-        } catch (AuthenticationException ex) {
-            log.warn("event=login_failed reason=invalid_credentials email={} ip={}", maskedEmail, ipAddress);
-            throw new InvalidCredentialsException();
-        }
-
-        User user = findUserByEmailOrThrow(email.value());
-
-        if (user.getUserProvider() != UserProvider.LOCAL) {
-            log.warn("event=login_rejected reason=provider_conflict publicId={} provider={}",
-                    user.getPublicId(), user.getUserProvider());
-            throw new ProviderConflictException();
-        }
-
-        if (!user.isEmailVerified()) {
-            log.warn("event=login_rejected reason=email_not_verified publicId={} email={}",
-                    user.getPublicId(), maskedEmail);
-            throw new EmailNotVerifiedException();
-        }
-
-        String refreshToken = tokenService.generateRefreshToken(user, deviceInfo, ipAddress);
-        String accessToken = tokenService.generateAccessToken(user);
-
-        log.info("event=login_success publicId={} email={} ip={}", user.getPublicId(), maskedEmail, ipAddress);
-        return new LoginResponse(accessToken, refreshToken);
-    }
 
     public LoginResponse refresh(String refreshToken) {
         log.debug("event=token_refresh_attempt");
