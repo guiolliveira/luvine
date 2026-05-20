@@ -1,7 +1,6 @@
 package com.javacore.spring_api_luvine.auth.service;
 
 import com.javacore.spring_api_luvine.auth.application.dto.*;
-import com.javacore.spring_api_luvine.auth.application.service.AuthService;
 import com.javacore.spring_api_luvine.auth.application.service.EmailVerificationService;
 import com.javacore.spring_api_luvine.auth.application.service.PasswordResetTokenService;
 import com.javacore.spring_api_luvine.auth.application.service.TokenService;
