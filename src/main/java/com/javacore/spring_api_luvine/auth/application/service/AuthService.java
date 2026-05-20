@@ -35,48 +35,10 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final TokenService tokenService;
-    private final RefreshTokenRepository refreshTokenRepository;
     private final EmailVerificationService verificationService;
     private final ProducerService producerService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordResetTokenService passwordResetTokenService;
-
-    public LoginResponse refresh(String refreshToken) {
-        log.debug("event=token_refresh_attempt");
-
-        String tokenHash = TokenHash.hash(refreshToken);
-
-        RefreshToken token = refreshTokenRepository.findByToken(tokenHash)
-                .filter(t -> t.getExpiresAt().isAfter(Instant.now()))
-                .orElseThrow(() -> {
-                    log.warn("event=token_refresh_rejected reason=token_not_found");
-                    return new InvalidTokenException();
-                });
-
-        if (token.isRevoked()) {
-            log.warn("event=token_refresh_rejected reason=token_revoked publicId={} — revoking all user tokens",
-                    token.getUser().getPublicId());
-            refreshTokenRepository.revokeAllUserTokens(token.getUser());
-            throw new InvalidTokenException();
-        }
-
-        token.revoke();
-
-        String newRefreshToken = tokenService.generateRefreshToken(
-                token.getUser(),
-                token.getDeviceInfo(),
-                token.getIpAddress()
-        );
-
-        String newTokenHash = TokenHash.hash(newRefreshToken);
-        token.markAsReplacedBy(newTokenHash);
-
-        String newAccessToken = tokenService.generateAccessToken(token.getUser());
-
-        log.info("event=token_refreshed publicId={}", token.getUser().getPublicId());
-        return new LoginResponse(newAccessToken, newRefreshToken);
-    }
 
     public void verifyEmail(VerifyEmailRequest request) {
         String maskedEmail = EmailMask.mask(request.email());
