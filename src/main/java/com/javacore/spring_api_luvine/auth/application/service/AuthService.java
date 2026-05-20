@@ -35,7 +35,6 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AuthMapper authMapper;
     private final TokenService tokenService;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -43,55 +42,6 @@ public class AuthService {
     private final ProducerService producerService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordResetTokenService passwordResetTokenService;
-
-    @Transactional
-    public RegisterResponse register(RegisterRequest request) {
-        String maskedEmail = EmailMask.mask(request.email());
-        log.info("event=register_attempt email={}", maskedEmail);
-
-        Email email = new Email(request.email());
-        PersonName firstName = new PersonName(request.firstName());
-        PersonName lastName = new PersonName(request.lastName());
-        Password password = new Password(request.password());
-
-        if (userRepository.existsByEmail(email)) {
-            log.warn("event=register_rejected reason=email_already_exists email={}", maskedEmail);
-            throw new EmailAlreadyExistsException();
-        }
-
-        if (!password.value().equals(request.confirmPassword())) {
-            log.warn("event=register_rejected reason=password_mismatch email={}", maskedEmail);
-            throw new PasswordMisMatchException();
-        }
-
-        User user = User.create(
-                email,
-                firstName,
-                lastName,
-                new Password(passwordEncoder.encode(password.value())),
-                UserProvider.LOCAL
-        );
-
-        userRepository.save(user);
-        log.info("event=user_created publicId={} email={}", user.getPublicId(), maskedEmail);
-
-        EmailVerificationCreationResult verification = verificationService.createCode(user);
-
-        Map<String, Object> variables = Map.of(
-                "digits", verification.rawCode().split("")
-        );
-
-        producerService.producer(new EmailMessageRequest(
-                user.getEmail().value(),
-                user.getFirstName().value(),
-                "Email de Verificação",
-                "email-verification-template",
-                variables
-        ));
-
-        log.info("event=register_completed publicId={} email={}", user.getPublicId(), maskedEmail);
-        return authMapper.toRegisterResponse(user);
-    }
 
     public LoginResponse login(LoginRequest request, String deviceInfo, String ipAddress) {
         String maskedEmail = EmailMask.mask(request.email());
