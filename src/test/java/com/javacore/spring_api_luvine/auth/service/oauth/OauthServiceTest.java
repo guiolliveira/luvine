@@ -1,6 +1,5 @@
 package com.javacore.spring_api_luvine.auth.service.oauth;
 
-import com.javacore.spring_api_luvine.auth.application.service.oauth.OauthService;
 import com.javacore.spring_api_luvine.auth.domain.exception.ProviderConflictException;
 import com.javacore.spring_api_luvine.auth.application.dto.LoginResponse;
 import com.javacore.spring_api_luvine.auth.application.service.TokenService;

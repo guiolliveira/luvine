@@ -1,8 +1,9 @@
-package com.javacore.spring_api_luvine.auth.application.service.oauth;
+package com.javacore.spring_api_luvine.auth.application.UseCase;
 
-import com.javacore.spring_api_luvine.auth.domain.exception.ProviderConflictException;
 import com.javacore.spring_api_luvine.auth.application.dto.LoginResponse;
 import com.javacore.spring_api_luvine.auth.application.service.TokenService;
+import com.javacore.spring_api_luvine.auth.domain.exception.ProviderConflictException;
+import com.javacore.spring_api_luvine.common.config.UseCase;
 import com.javacore.spring_api_luvine.common.util.EmailMask;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
@@ -13,20 +14,21 @@ import com.javacore.spring_api_luvine.user.infrastructure.repository.UserReposit
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
 @Slf4j
-@Service
+@UseCase
 @RequiredArgsConstructor
-public class OauthService {
+public class OauthLoginUseCase {
 
     private final UserRepository userRepository;
     private final TokenService tokenService;
     private final PasswordEncoder passwordEncoder;
 
-    public LoginResponse loginWithGoogle(String email, String name, String deviceInfo, String ipAddress) {
+    @Transactional
+    public LoginResponse execute(String email, String name, String deviceInfo, String ipAddress) {
         String maskedEmail = EmailMask.mask(email);
         log.info("event=oauth_login_attempt provider=GOOGLE email={} ip={}", maskedEmail, ipAddress);
 

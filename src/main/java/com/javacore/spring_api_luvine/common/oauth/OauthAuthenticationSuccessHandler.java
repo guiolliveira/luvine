@@ -2,7 +2,6 @@ package com.javacore.spring_api_luvine.common.oauth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.javacore.spring_api_luvine.auth.application.dto.LoginResponse;
-import com.javacore.spring_api_luvine.auth.application.service.oauth.OauthService;
 import com.javacore.spring_api_luvine.common.util.EmailMask;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
