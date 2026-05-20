@@ -33,11 +33,11 @@ public class User implements UserDetails {
     private Email email;
 
     @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "firstName", nullable = false, length = 100))
+    @AttributeOverride(name = "value", column = @Column(name = "first_name", nullable = false, length = 100))
     private Name firstName;
 
     @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "lastName", nullable = false, length = 100))
+    @AttributeOverride(name = "value", column = @Column(name = "last_name", nullable = false, length = 100))
     private Name lastName;
 
     @Column(nullable = false)

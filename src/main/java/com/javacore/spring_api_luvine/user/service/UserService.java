@@ -38,6 +38,10 @@ public class UserService {
     public void updateProfile(CurrentUser currentUser, UpdateProfileRequest request) {
         log.info("event=update_profile_attempt publicId={}", currentUser.publicId());
 
+        if (request.newFirstName() == null && request.newLastName() == null) {
+            throw new NoProfileChangesProvidedException();
+        }
+
         User user = findByPublicIdOrThrow(currentUser.publicId());
 
         if (request.newFirstName() != null) {
