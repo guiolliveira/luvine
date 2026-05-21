@@ -1,7 +1,7 @@
 package com.javacore.spring_api_luvine.user.domain.entity;
 
 import com.javacore.spring_api_luvine.user.domain.valueObject.Cep;
-import com.javacore.spring_api_luvine.user.domain.valueObject.Name;
+import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Phone;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -30,11 +30,11 @@ public class Address {
 
     @Embedded
     @AttributeOverride(name = "value", column = @Column(name = "firstName", nullable = false, length = 100))
-    private Name firstName;
+    private PersonName firstName;
 
     @Embedded
     @AttributeOverride(name = "value", column = @Column(name = "lastName", nullable = false, length = 100))
-    private Name lastName;
+    private PersonName lastName;
 
     @Embedded
     @AttributeOverride(name = "value", column = @Column(name = "cep", nullable = false, length = 8))
@@ -75,7 +75,7 @@ public class Address {
     private boolean active;
 
     private Address(
-            User user, Name firstName, Name lastName,
+            User user, PersonName firstName, PersonName lastName,
             Cep cep, String street, String number,
             String complement, String neighborhood, String city,
             String state, String country, Phone phone,
@@ -99,7 +99,7 @@ public class Address {
     }
 
     public static Address create(
-            User user, Name firstName, Name lastName,
+            User user, PersonName firstName, PersonName lastName,
             Cep cep, String street, String number,
             String complement, String neighborhood, String city,
             String state, String country, Phone phone,
