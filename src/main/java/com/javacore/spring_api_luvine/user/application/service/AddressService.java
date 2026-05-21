@@ -33,64 +33,6 @@ public class AddressService {
     private final UserMapper userMapper;
 
     @Transactional
-    public AddressResponse createAddress(CurrentUser currentUser, AddressRequest request) {
-        log.info("event=create_address_attempt publicId={}", currentUser.publicId());
-
-        PersonName firstName = new PersonName(request.firstName());
-        PersonName lastName = new PersonName(request.lastName());
-        Phone phone = new Phone(request.phone());
-        Cep cep = new Cep(request.cep());
-
-        User user = userRepository.findByPublicId(currentUser.publicId())
-                .orElseThrow(UserSessionInvalidException::new);
-
-        boolean alreadyExists = addressRepository
-                .existsByUserPublicIdAndFirstNameAndLastNameAndCepAndNumberAndComplementAndActiveTrue(
-                        currentUser.publicId(),
-                        firstName,
-                        lastName,
-                        cep,
-                        request.number(),
-                        request.complement()
-                );
-
-        if (alreadyExists) {
-            log.warn("event=create_address_rejected reason=address_already_exists publicId={}", currentUser.publicId());
-            throw new AddressAlreadyExistsException();
-        }
-
-        boolean hasNoDefault = !addressRepository.existsByUserPublicIdAndActiveTrue(currentUser.publicId());
-        boolean shouldBeDefault = hasNoDefault || request.defaultAddress();
-
-        if (shouldBeDefault) {
-            addressRepository.resetDefaultAddressForUser(currentUser.publicId());
-        }
-
-        Address address = Address.create(
-                user,
-                firstName,
-                lastName,
-                cep,
-                request.street(),
-                request.number(),
-                request.complement(),
-                request.neighborhood(),
-                request.city(),
-                request.state(),
-                request.country(),
-                phone,
-                shouldBeDefault
-        );
-
-        addressRepository.save(address);
-
-        log.info("event=address_created publicId={} addressPublicId={} default={}",
-                currentUser.publicId(), address.getPublicId(), shouldBeDefault);
-
-        return userMapper.toAddressResponse(address);
-    }
-
-    @Transactional
     public void deleteAddress(CurrentUser user, UUID addressPublicId) {
         log.info("event=delete_address_attempt publicId={} addressPublicId={}", user.publicId(), addressPublicId);
 
