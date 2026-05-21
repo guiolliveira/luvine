@@ -1,4 +1,4 @@
-package com.javacore.spring_api_luvine.auth.application.UseCase;
+package com.javacore.spring_api_luvine.auth.application.usecase;
 
 import com.javacore.spring_api_luvine.auth.application.dto.EmailVerificationCreationResult;
 import com.javacore.spring_api_luvine.auth.application.dto.RegisterRequest;

@@ -1,6 +1,6 @@
 package com.javacore.spring_api_luvine.auth.infrastructure.controller;
 
-import com.javacore.spring_api_luvine.auth.application.UseCase.*;
+import com.javacore.spring_api_luvine.auth.application.usecase.*;
 import com.javacore.spring_api_luvine.auth.application.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
