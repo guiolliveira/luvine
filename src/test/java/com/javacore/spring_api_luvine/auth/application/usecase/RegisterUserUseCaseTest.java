@@ -52,10 +52,10 @@ class RegisterUserUseCaseTest {
 
     // --- HELPERS ------------------------------------------------------------------
 
-    private static final String VALID_EMAIL      = "user@example.com";
+    private static final String VALID_EMAIL = "user@example.com";
     private static final String VALID_FIRST_NAME = "User";
-    private static final String VALID_LAST_NAME  = "Name";
-    private static final String VALID_PASSWORD   = "Password@123";
+    private static final String VALID_LAST_NAME = "Name";
+    private static final String VALID_PASSWORD = "Password@123";
 
     private User buildPersistedUnverifiedUser() {
         User user = User.create(
