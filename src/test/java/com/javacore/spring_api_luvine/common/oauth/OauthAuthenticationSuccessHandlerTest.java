@@ -2,13 +2,14 @@ package com.javacore.spring_api_luvine.common.oauth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.javacore.spring_api_luvine.auth.application.dto.LoginResponse;
+import com.javacore.spring_api_luvine.auth.application.usecase.OauthLoginUseCase;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -19,242 +20,233 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 
 @DisplayName("OauthAuthenticationSuccessHandler")
 @ExtendWith(MockitoExtension.class)
 class OauthAuthenticationSuccessHandlerTest {
 
-    @Mock private OauthService oauthService;
+    @Mock private OauthLoginUseCase oauthLoginUseCase;
     @Mock private ObjectMapper objectMapper;
-    @Mock private HttpServletRequest request;
-    @Mock private HttpServletResponse response;
-    @Mock private OAuth2AuthenticationToken oauth2Token;
-    @Mock private OAuth2User oAuth2User;
 
     @InjectMocks
     private OauthAuthenticationSuccessHandler handler;
 
-    PrintWriter printWriter;
+    // --- HELPERS ------------------------------------------------------------------
 
-    @BeforeEach
-    void setUp() {
-        printWriter = new PrintWriter(new StringWriter());
+    private static final String VALID_EMAIL   = "user@example.com";
+    private static final String VALID_NAME    = "João Silva";
+    private static final String DEVICE_INFO   = "Mozilla/5.0";
+    private static final String IP_ADDRESS    = "192.168.0.1";
+    private static final String ACCESS_TOKEN  = "header.payload.signature";
+    private static final String REFRESH_TOKEN = "raw-refresh-token-value";
+
+    private OAuth2AuthenticationToken buildOauth2Token(String email, String name) {
+        OAuth2User oAuth2User = mock(OAuth2User.class);
+        given(oAuth2User.getAttribute("email")).willReturn(email);
+        given(oAuth2User.getAttribute("name")).willReturn(name);
+
+        OAuth2AuthenticationToken token = mock(OAuth2AuthenticationToken.class);
+        given(token.getPrincipal()).willReturn(oAuth2User);
+        given(token.getAuthorizedClientRegistrationId()).willReturn("google");
+        return token;
     }
 
-    // --- HELPERS --------------------------------------------------------------
-
-    private void setupOAuth2Token() {
-        when(oauth2Token.getPrincipal()).thenReturn(oAuth2User);
-        when(oauth2Token.getAuthorizedClientRegistrationId()).thenReturn("google");
+    private HttpServletRequest buildRequest(String userAgent, String forwardedFor, String remoteAddr) {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        given(request.getHeader("User-Agent")).willReturn(userAgent);
+        given(request.getHeader("X-Forwarded-For")).willReturn(forwardedFor);
+        if (forwardedFor == null) {
+            given(request.getRemoteAddr()).willReturn(remoteAddr);
+        }
+        return request;
     }
 
-    private void setupValidAttributes() {
-        when(oAuth2User.getAttribute("email")).thenReturn("user@example.com");
-        when(oAuth2User.getAttribute("name")).thenReturn("John Doe");
+    private HttpServletResponse buildWritableResponse() throws Exception {
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        given(response.getWriter()).willReturn(new PrintWriter(new StringWriter()));
+        return response;
     }
 
-    private void setupHeaders(String userAgent, String xForwardedFor) {
-        when(request.getHeader("User-Agent")).thenReturn(userAgent);
-        when(request.getHeader("X-Forwarded-For")).thenReturn(xForwardedFor);
-    }
-
-    private void setupLoginResponse() {
-        when(oauthService.loginWithGoogle(anyString(), anyString(), any(), any()))
-                .thenReturn(new LoginResponse("access-token-123", "refresh-token-456"));
-    }
-
-    // --- FLUXO FELIZ ----------------------------------------------------------
+    // --- ON AUTHENTICATION SUCCESS ------------------------------------------------------------------
 
     @Nested
-    @DisplayName("onAuthenticationSuccess() — fluxo feliz")
-    class HappyPath {
+    @DisplayName("onAuthenticationSuccess()")
+    class OnAuthenticationSuccess {
 
-        @BeforeEach
-        void setUp() throws Exception {
-            when(response.getWriter()).thenReturn(printWriter);
-            setupOAuth2Token();
-            setupValidAttributes();
-            setupLoginResponse();
-            setupHeaders("Mozilla/5.0", "192.168.0.1");
-            when(objectMapper.writeValueAsString(any()))
-                    .thenReturn("{\"accessToken\":\"access-token-123\",\"refreshToken\":null}");
+        // --- FLUXO FELIZ ------------------------------------------------------------------
+
+        @Test
+        @DisplayName("deve chamar oauthLoginUseCase com email, nome, deviceInfo e ip corretos")
+        void success_validOauth2Token_callsUseCaseWithCorrectArgs() throws Exception {
+            OAuth2AuthenticationToken auth = buildOauth2Token(VALID_EMAIL, VALID_NAME);
+            HttpServletRequest request = buildRequest(DEVICE_INFO, null, IP_ADDRESS);
+            HttpServletResponse response = buildWritableResponse();
+
+            given(oauthLoginUseCase.execute(VALID_EMAIL, VALID_NAME, DEVICE_INFO, IP_ADDRESS))
+                    .willReturn(new LoginResponse(ACCESS_TOKEN, REFRESH_TOKEN));
+            given(objectMapper.writeValueAsString(any())).willReturn("{\"accessToken\":\"" + ACCESS_TOKEN + "\"}");
+
+            handler.onAuthenticationSuccess(request, response, auth);
+
+            then(oauthLoginUseCase).should().execute(VALID_EMAIL, VALID_NAME, DEVICE_INFO, IP_ADDRESS);
         }
 
         @Test
-        @DisplayName("deve chamar oauthService.loginWithGoogle com email e nome corretos")
-        void shouldCallOauthServiceWithCorrectEmailAndName() throws Exception {
-            handler.onAuthenticationSuccess(request, response, oauth2Token);
+        @DisplayName("deve usar X-Forwarded-For como ip quando header presente")
+        void success_xForwardedForPresent_usesForwardedIp() throws Exception {
+            OAuth2AuthenticationToken auth = buildOauth2Token(VALID_EMAIL, VALID_NAME);
+            HttpServletRequest request = buildRequest(DEVICE_INFO, "10.0.0.1", null);
+            HttpServletResponse response = buildWritableResponse();
 
-            verify(oauthService).loginWithGoogle(
-                    eq("user@example.com"), eq("John Doe"), any(), any());
+            given(oauthLoginUseCase.execute(VALID_EMAIL, VALID_NAME, DEVICE_INFO, "10.0.0.1"))
+                    .willReturn(new LoginResponse(ACCESS_TOKEN, REFRESH_TOKEN));
+            given(objectMapper.writeValueAsString(any())).willReturn("{}");
+
+            handler.onAuthenticationSuccess(request, response, auth);
+
+            then(oauthLoginUseCase).should().execute(VALID_EMAIL, VALID_NAME, DEVICE_INFO, "10.0.0.1");
+            then(request).should(never()).getRemoteAddr();
         }
 
         @Test
-        @DisplayName("deve passar o User-Agent como deviceInfo para o service")
-        void shouldPassUserAgentAsDeviceInfo() throws Exception {
-            handler.onAuthenticationSuccess(request, response, oauth2Token);
+        @DisplayName("deve usar remoteAddr como ip quando X-Forwarded-For está ausente")
+        void success_noXForwardedFor_usesRemoteAddr() throws Exception {
+            OAuth2AuthenticationToken auth = buildOauth2Token(VALID_EMAIL, VALID_NAME);
+            HttpServletRequest request = buildRequest(DEVICE_INFO, null, IP_ADDRESS);
+            HttpServletResponse response = buildWritableResponse();
 
-            verify(oauthService).loginWithGoogle(any(), any(), eq("Mozilla/5.0"), any());
+            given(oauthLoginUseCase.execute(VALID_EMAIL, VALID_NAME, DEVICE_INFO, IP_ADDRESS))
+                    .willReturn(new LoginResponse(ACCESS_TOKEN, REFRESH_TOKEN));
+            given(objectMapper.writeValueAsString(any())).willReturn("{}");
+
+            handler.onAuthenticationSuccess(request, response, auth);
+
+            then(oauthLoginUseCase).should().execute(VALID_EMAIL, VALID_NAME, DEVICE_INFO, IP_ADDRESS);
         }
 
         @Test
-        @DisplayName("deve usar X-Forwarded-For como ipAddress quando presente")
-        void shouldUseXForwardedForAsIpWhenPresent() throws Exception {
-            handler.onAuthenticationSuccess(request, response, oauth2Token);
+        @DisplayName("deve definir cookie refreshToken httpOnly e secure na resposta")
+        void success_validOauth2Token_setsRefreshTokenCookie() throws Exception {
+            OAuth2AuthenticationToken auth = buildOauth2Token(VALID_EMAIL, VALID_NAME);
+            HttpServletRequest request = buildRequest(DEVICE_INFO, null, IP_ADDRESS);
+            HttpServletResponse response = buildWritableResponse();
 
-            verify(oauthService).loginWithGoogle(any(), any(), any(), eq("192.168.0.1"));
+            given(oauthLoginUseCase.execute(any(), any(), any(), any()))
+                    .willReturn(new LoginResponse(ACCESS_TOKEN, REFRESH_TOKEN));
+            given(objectMapper.writeValueAsString(any())).willReturn("{}");
+
+            handler.onAuthenticationSuccess(request, response, auth);
+
+            ArgumentCaptor<String> cookieCaptor = ArgumentCaptor.forClass(String.class);
+            then(response).should().setHeader(eq("Set-Cookie"), cookieCaptor.capture());
+
+            String cookie = cookieCaptor.getValue();
+            assertThat(cookie).contains("refreshToken=" + REFRESH_TOKEN);
+            assertThat(cookie).containsIgnoringCase("HttpOnly");
+            assertThat(cookie).containsIgnoringCase("Secure");
         }
 
         @Test
-        @DisplayName("deve usar remoteAddr como ipAddress quando X-Forwarded-For estiver ausente")
-        void shouldFallbackToRemoteAddrWhenXForwardedForIsNull() throws Exception {
-            // Sobrescreve apenas o X-Forwarded-For para null neste teste específico
-            when(request.getHeader("X-Forwarded-For")).thenReturn(null);
-            when(request.getRemoteAddr()).thenReturn("10.0.0.1");
+        @DisplayName("deve retornar accessToken no body e null para refreshToken")
+        void success_validOauth2Token_writesAccessTokenWithNullRefreshToken() throws Exception {
+            OAuth2AuthenticationToken auth = buildOauth2Token(VALID_EMAIL, VALID_NAME);
+            HttpServletRequest request = buildRequest(DEVICE_INFO, null, IP_ADDRESS);
+            HttpServletResponse response = buildWritableResponse();
 
-            handler.onAuthenticationSuccess(request, response, oauth2Token);
+            given(oauthLoginUseCase.execute(any(), any(), any(), any()))
+                    .willReturn(new LoginResponse(ACCESS_TOKEN, REFRESH_TOKEN));
+            given(objectMapper.writeValueAsString(any())).willReturn("{}");
 
-            verify(oauthService).loginWithGoogle(any(), any(), any(), eq("10.0.0.1"));
+            handler.onAuthenticationSuccess(request, response, auth);
+
+            ArgumentCaptor<LoginResponse> bodyCaptor = ArgumentCaptor.forClass(LoginResponse.class);
+            then(objectMapper).should().writeValueAsString(bodyCaptor.capture());
+
+            assertThat(bodyCaptor.getValue().accessToken()).isEqualTo(ACCESS_TOKEN);
+            assertThat(bodyCaptor.getValue().refreshToken()).isNull();
         }
 
         @Test
-        @DisplayName("deve setar status 200 na resposta")
-        void shouldSetStatus200() throws Exception {
-            handler.onAuthenticationSuccess(request, response, oauth2Token);
+        @DisplayName("deve definir status 200, contentType application/json e encoding UTF-8")
+        void success_validOauth2Token_setsResponseMetadata() throws Exception {
+            OAuth2AuthenticationToken auth = buildOauth2Token(VALID_EMAIL, VALID_NAME);
+            HttpServletRequest request = buildRequest(DEVICE_INFO, null, IP_ADDRESS);
+            HttpServletResponse response = buildWritableResponse();
 
-            verify(response).setStatus(HttpServletResponse.SC_OK);
+            given(oauthLoginUseCase.execute(any(), any(), any(), any()))
+                    .willReturn(new LoginResponse(ACCESS_TOKEN, REFRESH_TOKEN));
+            given(objectMapper.writeValueAsString(any())).willReturn("{}");
+
+            handler.onAuthenticationSuccess(request, response, auth);
+
+            then(response).should().setStatus(HttpServletResponse.SC_OK);
+            then(response).should().setContentType("application/json");
+            then(response).should().setCharacterEncoding("UTF-8");
+        }
+
+        // --- ATRIBUTOS AUSENTES ------------------------------------------------------------------
+
+        @Test
+        @DisplayName("deve retornar 400 quando email está ausente nos atributos OAuth2")
+        void success_missingEmail_sends400() throws Exception {
+            OAuth2AuthenticationToken auth = buildOauth2Token(null, VALID_NAME);
+            HttpServletRequest request = buildRequest(DEVICE_INFO, null, IP_ADDRESS);
+            HttpServletResponse response = mock(HttpServletResponse.class);
+
+            handler.onAuthenticationSuccess(request, response, auth);
+
+            then(response).should().sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
+            then(oauthLoginUseCase).should(never()).execute(any(), any(), any(), any());
         }
 
         @Test
-        @DisplayName("deve setar Content-Type como application/json")
-        void shouldSetContentTypeJson() throws Exception {
-            handler.onAuthenticationSuccess(request, response, oauth2Token);
+        @DisplayName("deve retornar 400 quando name está ausente nos atributos OAuth2")
+        void success_missingName_sends400() throws Exception {
+            OAuth2AuthenticationToken auth = buildOauth2Token(VALID_EMAIL, null);
+            HttpServletRequest request = buildRequest(DEVICE_INFO, null, IP_ADDRESS);
+            HttpServletResponse response = mock(HttpServletResponse.class);
 
-            verify(response).setContentType("application/json");
+            handler.onAuthenticationSuccess(request, response, auth);
+
+            then(response).should().sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
+            then(oauthLoginUseCase).should(never()).execute(any(), any(), any(), any());
+        }
+
+        // --- AUTENTICAÇÃO NÃO OAUTH2 ------------------------------------------------------------------
+
+        @Test
+        @DisplayName("deve retornar 401 quando authentication não é OAuth2AuthenticationToken")
+        void success_nonOauth2Authentication_sends401() throws Exception {
+            Authentication auth = mock(Authentication.class);
+            given(auth.getClass()).willCallRealMethod();
+            HttpServletRequest request = mock(HttpServletRequest.class);
+            HttpServletResponse response = mock(HttpServletResponse.class);
+
+            handler.onAuthenticationSuccess(request, response, auth);
+
+            then(response).should().sendError(eq(HttpServletResponse.SC_UNAUTHORIZED), anyString());
+            then(oauthLoginUseCase).should(never()).execute(any(), any(), any(), any());
         }
 
         @Test
-        @DisplayName("deve setar encoding UTF-8 na resposta")
-        void shouldSetCharacterEncodingUtf8() throws Exception {
-            handler.onAuthenticationSuccess(request, response, oauth2Token);
+        @DisplayName("deve completar sem exceção no fluxo feliz")
+        void success_validOauth2Token_doesNotThrow() throws Exception {
+            OAuth2AuthenticationToken auth = buildOauth2Token(VALID_EMAIL, VALID_NAME);
+            HttpServletRequest request = buildRequest(DEVICE_INFO, null, IP_ADDRESS);
+            HttpServletResponse response = buildWritableResponse();
 
-            verify(response).setCharacterEncoding("UTF-8");
-        }
+            given(oauthLoginUseCase.execute(any(), any(), any(), any()))
+                    .willReturn(new LoginResponse(ACCESS_TOKEN, REFRESH_TOKEN));
+            given(objectMapper.writeValueAsString(any())).willReturn("{}");
 
-        @Test
-        @DisplayName("deve escrever o accessToken no body e omitir o refreshToken")
-        void shouldWriteAccessTokenAndOmitRefreshToken() throws Exception {
-            handler.onAuthenticationSuccess(request, response, oauth2Token);
-
-            verify(objectMapper).writeValueAsString(
-                    argThat(arg -> arg instanceof LoginResponse response
-                            && "access-token-123".equals(response.accessToken())
-                            && response.refreshToken() == null)
-            );
-        }
-
-        @Test
-        @DisplayName("deve setar o cookie refreshToken como HttpOnly e Secure")
-        void shouldSetRefreshTokenCookieHttpOnlyAndSecure() throws Exception {
-            handler.onAuthenticationSuccess(request, response, oauth2Token);
-
-            verify(response).setHeader(eq("Set-Cookie"), argThat(cookie ->
-                    cookie.contains("refreshToken=refresh-token-456")
-                            && cookie.contains("HttpOnly")
-                            && cookie.contains("Secure")));
-        }
-
-        @Test
-        @DisplayName("deve setar o cookie com path /auth/refresh")
-        void shouldSetRefreshTokenCookieWithCorrectPath() throws Exception {
-            handler.onAuthenticationSuccess(request, response, oauth2Token);
-
-            verify(response).setHeader(eq("Set-Cookie"),
-                    argThat(cookie -> cookie.contains("Path=/api/v1/auth/refresh")));
-        }
-
-        @Test
-        @DisplayName("deve setar o cookie com SameSite=None")
-        void shouldSetRefreshTokenCookieWithSameSiteNone() throws Exception {
-            handler.onAuthenticationSuccess(request, response, oauth2Token);
-
-            verify(response).setHeader(eq("Set-Cookie"),
-                    argThat(cookie -> cookie.contains("SameSite=None")));
-        }
-    }
-
-    // --- ATRIBUTOS AUSENTES ---------------------------------------------------
-
-    @Nested
-    @DisplayName("onAuthenticationSuccess() — atributos OAuth ausentes")
-    class MissingAttributes {
-
-        @BeforeEach
-        void setUp() {
-            setupOAuth2Token();
-            setupHeaders(null, null);
-        }
-
-        @Test
-        @DisplayName("deve retornar 400 quando email for nulo")
-        void shouldReturn400WhenEmailIsNull() throws Exception {
-            when(oAuth2User.getAttribute("email")).thenReturn(null);
-            when(oAuth2User.getAttribute("name")).thenReturn("John Doe");
-
-            handler.onAuthenticationSuccess(request, response, oauth2Token);
-
-            verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
-        }
-
-        @Test
-        @DisplayName("deve retornar 400 quando name for nulo")
-        void shouldReturn400WhenNameIsNull() throws Exception {
-            when(oAuth2User.getAttribute("email")).thenReturn("user@example.com");
-            when(oAuth2User.getAttribute("name")).thenReturn(null);
-
-            handler.onAuthenticationSuccess(request, response, oauth2Token);
-
-            verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
-        }
-
-        @Test
-        @DisplayName("não deve chamar oauthService quando atributos estiverem ausentes")
-        void shouldNotCallOauthServiceWhenAttributesAreMissing() throws Exception {
-            when(oAuth2User.getAttribute("email")).thenReturn(null);
-            when(oAuth2User.getAttribute("name")).thenReturn(null);
-
-            handler.onAuthenticationSuccess(request, response, oauth2Token);
-
-            verifyNoInteractions(oauthService);
-        }
-    }
-
-    // --- TIPO DE AUTENTICAÇÃO INESPERADO --------------------------------------
-
-    @Nested
-    @DisplayName("onAuthenticationSuccess() — tipo de autenticação inesperado")
-    class UnexpectedAuthType {
-
-        @Test
-        @DisplayName("deve retornar 401 quando authentication não for OAuth2AuthenticationToken")
-        void shouldReturn401WhenAuthIsNotOAuth2Token() throws Exception {
-            Authentication otherAuth = mock(Authentication.class);
-
-            handler.onAuthenticationSuccess(request, response, otherAuth);
-
-            verify(response).sendError(eq(HttpServletResponse.SC_UNAUTHORIZED), anyString());
-        }
-
-        @Test
-        @DisplayName("não deve chamar oauthService quando tipo de autenticação for inesperado")
-        void shouldNotCallOauthServiceWhenAuthTypeIsUnexpected() throws Exception {
-            Authentication otherAuth = mock(Authentication.class);
-
-            handler.onAuthenticationSuccess(request, response, otherAuth);
-
-            verifyNoInteractions(oauthService);
+            assertThatNoException()
+                    .isThrownBy(() -> handler.onAuthenticationSuccess(request, response, auth));
         }
     }
 }
