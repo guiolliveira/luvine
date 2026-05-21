@@ -3,6 +3,8 @@ package com.javacore.spring_api_luvine.user.infrastructure.controller;
 import com.javacore.spring_api_luvine.user.application.dto.CurrentUser;
 import com.javacore.spring_api_luvine.user.application.dto.ProfileResponse;
 import com.javacore.spring_api_luvine.user.application.dto.UpdateProfileRequest;
+import com.javacore.spring_api_luvine.user.application.usecase.GetProfileUseCase;
+import com.javacore.spring_api_luvine.user.application.usecase.UpdateProfileUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -21,7 +23,8 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "usuário", description = "Endpoints de gerenciamento do perfil do usuário autenticado")
 public class UserController {
 
-    private final UserService userService;
+    private final GetProfileUseCase getProfile;
+    private final UpdateProfileUseCase updateProfile;
 
     @Operation(summary = "Buscar perfil", description = "Retorna os dados do perfil do usuário autenticado")
     @ApiResponses({
@@ -31,7 +34,7 @@ public class UserController {
     })
     @GetMapping
     public ResponseEntity<ProfileResponse> profile(@AuthenticationPrincipal CurrentUser currentUser) {
-        ProfileResponse profileResponse = userService.findProfile(currentUser);
+        ProfileResponse profileResponse = getProfile.execute(currentUser);
         return ResponseEntity.ok(profileResponse);
     }
 
@@ -46,7 +49,7 @@ public class UserController {
     public ResponseEntity<Void> updateProfile(
             @AuthenticationPrincipal CurrentUser currentUser,
             @RequestBody @Valid UpdateProfileRequest request) {
-        userService.updateProfile(currentUser, request);
+        updateProfile.execute(currentUser, request);
         return ResponseEntity.noContent().build();
     }
 }

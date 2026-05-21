@@ -1,4 +1,4 @@
-package com.javacore.spring_api_luvine.user.application.service;
+package com.javacore.spring_api_luvine.user.infrastructure.security;
 
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
 import com.javacore.spring_api_luvine.user.infrastructure.repository.UserRepository;
