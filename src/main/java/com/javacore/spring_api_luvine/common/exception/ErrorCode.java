@@ -36,6 +36,7 @@ public enum ErrorCode {
     // PRODUCT
     INVALID_CATEGORY_NAME(HttpStatus.BAD_REQUEST),
     INVALID_SLUG(HttpStatus.BAD_REQUEST),
+    INVALID_DESCRIPTION(HttpStatus.BAD_REQUEST),
 
     // SHARED
     TOKEN_HASH(HttpStatus.INTERNAL_SERVER_ERROR),
