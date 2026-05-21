@@ -2,6 +2,7 @@ package com.javacore.spring_api_luvine.common.oauth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.javacore.spring_api_luvine.auth.application.dto.LoginResponse;
+import com.javacore.spring_api_luvine.auth.application.usecase.OauthLoginUseCase;
 import com.javacore.spring_api_luvine.common.util.EmailMask;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +23,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class OauthAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
-    private final OauthService oauthService;
+    private final OauthLoginUseCase oauthLoginUseCase;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -53,7 +54,7 @@ public class OauthAuthenticationSuccessHandler implements AuthenticationSuccessH
                 return;
             }
 
-            LoginResponse loginResponse = oauthService.loginWithGoogle(email, name, deviceInfo, ipAddress);
+            LoginResponse loginResponse = oauthLoginUseCase.execute(email, name, deviceInfo, ipAddress);
 
             ResponseCookie cookie = ResponseCookie.from("refreshToken", loginResponse.refreshToken())
                     .httpOnly(true)
