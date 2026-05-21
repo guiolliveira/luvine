@@ -1,4 +1,4 @@
-package com.javacore.spring_api_luvine.auth.service;
+package com.javacore.spring_api_luvine.auth.application.service;
 
 import com.javacore.spring_api_luvine.auth.application.service.TokenService;
 import com.javacore.spring_api_luvine.auth.domain.entity.RefreshToken;

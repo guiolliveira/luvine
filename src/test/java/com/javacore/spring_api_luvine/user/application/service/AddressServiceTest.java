@@ -1,4 +1,4 @@
-package com.javacore.spring_api_luvine.user.service;
+package com.javacore.spring_api_luvine.user.application.service;
 
 import com.javacore.spring_api_luvine.user.domain.entity.Address;
 import com.javacore.spring_api_luvine.user.domain.entity.User;

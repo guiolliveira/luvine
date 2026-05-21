@@ -1,4 +1,4 @@
-package com.javacore.spring_api_luvine.user.repository;
+package com.javacore.spring_api_luvine.user.infrastucture.repository;
 
 import com.javacore.spring_api_luvine.testcontainers.AbstractIntegrationTest;
 import com.javacore.spring_api_luvine.user.domain.entity.Address;

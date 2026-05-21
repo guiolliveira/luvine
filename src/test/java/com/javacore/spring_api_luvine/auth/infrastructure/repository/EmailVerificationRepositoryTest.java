@@ -1,4 +1,4 @@
-package com.javacore.spring_api_luvine.auth.repository;
+package com.javacore.spring_api_luvine.auth.infrastructure.repository;
 
 import com.javacore.spring_api_luvine.auth.domain.entity.EmailVerification;
 import com.javacore.spring_api_luvine.auth.infrastructure.repository.EmailVerificationRepository;
