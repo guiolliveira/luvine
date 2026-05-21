@@ -1,6 +1,6 @@
 package com.javacore.spring_api_luvine.user.domain.entity;
 
-import com.javacore.spring_api_luvine.user.domain.exception.UnchangedValueException;
+import com.javacore.spring_api_luvine.common.exception.exceptions.UnchangedValueException;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Password;
 import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;

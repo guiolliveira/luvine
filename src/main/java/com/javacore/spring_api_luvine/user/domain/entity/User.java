@@ -1,6 +1,6 @@
 package com.javacore.spring_api_luvine.user.domain.entity;
 
-import com.javacore.spring_api_luvine.user.domain.exception.UnchangedValueException;
+import com.javacore.spring_api_luvine.common.exception.exceptions.UnchangedValueException;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Password;
 import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
@@ -97,7 +97,7 @@ public class User implements UserDetails {
 
     public void changeFirstName(PersonName newFirstName) {
         if (this.firstName.equals(newFirstName)) {
-            throw new UnchangedValueException();
+            throw new UnchangedValueException("O usuário já possui o nome informado");
         }
 
         this.firstName = newFirstName;
@@ -106,7 +106,7 @@ public class User implements UserDetails {
 
     public void changeLastName(PersonName newLastName) {
         if (this.lastName.equals(newLastName)) {
-            throw new UnchangedValueException();
+            throw new UnchangedValueException("O usuário já possui o sobrenome informado");
         }
 
         this.lastName = newLastName;

@@ -34,6 +34,6 @@ public record Slug(@Column String value) {
     }
 
     private static boolean isValid(String slug) {
-        return !slug.isBlank();
+        return !slug.isBlank() && slug.length() <= 150;
     }
 }
