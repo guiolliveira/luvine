@@ -2,6 +2,7 @@ package com.javacore.spring_api_luvine.user.infrastructure.controller;
 
 import com.javacore.spring_api_luvine.user.application.dto.CurrentUser;
 import com.javacore.spring_api_luvine.user.application.dto.UpdateRoleRequest;
+import com.javacore.spring_api_luvine.user.application.usecase.UpdateUserRoleUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -22,7 +23,7 @@ import java.util.UUID;
 @Tag(name = "admin — usuários", description = "Endpoints administrativos para gerenciamento de usuários")
 public class AdminUserController {
 
-    private final UserService userService;
+    private final UpdateUserRoleUseCase updateRole;
 
     @Operation(
             summary = "Atualizar papel do usuário",
@@ -42,7 +43,7 @@ public class AdminUserController {
             @AuthenticationPrincipal CurrentUser currentUser,
             @Parameter(description = "ID público do usuário alvo", required = true) @PathVariable UUID publicId,
             @RequestBody UpdateRoleRequest request) {
-        userService.updateRole(currentUser, publicId, request);
+        updateRole.execute(currentUser, publicId, request);
         return ResponseEntity.noContent().build();
     }
 }
