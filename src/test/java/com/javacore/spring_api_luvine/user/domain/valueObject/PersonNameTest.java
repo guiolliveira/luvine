@@ -37,13 +37,6 @@ class NameTest {
             PersonName name = new PersonName("Maria das Graças");
             assertThat(name.value()).isEqualTo("Maria Das Graças");
         }
-
-        @Test
-        @DisplayName("deve criar Name com nome de uma única letra")
-        void shouldCreateNameWithSingleLetter() {
-            PersonName name = new PersonName("A");
-            assertThat(name.value()).isEqualTo("A");
-        }
     }
 
     // --- NORMALIZAÇÃO --------------------------------------------------
@@ -137,6 +130,35 @@ class NameTest {
             assertThatThrownBy(() -> new PersonName("\t"))
                     .isInstanceOf(InvalidNameException.class);
             assertThatThrownBy(() -> new PersonName("\n"))
+                    .isInstanceOf(InvalidNameException.class);
+        }
+
+        @Test
+        @DisplayName("deve lançar InvalidNameException quando nome tiver apenas uma letra")
+        void shouldThrowWhenNameIsSingleLetter() {
+            assertThatThrownBy(() -> new PersonName("A"))
+                    .isInstanceOf(InvalidNameException.class);
+        }
+
+        @Test
+        @DisplayName("deve lançar InvalidNameException quando nome tiver mais de 100 caracteres")
+        void shouldThrowWhenNameExceedsMaxLength() {
+            String tooLong = "A".repeat(101);
+            assertThatThrownBy(() -> new PersonName(tooLong))
+                    .isInstanceOf(InvalidNameException.class);
+        }
+
+        @Test
+        @DisplayName("deve lançar InvalidNameException quando nome contiver números")
+        void shouldThrowWhenNameContainsNumbers() {
+            assertThatThrownBy(() -> new PersonName("Joao123"))
+                    .isInstanceOf(InvalidNameException.class);
+        }
+
+        @Test
+        @DisplayName("deve lançar InvalidNameException quando nome contiver caracteres especiais")
+        void shouldThrowWhenNameContainsSpecialChars() {
+            assertThatThrownBy(() -> new PersonName("Joao@Silva"))
                     .isInstanceOf(InvalidNameException.class);
         }
     }
