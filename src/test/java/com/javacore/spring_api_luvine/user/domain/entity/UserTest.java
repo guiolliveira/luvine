@@ -19,10 +19,10 @@ class UserTest {
 
     // --- FIXTURE -------------------------------------------------------------
 
-    private static final String EMAIL      = "user@example.com";
+    private static final String EMAIL = "user@example.com";
     private static final String FIRST_NAME = "User";
-    private static final String LAST_NAME  = "Name";
-    private static final String PASSWORD   = "Password@123";
+    private static final String LAST_NAME = "Name";
+    private static final String PASSWORD = "Password@123";
 
     private User localUser() {
         return User.create(
