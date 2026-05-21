@@ -2,7 +2,6 @@ package com.javacore.spring_api_luvine.user.application.usecase;
 
 import com.javacore.spring_api_luvine.common.config.UseCase;
 import com.javacore.spring_api_luvine.user.application.dto.CurrentUser;
-import com.javacore.spring_api_luvine.user.application.mapper.UserMapper;
 import com.javacore.spring_api_luvine.user.domain.entity.Address;
 import com.javacore.spring_api_luvine.user.domain.exception.AddressNotFoundException;
 import com.javacore.spring_api_luvine.user.infrastructure.repository.AddressRepository;

@@ -31,26 +31,6 @@ public class AddressService {
     private final AddressRepository addressRepository;
     private final UserMapper userMapper;
 
-    @Transactional
-    public AddressResponse setDefaultAddress(CurrentUser user, UUID addressPublicId) {
-        log.info("event=set_default_address_attempt publicId={} addressPublicId={}", user.publicId(), addressPublicId);
-
-        Address newDefault = getOwnedAddress(user.publicId(), addressPublicId);
-
-        if (!newDefault.isActive()) {
-            log.warn("event=set_default_address_rejected reason=address_inactive publicId={} addressPublicId={}",
-                    user.publicId(), addressPublicId);
-            throw new AddressInactiveException();
-        }
-
-        addressRepository.resetDefaultAddressForUser(user.publicId());
-        newDefault.markAsDefault();
-
-        log.info("event=default_address_updated publicId={} addressPublicId={}", user.publicId(), addressPublicId);
-
-        return userMapper.toAddressResponse(newDefault);
-    }
-
     @Transactional(readOnly = true)
     public List<AddressResponse> findAllAddresses(CurrentUser user) {
         log.debug("event=find_all_addresses publicId={}", user.publicId());
