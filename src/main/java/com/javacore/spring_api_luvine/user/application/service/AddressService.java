@@ -29,30 +29,7 @@ import java.util.UUID;
 public class AddressService {
 
     private final AddressRepository addressRepository;
-    private final UserRepository userRepository;
     private final UserMapper userMapper;
-
-    @Transactional
-    public void deleteAddress(CurrentUser user, UUID addressPublicId) {
-        log.info("event=delete_address_attempt publicId={} addressPublicId={}", user.publicId(), addressPublicId);
-
-        Address address = getOwnedAddress(user.publicId(), addressPublicId);
-        boolean wasDefault = address.isDefaultAddress();
-
-        address.disable();
-
-        if (wasDefault) {
-            addressRepository.findFirstByUserPublicIdAndActiveTrueOrderByCreatedAtDesc(user.publicId())
-                    .ifPresent(next -> {
-                        next.markAsDefault();
-                        log.info("event=default_address_reassigned publicId={} newDefaultAddressPublicId={}",
-                                user.publicId(), next.getPublicId());
-                    });
-        }
-
-        log.info("event=address_deleted publicId={} addressPublicId={} wasDefault={}",
-                user.publicId(), addressPublicId, wasDefault);
-    }
 
     @Transactional
     public AddressResponse setDefaultAddress(CurrentUser user, UUID addressPublicId) {
