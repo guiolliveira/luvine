@@ -22,40 +22,6 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
-
-    @Transactional(readOnly = true)
-    public ProfileResponse findProfile(CurrentUser currentUser) {
-        log.info("event=find_profile_attempt publicId={}", currentUser.publicId());
-
-        User user = findByPublicIdOrThrow(currentUser.publicId());
-
-        log.info("event=find_profile_success publicId={}", user.getPublicId());
-        return userMapper.toProfileResponse(user);
-    }
-
-    @Transactional
-    public void updateProfile(CurrentUser currentUser, UpdateProfileRequest request) {
-        log.info("event=update_profile_attempt publicId={}", currentUser.publicId());
-
-        if (request.newFirstName() == null && request.newLastName() == null) {
-            throw new NoProfileChangesProvidedException();
-        }
-
-        User user = findByPublicIdOrThrow(currentUser.publicId());
-
-        if (request.newFirstName() != null) {
-            user.changeFirstName(new PersonName(request.newFirstName()));
-            log.info("event=update_profile_first_name_changed publicId={}", user.getPublicId());
-        }
-
-        if (request.newLastName() != null) {
-            user.changeLastName(new PersonName(request.newLastName()));
-            log.info("event=update_profile_last_name_changed publicId={}", user.getPublicId());
-        }
-
-        log.info("event=update_profile_success publicId={}", user.getPublicId());
-    }
 
     @Transactional
     public void updateRole(CurrentUser currentUser, UUID targetPublicId, UpdateRoleRequest request) {
