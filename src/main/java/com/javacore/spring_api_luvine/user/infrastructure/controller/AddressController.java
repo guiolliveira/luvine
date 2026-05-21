@@ -3,6 +3,10 @@ package com.javacore.spring_api_luvine.user.infrastructure.controller;
 import com.javacore.spring_api_luvine.user.application.dto.AddressRequest;
 import com.javacore.spring_api_luvine.user.application.dto.AddressResponse;
 import com.javacore.spring_api_luvine.user.application.dto.CurrentUser;
+import com.javacore.spring_api_luvine.user.application.usecase.CreateAddressUseCase;
+import com.javacore.spring_api_luvine.user.application.usecase.DeleteAddressUseCase;
+import com.javacore.spring_api_luvine.user.application.usecase.FindAllAddressesUseCase;
+import com.javacore.spring_api_luvine.user.application.usecase.SetDefaultAddressUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -25,7 +29,10 @@ import java.util.UUID;
 @Tag(name = "endereços", description = "Endpoints para gerenciamento de endereços do usuário")
 public class AddressController {
 
-    private final AddressService addressService;
+    private final CreateAddressUseCase createAddress;
+    private final DeleteAddressUseCase deleteAddress;
+    private final FindAllAddressesUseCase findAllAddresses;
+    private final SetDefaultAddressUseCase setDefaultAddress;
 
     @Operation(summary = "Cadastrar endereço", description = "Cria um novo endereço vinculado ao usuário autenticado")
     @ApiResponses({
@@ -36,7 +43,7 @@ public class AddressController {
     @PostMapping
     public ResponseEntity<AddressResponse> create(
             @AuthenticationPrincipal CurrentUser user, @RequestBody @Valid AddressRequest request) {
-        AddressResponse addressResponse = addressService.createAddress(user, request);
+        AddressResponse addressResponse = createAddress.execute(user, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(addressResponse);
     }
 
@@ -47,7 +54,7 @@ public class AddressController {
     })
     @GetMapping
     public ResponseEntity<List<AddressResponse>> findAllAddresses(@AuthenticationPrincipal CurrentUser user) {
-        List<AddressResponse> addressResponse = addressService.findAllAddresses(user);
+        List<AddressResponse> addressResponse = findAllAddresses.execute(user);
         return ResponseEntity.ok(addressResponse);
     }
 
@@ -61,7 +68,7 @@ public class AddressController {
     @PatchMapping("/{publicId}/default")
     public ResponseEntity<AddressResponse> setDefaultAddress(
             @AuthenticationPrincipal CurrentUser user, @PathVariable UUID publicId) {
-        AddressResponse addressResponse = addressService.setDefaultAddress(user, publicId);
+        AddressResponse addressResponse = setDefaultAddress.execute(user, publicId);
         return ResponseEntity.ok(addressResponse);
     }
 
@@ -73,7 +80,7 @@ public class AddressController {
     @DeleteMapping("/{publicId}/delete")
     public ResponseEntity<Void> delete(
             @AuthenticationPrincipal CurrentUser user, @PathVariable UUID publicId) {
-        addressService.deleteAddress(user, publicId);
+        deleteAddress.execute(user, publicId);
         return ResponseEntity.noContent().build();
     }
 }
