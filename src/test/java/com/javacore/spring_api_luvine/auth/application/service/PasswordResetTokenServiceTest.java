@@ -1,11 +1,11 @@
 package com.javacore.spring_api_luvine.auth.application.service;
 
-import com.javacore.spring_api_luvine.auth.application.service.PasswordResetTokenService;
 import com.javacore.spring_api_luvine.auth.domain.entity.PasswordResetToken;
 import com.javacore.spring_api_luvine.auth.infrastructure.repository.PasswordResetTokenRepository;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Password;
 import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -42,7 +42,7 @@ class PasswordResetTokenServiceTest {
                 new Email("user@example.com"),
                 new PersonName("João"),
                 new PersonName("Silva"),
-                "hashed-password",
+                new Password("hashed-password"),
                 UserProvider.LOCAL
         );
     }

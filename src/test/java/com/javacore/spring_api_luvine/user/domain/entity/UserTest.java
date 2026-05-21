@@ -1,6 +1,8 @@
 package com.javacore.spring_api_luvine.user.domain.entity;
 
+import com.javacore.spring_api_luvine.user.domain.exception.UnchangedValueException;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Password;
 import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -10,23 +12,36 @@ import org.springframework.security.core.GrantedAuthority;
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 
 @DisplayName("User")
 class UserTest {
 
     // --- FIXTURE -------------------------------------------------------------
 
-    private static final String EMAIL = "user@example.com";
-    private static final String FIRST_NAME = "user";
-    private static final String LAST_NAME = "name";
-    private static final String PASSWORD = "hashed-password";
+    private static final String EMAIL      = "user@example.com";
+    private static final String FIRST_NAME = "User";
+    private static final String LAST_NAME  = "Name";
+    private static final String PASSWORD   = "Password@123";
 
     private User localUser() {
-        return User.create(new Email(EMAIL), new PersonName(FIRST_NAME), new PersonName(LAST_NAME), PASSWORD, UserProvider.LOCAL);
+        return User.create(
+                new Email(EMAIL),
+                new PersonName(FIRST_NAME),
+                new PersonName(LAST_NAME),
+                new Password(PASSWORD),
+                UserProvider.LOCAL
+        );
     }
 
     private User googleUser() {
-        return User.create(new Email(EMAIL), new PersonName(FIRST_NAME), new PersonName(LAST_NAME), PASSWORD, UserProvider.GOOGLE);
+        return User.create(
+                new Email(EMAIL),
+                new PersonName(FIRST_NAME),
+                new PersonName(LAST_NAME),
+                new Password(PASSWORD),
+                UserProvider.GOOGLE
+        );
     }
 
     // --- USER.CREATE() - FACTORY -------------------------------------------------------------
@@ -41,9 +56,9 @@ class UserTest {
             User user = localUser();
 
             assertThat(user.getEmail().value()).isEqualTo(EMAIL);
-            assertThat(user.getFirstName().value()).isEqualTo(new PersonName(FIRST_NAME).value());
-            assertThat(user.getLastName().value()).isEqualTo(new PersonName(LAST_NAME).value());
-            assertThat(user.getPassword()).isEqualTo(PASSWORD);
+            assertThat(user.getFirstName()).isEqualTo(new PersonName(FIRST_NAME));
+            assertThat(user.getLastName()).isEqualTo(new PersonName(LAST_NAME));
+            assertThat(user.getPassword()).isEqualTo(new Password(PASSWORD).value());
         }
 
         @Test
@@ -120,6 +135,86 @@ class UserTest {
         @DisplayName("id deve ser nulo antes de persistência (sem banco)")
         void shouldHaveNullIdBeforePersistence() {
             assertThat(localUser().getId()).isNull();
+        }
+
+        @Test
+        @DisplayName("deve iniciar com role CUSTOMER")
+        void shouldStartWithCustomerRole() {
+            assertThat(localUser().getUserRole()).isEqualTo(UserRole.CUSTOMER);
+        }
+    }
+
+    // --- CHANGE FIRST NAME -------------------------------------------------------------
+
+    @Nested
+    @DisplayName("changeFirstName()")
+    class ChangeFirstName {
+
+        @Test
+        @DisplayName("deve alterar firstName quando valor é diferente")
+        void shouldChangeFirstNameWhenDifferent() {
+            User user = localUser();
+            user.changeFirstName(new PersonName("NovoNome"));
+
+            assertThat(user.getFirstName()).isEqualTo(new PersonName("NovoNome"));
+        }
+
+        @Test
+        @DisplayName("deve lançar UnchangedValueException quando firstName é igual ao atual")
+        void shouldThrowUnchangedValueExceptionWhenSame() {
+            User user = localUser();
+
+            assertThatExceptionOfType(UnchangedValueException.class)
+                    .isThrownBy(() -> user.changeFirstName(new PersonName(FIRST_NAME)));
+        }
+
+        @Test
+        @DisplayName("deve atualizar updatedAt ao alterar firstName")
+        void shouldTouchUpdatedAtOnChange() throws InterruptedException {
+            User user = localUser();
+            Instant before = user.getUpdatedAt();
+
+            Thread.sleep(5);
+            user.changeFirstName(new PersonName("NovoNome"));
+
+            assertThat(user.getUpdatedAt()).isAfter(before);
+        }
+    }
+
+    // --- CHANGE LAST NAME -------------------------------------------------------------
+
+    @Nested
+    @DisplayName("changeLastName()")
+    class ChangeLastName {
+
+        @Test
+        @DisplayName("deve alterar lastName quando valor é diferente")
+        void shouldChangeLastNameWhenDifferent() {
+            User user = localUser();
+            user.changeLastName(new PersonName("NovoSobrenome"));
+
+            assertThat(user.getLastName()).isEqualTo(new PersonName("NovoSobrenome"));
+        }
+
+        @Test
+        @DisplayName("deve lançar UnchangedValueException quando lastName é igual ao atual")
+        void shouldThrowUnchangedValueExceptionWhenSame() {
+            User user = localUser();
+
+            assertThatExceptionOfType(UnchangedValueException.class)
+                    .isThrownBy(() -> user.changeLastName(new PersonName(LAST_NAME)));
+        }
+
+        @Test
+        @DisplayName("deve atualizar updatedAt ao alterar lastName")
+        void shouldTouchUpdatedAtOnChange() throws InterruptedException {
+            User user = localUser();
+            Instant before = user.getUpdatedAt();
+
+            Thread.sleep(5);
+            user.changeLastName(new PersonName("NovoSobrenome"));
+
+            assertThat(user.getUpdatedAt()).isAfter(before);
         }
     }
 
@@ -290,6 +385,12 @@ class UserTest {
         @DisplayName("getUsername() deve retornar o email do usuário")
         void getUsernameShouldReturnEmail() {
             assertThat(localUser().getUsername()).isEqualTo(EMAIL);
+        }
+
+        @Test
+        @DisplayName("getPassword() deve retornar o value do Password VO")
+        void getPasswordShouldReturnPasswordValue() {
+            assertThat(localUser().getPassword()).isEqualTo(new Password(PASSWORD).value());
         }
 
         @Test

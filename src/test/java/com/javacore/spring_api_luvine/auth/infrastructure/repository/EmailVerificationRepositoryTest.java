@@ -6,6 +6,7 @@ import com.javacore.spring_api_luvine.testcontainers.AbstractIntegrationTest;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
+import com.javacore.spring_api_luvine.user.domain.valueObject.Password;
 import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -45,7 +46,8 @@ class EmailVerificationRepositoryTest extends AbstractIntegrationTest {
     // --- HELPERS ---------------------------------------------------------------
 
     private User buildUser(String email) {
-        return User.create(new Email(email), new PersonName("John"), new PersonName("Doe"), "hashed-password", UserProvider.LOCAL);
+        return User.create(new Email(email), new PersonName("John"), new PersonName("Doe"),
+                new Password("hashed-password"), UserProvider.LOCAL);
     }
 
     private EmailVerification persistValidCode(User owner) {
