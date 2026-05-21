@@ -34,7 +34,8 @@ public enum ErrorCode {
     INVALID_PASSWORD(HttpStatus.BAD_REQUEST),
 
     // SHARED
-    TOKEN_HASH(HttpStatus.INTERNAL_SERVER_ERROR);
+    TOKEN_HASH(HttpStatus.INTERNAL_SERVER_ERROR),
+    UNSUPPORTED_OPERATION(HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final HttpStatus status;
 
