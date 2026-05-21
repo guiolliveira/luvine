@@ -1,30 +1,29 @@
-package com.javacore.spring_api_luvine.user.application.service;
+package com.javacore.spring_api_luvine.user.application.usecase;
 
-import com.javacore.spring_api_luvine.user.domain.entity.User;
-import com.javacore.spring_api_luvine.user.domain.exception.*;
-import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
+import com.javacore.spring_api_luvine.common.config.UseCase;
 import com.javacore.spring_api_luvine.user.application.dto.CurrentUser;
-import com.javacore.spring_api_luvine.user.application.dto.ProfileResponse;
-import com.javacore.spring_api_luvine.user.application.dto.UpdateProfileRequest;
 import com.javacore.spring_api_luvine.user.application.dto.UpdateRoleRequest;
-import com.javacore.spring_api_luvine.user.application.mapper.UserMapper;
+import com.javacore.spring_api_luvine.user.domain.entity.User;
+import com.javacore.spring_api_luvine.user.domain.exception.InsufficientPromotionsException;
+import com.javacore.spring_api_luvine.user.domain.exception.RoleAlreadyAssignedException;
+import com.javacore.spring_api_luvine.user.domain.exception.SelfPromotionNotAllowedException;
+import com.javacore.spring_api_luvine.user.domain.exception.UserSessionInvalidException;
 import com.javacore.spring_api_luvine.user.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
 @Slf4j
-@Service
+@UseCase
 @RequiredArgsConstructor
-public class UserService {
+public class UpdateUserRoleUseCase {
 
     private final UserRepository userRepository;
 
     @Transactional
-    public void updateRole(CurrentUser currentUser, UUID targetPublicId, UpdateRoleRequest request) {
+    public void execute(CurrentUser currentUser, UUID targetPublicId, UpdateRoleRequest request) {
         log.info("event=update_role_attempt actorPublicId={} targetPublicId={} role={}",
                 currentUser.publicId(), targetPublicId, request.role());
 

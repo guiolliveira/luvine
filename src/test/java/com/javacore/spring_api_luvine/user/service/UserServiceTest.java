@@ -1,6 +1,5 @@
 package com.javacore.spring_api_luvine.user.service;
 
-import com.javacore.spring_api_luvine.user.application.service.UserService;
 import com.javacore.spring_api_luvine.user.domain.entity.User;
 import com.javacore.spring_api_luvine.user.domain.entity.UserProvider;
 import com.javacore.spring_api_luvine.user.domain.entity.UserRole;

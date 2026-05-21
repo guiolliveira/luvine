@@ -3,7 +3,6 @@ package com.javacore.spring_api_luvine.user.infrastructure.controller;
 import com.javacore.spring_api_luvine.user.application.dto.CurrentUser;
 import com.javacore.spring_api_luvine.user.application.dto.ProfileResponse;
 import com.javacore.spring_api_luvine.user.application.dto.UpdateProfileRequest;
-import com.javacore.spring_api_luvine.user.application.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
