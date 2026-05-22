@@ -82,6 +82,7 @@ public class Category {
         }
 
         this.parent = newParent;
+        touch();
     }
 
     public void changeCategoryName(CategoryName newCategoryName) {
@@ -90,6 +91,7 @@ public class Category {
         }
 
         this.categoryName = newCategoryName;
+        touch();
     }
 
     public void changeSlug(Slug newSlug) {
@@ -98,6 +100,7 @@ public class Category {
         }
 
         this.slug = newSlug;
+        touch();
     }
 
     public void changeDescription(Description newDescription) {
@@ -106,6 +109,7 @@ public class Category {
         }
 
         this.description = newDescription;
+        touch();
     }
 
     public void changeImageUrl(String newImageUrl) {
@@ -114,6 +118,7 @@ public class Category {
         }
 
         this.imageUrl = newImageUrl;
+        touch();
     }
 
     public void changeDisplayOrder(int newDisplayOrder) {
@@ -122,6 +127,7 @@ public class Category {
         }
 
         this.displayOrder = newDisplayOrder;
+        touch();
     }
 
     public void activate() {
@@ -130,5 +136,9 @@ public class Category {
 
     public void deactivate() {
         this.active = false;
+    }
+
+    public void touch() {
+        this.updatedAt = Instant.now();
     }
 }

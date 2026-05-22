@@ -20,7 +20,7 @@ import java.io.UnsupportedEncodingException;
 @Service
 @RequiredArgsConstructor
 @EnableConfigurationProperties(MailSenderProperties.class)
-public class MailSenderService {
+public class MailSenderProvider {
 
     private final JavaMailSender javaMailSender;
     private final TemplateEngine templateEngine;

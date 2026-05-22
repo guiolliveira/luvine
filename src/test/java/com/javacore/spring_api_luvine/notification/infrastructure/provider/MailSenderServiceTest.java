@@ -30,7 +30,7 @@ class MailSenderServiceTest {
     @Mock private MailSenderProperties properties;
 
     @InjectMocks
-    private MailSenderService mailSenderService;
+    private MailSenderProvider mailSenderService;
 
     // --- HELPERS ------------------------------------------------------------------
 

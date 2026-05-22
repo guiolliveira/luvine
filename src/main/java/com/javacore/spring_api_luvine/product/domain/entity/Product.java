@@ -14,7 +14,9 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -69,6 +71,9 @@ public class Product {
     @Column(nullable = false)
     private String lastUpdatedBy;
 
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ProductVariant> variants;
+
     private Product(Category category, ProductName productName, Description description, Money basePrice) {
         this.publicId = UUID.randomUUID();
         this.category = category;
@@ -79,6 +84,7 @@ public class Product {
         this.status = Status.ACTIVE;
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
+        this.variants = new HashSet<>();
     }
 
     public static Product create(
@@ -87,12 +93,23 @@ public class Product {
         return new Product(category, productName, description, basePrice);
     }
 
+    public void addVariant(ProductVariant variant) {
+        variants.add(variant);
+        variant.assignToProduct(this);
+    }
+
+    public void removeVariant(ProductVariant variant) {
+        variants.remove(variant);
+        variant.unassignToProduct();;
+    }
+
     public void changeCategory(Category newCategory) {
         if (this.category.equals(newCategory)) {
             throw new UnchangedValueException("A categoria do produto não pode ser igual a atual");
         }
 
         this.category = newCategory;
+        touch();
     }
 
     public void changeProductName(ProductName newProductName) {
@@ -101,6 +118,7 @@ public class Product {
         }
 
         this.productName = newProductName;
+        touch();
     }
 
     public void changeSlug(Slug newSlug) {
@@ -109,6 +127,7 @@ public class Product {
         }
 
         this.slug = newSlug;
+        touch();
     }
 
     public void changeDescription(Description newDescription) {
@@ -117,6 +136,7 @@ public class Product {
         }
 
         this.description = newDescription;
+        touch();
     }
 
     public void changeBasePrice(Money newBasePrice) {
@@ -125,11 +145,19 @@ public class Product {
         }
 
         this.basePrice = newBasePrice;
+        touch();
     }
 
     public void changeStatus(Status newStatus) {
         if (this.status.equals(newStatus)) {
             throw new UnchangedValueException("O produto já possui o status informado");
         }
+
+        this.status = newStatus;
+        touch();
+    }
+
+    public void touch() {
+        this.updatedAt = Instant.now();
     }
 }
