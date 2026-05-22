@@ -41,6 +41,7 @@ public enum ErrorCode {
     INVALID_PRODUCT_NAME(HttpStatus.BAD_REQUEST),
     INVALID_MONEY(HttpStatus.BAD_REQUEST),
     INVALID_SKU(HttpStatus.BAD_REQUEST),
+    INVALID_COLOR(HttpStatus.BAD_REQUEST),
 
     // SHARED
     TOKEN_HASH(HttpStatus.INTERNAL_SERVER_ERROR),
