@@ -29,6 +29,10 @@ public class ProductVariant {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @Version
+    @Column(nullable = false)
+    private Long version;
+
     @Embedded
     @AttributeOverride(name = "value", column = @Column(name = "sku", nullable = false, unique = true, length = 50))
     private Sku sku;
