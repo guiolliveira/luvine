@@ -1,10 +1,14 @@
 package com.javacore.spring_api_luvine.product.domain.entity;
 
 import com.javacore.spring_api_luvine.common.exception.exceptions.UnchangedValueException;
+import com.javacore.spring_api_luvine.product.domain.exception.ImageAlreadyPrimaryException;
+import com.javacore.spring_api_luvine.product.domain.exception.ImageNotPrimaryException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -14,6 +18,7 @@ import java.util.UUID;
 @Table(name = "product_images")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class ProductImage {
 
     @Id
@@ -33,18 +38,26 @@ public class ProductImage {
     @Column(nullable = false)
     private int displayOrder;
 
+    @Column(nullable = false, updatable = false)
+    private String storageKey;
+
     @Column(nullable = false)
     private boolean primaryImage;
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    private ProductImage(String imageUrl, int displayOrder, boolean primaryImage) {
+    private ProductImage(String imageUrl, String storageKey, int displayOrder, boolean primaryImage) {
         this.publicId = UUID.randomUUID();
         this.imageUrl = imageUrl;
+        this.storageKey = storageKey;
         this.displayOrder = displayOrder;
         this.primaryImage = primaryImage;
-        this.createdAt = Instant.now();
+    }
+
+    public static ProductImage create(String imageUrl, String storageKey, int displayOrder, boolean primaryImage) {
+        return new ProductImage(imageUrl, storageKey, displayOrder, primaryImage);
     }
 
     void assignToVariant(ProductVariant variant) {
@@ -72,6 +85,18 @@ public class ProductImage {
     }
 
     public void setAsPrimary() {
+        if (this.primaryImage) {
+            throw new ImageAlreadyPrimaryException();
+        }
+
         this.primaryImage = true;
+    }
+
+    public void unsetAsPrimary() {
+        if (!this.primaryImage) {
+            throw new ImageNotPrimaryException();
+        }
+
+        this.primaryImage = false;
     }
 }

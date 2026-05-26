@@ -1,5 +1,7 @@
 package com.javacore.spring_api_luvine.product.domain.entity;
 
+import com.javacore.spring_api_luvine.product.domain.exception.CategoryAlreadyActivateException;
+import com.javacore.spring_api_luvine.product.domain.exception.CategoryAlreadyDeactivateException;
 import com.javacore.spring_api_luvine.product.domain.exception.InvalidCategoryHierarchyException;
 import com.javacore.spring_api_luvine.product.domain.valueObject.CategoryName;
 import com.javacore.spring_api_luvine.product.domain.valueObject.Description;
@@ -9,6 +11,9 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -18,6 +23,7 @@ import java.util.UUID;
 @Table(name = "categories")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class Category {
 
     @Id
@@ -53,10 +59,12 @@ public class Category {
     @Column(nullable = false)
     private boolean active;
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    @Column(nullable = false, updatable = false)
+    @LastModifiedDate
+    @Column(nullable = false)
     private Instant updatedAt;
 
     private Category(Category parent, CategoryName categoryName, Description description) {
@@ -68,8 +76,6 @@ public class Category {
         this.imageUrl = null;
         this.displayOrder = 0;
         this.active = true;
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
     }
 
     public static Category create(Category parent, CategoryName categoryName, Description description) {
@@ -82,7 +88,6 @@ public class Category {
         }
 
         this.parent = newParent;
-        touch();
     }
 
     public void changeCategoryName(CategoryName newCategoryName) {
@@ -91,7 +96,6 @@ public class Category {
         }
 
         this.categoryName = newCategoryName;
-        touch();
     }
 
     public void changeSlug(Slug newSlug) {
@@ -100,7 +104,6 @@ public class Category {
         }
 
         this.slug = newSlug;
-        touch();
     }
 
     public void changeDescription(Description newDescription) {
@@ -109,7 +112,6 @@ public class Category {
         }
 
         this.description = newDescription;
-        touch();
     }
 
     public void changeImageUrl(String newImageUrl) {
@@ -118,7 +120,6 @@ public class Category {
         }
 
         this.imageUrl = newImageUrl;
-        touch();
     }
 
     public void changeDisplayOrder(int newDisplayOrder) {
@@ -127,18 +128,21 @@ public class Category {
         }
 
         this.displayOrder = newDisplayOrder;
-        touch();
     }
 
     public void activate() {
+        if (this.active) {
+            throw new CategoryAlreadyActivateException();
+        }
+
         this.active = true;
     }
 
     public void deactivate() {
-        this.active = false;
-    }
+        if (!this.active) {
+            throw new CategoryAlreadyDeactivateException();
+        }
 
-    public void touch() {
-        this.updatedAt = Instant.now();
+        this.active = false;
     }
 }

@@ -1,0 +1,13 @@
+package com.javacore.spring_api_luvine.product.domain.exception;
+
+import com.javacore.spring_api_luvine.common.exception.ErrorCode;
+import com.javacore.spring_api_luvine.common.exception.exceptions.BusinessException;
+
+public class CategoryAlreadyActivateException extends BusinessException {
+    public CategoryAlreadyActivateException() {
+        super(
+                "Essa categoria já está ativa",
+                ErrorCode.CATEGORY_ALREADY_ACTIVATE
+        );
+    }
+}

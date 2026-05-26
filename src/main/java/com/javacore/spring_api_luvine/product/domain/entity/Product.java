@@ -10,7 +10,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
@@ -57,9 +59,11 @@ public class Product {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
+    @LastModifiedDate
     @Column(nullable = false)
     private Instant updatedAt;
 
@@ -82,8 +86,6 @@ public class Product {
         this.description = description;
         this.basePrice = basePrice;
         this.status = Status.ACTIVE;
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
         this.variants = new HashSet<>();
     }
 
@@ -109,7 +111,6 @@ public class Product {
         }
 
         this.category = newCategory;
-        touch();
     }
 
     public void changeProductName(ProductName newProductName) {
@@ -118,16 +119,14 @@ public class Product {
         }
 
         this.productName = newProductName;
-        touch();
     }
 
     public void changeSlug(Slug newSlug) {
         if (this.slug.equals(newSlug)) {
-            throw new UnchangedValueException("O protudo já possui o slug informado");
+            throw new UnchangedValueException("O produdo já possui o slug informado");
         }
 
         this.slug = newSlug;
-        touch();
     }
 
     public void changeDescription(Description newDescription) {
@@ -136,7 +135,6 @@ public class Product {
         }
 
         this.description = newDescription;
-        touch();
     }
 
     public void changeBasePrice(Money newBasePrice) {
@@ -145,7 +143,6 @@ public class Product {
         }
 
         this.basePrice = newBasePrice;
-        touch();
     }
 
     public void changeStatus(Status newStatus) {
@@ -154,10 +151,5 @@ public class Product {
         }
 
         this.status = newStatus;
-        touch();
-    }
-
-    public void touch() {
-        this.updatedAt = Instant.now();
     }
 }

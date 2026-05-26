@@ -2,11 +2,16 @@ package com.javacore.spring_api_luvine.product.domain.entity;
 
 import com.javacore.spring_api_luvine.common.exception.exceptions.UnchangedValueException;
 import com.javacore.spring_api_luvine.product.domain.exception.InsufficientStockException;
+import com.javacore.spring_api_luvine.product.domain.exception.VariantAlreadyActivateException;
+import com.javacore.spring_api_luvine.product.domain.exception.VariantAlreadyDeactivateException;
 import com.javacore.spring_api_luvine.product.domain.valueObject.*;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -16,6 +21,7 @@ import java.util.UUID;
 @Table(name = "product_variants")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class ProductVariant {
 
     @Id
@@ -34,7 +40,8 @@ public class ProductVariant {
     private Long version;
 
     @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "sku", nullable = false, unique = true, length = 50))
+    @AttributeOverride(name = "value", column = @Column(
+            name = "sku", nullable = false, unique = true, length = 50, updatable = false))
     private Sku sku;
 
     @Embedded
@@ -56,9 +63,11 @@ public class ProductVariant {
     @Column(nullable = false)
     private boolean active;
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
+    @LastModifiedDate
     @Column(nullable = false)
     private Instant updatedAt;
 
@@ -70,8 +79,6 @@ public class ProductVariant {
         this.price = price;
         this.stockQuantity = stockQuantity;
         this.active = true;
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
     }
 
     public static ProductVariant create(Sku sku, Color color, Size size, Money price, StockQuantity stockQuantity) {
@@ -92,7 +99,6 @@ public class ProductVariant {
         }
 
         this.sku = newSku;
-        touch();
     }
 
     public void changeColor(Color newColor) {
@@ -101,7 +107,6 @@ public class ProductVariant {
         }
 
         this.color = newColor;
-        touch();
     }
 
     public void changeSize(Size newSize) {
@@ -110,7 +115,6 @@ public class ProductVariant {
         }
 
         this.size = newSize;
-        touch();
     }
 
     public void changePrice(Money newPrice) {
@@ -119,7 +123,6 @@ public class ProductVariant {
         }
 
         this.price = newPrice;
-        touch();
     }
 
     public void increaseStock(StockQuantity quantity) {
@@ -135,14 +138,18 @@ public class ProductVariant {
     }
 
     public void activate() {
+        if (this.active) {
+            throw new VariantAlreadyActivateException();
+        }
+
         this.active = true;
     }
 
     public void deactivate() {
-        this.active = false;
-    }
+        if (!this.active) {
+            throw new VariantAlreadyDeactivateException();
+        }
 
-    public void touch() {
-        this.updatedAt = Instant.now();
+        this.active = false;
     }
 }
