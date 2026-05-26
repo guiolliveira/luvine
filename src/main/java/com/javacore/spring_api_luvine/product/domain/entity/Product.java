@@ -1,6 +1,8 @@
 package com.javacore.spring_api_luvine.product.domain.entity;
 
 import com.javacore.spring_api_luvine.common.exception.exceptions.UnchangedValueException;
+import com.javacore.spring_api_luvine.product.domain.exception.DuplicatedSkuException;
+import com.javacore.spring_api_luvine.product.domain.exception.VariantAlreadyExistsException;
 import com.javacore.spring_api_luvine.product.domain.valueObject.Description;
 import com.javacore.spring_api_luvine.product.domain.valueObject.Money;
 import com.javacore.spring_api_luvine.product.domain.valueObject.ProductName;
@@ -151,5 +153,24 @@ public class Product {
         }
 
         this.status = newStatus;
+    }
+
+    private void validateDuplicatedVariant(ProductVariant productVariant) {
+        boolean alreadyExists = this.variants.stream()
+                .anyMatch(variant -> variant.getColor().value().equalsIgnoreCase(productVariant.getColor().value()) &&
+                        variant.getSize().value().equalsIgnoreCase(productVariant.getSize().value()));
+
+        if (alreadyExists) {
+            throw new VariantAlreadyExistsException();
+        }
+    }
+
+    private void validateDuplicatedSku(ProductVariant productVariant) {
+        boolean duplicatedSku = this.variants.stream()
+                .anyMatch(variant -> variant.getSku().value().equalsIgnoreCase(productVariant.getSku().value()));
+
+        if (duplicatedSku) {
+            throw new DuplicatedSkuException();
+        }
     }
 }
