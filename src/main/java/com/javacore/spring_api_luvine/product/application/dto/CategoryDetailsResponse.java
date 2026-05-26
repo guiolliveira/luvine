@@ -1,6 +1,5 @@
 package com.javacore.spring_api_luvine.product.application.dto;
 
-import java.util.List;
 import java.util.UUID;
 
 public record CategoryDetailsResponse(
