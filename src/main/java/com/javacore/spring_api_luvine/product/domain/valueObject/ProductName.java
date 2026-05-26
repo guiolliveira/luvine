@@ -27,6 +27,6 @@ public record ProductName(@Column String value) {
     private static boolean isValid(String productName) {
         return !productName.isBlank()
                 && productName.length() >= 3
-                && productName.matches("^[\\p{L}\\s\\-.,()]+$");
+                && productName.matches("^[\\p{L}\\d\\s\\-.,()]+$");
     }
 }
