@@ -1,10 +1,11 @@
 package com.javacore.spring_api_luvine.product.infrastructure.storage;
 
+import com.javacore.spring_api_luvine.product.application.dto.UploadResult;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface StorageService {
 
-    String upload(MultipartFile file, String folder, String fileName);
+    UploadResult upload(MultipartFile file, String folder, String fileName);
 
     void delete(String storageKey);
 }
