@@ -98,6 +98,9 @@ public class Product {
     }
 
     public void addVariant(ProductVariant variant) {
+        validateDuplicatedVariant(variant);
+        validateDuplicatedSku(variant);
+
         variants.add(variant);
         variant.assignToProduct(this);
     }
