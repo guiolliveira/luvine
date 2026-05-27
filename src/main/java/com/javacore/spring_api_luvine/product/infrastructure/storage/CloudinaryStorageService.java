@@ -21,7 +21,7 @@ public class CloudinaryStorageService implements StorageService {
     @Override
     public UploadResult upload(MultipartFile file, String folder, String fileName) {
         if (file == null || file.isEmpty()) {
-            throw new InvalidFileUploadException("Arquivo inválido");
+            throw new InvalidFileUploadException("Arquivo não encontrado");
         }
 
         try {
