@@ -115,7 +115,7 @@ public class Product {
                 .orElseThrow(VariantNotFoundException::new);
     }
 
-    public void updateVariantAttributes(UUID variantPublicId, Color newColor, Size newSize) {
+    public ProductVariant updateVariantAttributes(UUID variantPublicId, Color newColor, Size newSize) {
         ProductVariant variantToUpdate = findVariantByPublicId(variantPublicId);
 
         boolean alreadyExists = this.variants.stream()
@@ -129,6 +129,7 @@ public class Product {
 
         variantToUpdate.changeColor(newColor);
         variantToUpdate.changeSize(newSize);
+        return variantToUpdate;
     }
 
     public void changeCategory(Category newCategory) {
