@@ -4,10 +4,7 @@ import com.javacore.spring_api_luvine.common.exception.exceptions.UnchangedValue
 import com.javacore.spring_api_luvine.product.domain.exception.DuplicatedSkuException;
 import com.javacore.spring_api_luvine.product.domain.exception.VariantAlreadyExistsException;
 import com.javacore.spring_api_luvine.product.domain.exception.VariantNotFoundException;
-import com.javacore.spring_api_luvine.product.domain.valueObject.Description;
-import com.javacore.spring_api_luvine.product.domain.valueObject.Money;
-import com.javacore.spring_api_luvine.product.domain.valueObject.ProductName;
-import com.javacore.spring_api_luvine.product.domain.valueObject.Slug;
+import com.javacore.spring_api_luvine.product.domain.valueObject.*;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -116,6 +113,22 @@ public class Product {
                 .filter(variant -> variant.getPublicId().equals(variantPublicId))
                 .findFirst()
                 .orElseThrow(VariantNotFoundException::new);
+    }
+
+    public void updateVariantAttributes(UUID variantPublicId, Color newColor, Size newSize) {
+        ProductVariant variantToUpdate = findVariantByPublicId(variantPublicId);
+
+        boolean alreadyExists = this.variants.stream()
+                .filter(variant -> !variant.getPublicId().equals(variantPublicId))
+                .anyMatch(variant -> variant.getColor().value().equalsIgnoreCase(newColor.value()) &&
+                        variant.getSize().value().equalsIgnoreCase(newSize.value()));
+
+        if (alreadyExists) {
+            throw new VariantAlreadyExistsException();
+        }
+
+        variantToUpdate.changeColor(newColor);
+        variantToUpdate.changeSize(newSize);
     }
 
     public void changeCategory(Category newCategory) {
