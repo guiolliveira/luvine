@@ -118,20 +118,13 @@ public class Product {
         this.category = newCategory;
     }
 
-    public void changeProductName(ProductName newProductName) {
+    public void rename(ProductName newProductName) {
         if (this.productName.equals(newProductName)) {
             throw new UnchangedValueException("O produto já possui o nome informado");
         }
 
         this.productName = newProductName;
-    }
-
-    public void changeSlug(Slug newSlug) {
-        if (this.slug.equals(newSlug)) {
-            throw new UnchangedValueException("O produdo já possui o slug informado");
-        }
-
-        this.slug = newSlug;
+        this.slug = new Slug(newProductName.value());
     }
 
     public void changeDescription(Description newDescription) {
