@@ -14,6 +14,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -71,6 +73,10 @@ public class ProductVariant {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("displayOrder ASC")
+    private List<ProductImage> images;
+
     private ProductVariant(Sku sku, Color color, Size size, Money price, StockQuantity stockQuantity) {
         this.publicId = UUID.randomUUID();
         this.sku = sku;
@@ -79,6 +85,7 @@ public class ProductVariant {
         this.price = price;
         this.stockQuantity = stockQuantity;
         this.active = true;
+        this.images = new ArrayList<>();
     }
 
     public static ProductVariant create(Sku sku, Color color, Size size, Money price, StockQuantity stockQuantity) {
