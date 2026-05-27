@@ -61,6 +61,7 @@ CREATE TABLE product_images(
     public_id UUID UNIQUE NOT NULL,
     product_variant_id BIGINT NOT NULL REFERENCES product_variants(id) ON DELETE CASCADE,
     image_url VARCHAR(500) NOT NULL,
+    storage_key VARCHAR(255) NOT NULL,
     display_order INTEGER NOT NULL,
     primary_image BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -86,3 +87,4 @@ CREATE INDEX idx_product_variants_size ON product_variants(size);
 
 CREATE INDEX idx_product_images_product_variant_id ON product_images(product_variant_id);
 CREATE INDEX idx_product_images_primary_image ON product_images(product_variant_id) WHERE primary_image = TRUE;
+CREATE INDEX idx_product_images_storage_key ON product_images(storage_key);
