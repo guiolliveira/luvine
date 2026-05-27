@@ -60,6 +60,7 @@ public enum ErrorCode {
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND),
     PRODUCT_NOT_AVAILABLE(HttpStatus.CONFLICT),
     VARIANT_NOT_FOUND(HttpStatus.NOT_FOUND),
+    INVALID_ALT_TEXT(HttpStatus.BAD_REQUEST),
 
     // SHARED
     TOKEN_HASH(HttpStatus.INTERNAL_SERVER_ERROR),

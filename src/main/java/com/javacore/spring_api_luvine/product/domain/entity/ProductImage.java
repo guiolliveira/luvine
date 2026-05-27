@@ -3,6 +3,7 @@ package com.javacore.spring_api_luvine.product.domain.entity;
 import com.javacore.spring_api_luvine.common.exception.exceptions.UnchangedValueException;
 import com.javacore.spring_api_luvine.product.domain.exception.ImageAlreadyPrimaryException;
 import com.javacore.spring_api_luvine.product.domain.exception.ImageNotPrimaryException;
+import com.javacore.spring_api_luvine.product.domain.valueObject.AltText;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -35,11 +36,15 @@ public class ProductImage {
     @Column(nullable = false, length = 500)
     private String imageUrl;
 
-    @Column(nullable = false)
-    private int displayOrder;
-
     @Column(nullable = false, updatable = false)
     private String storageKey;
+
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "alt_text", nullable = false, length = 150))
+    private AltText altText;
+
+    @Column(nullable = false)
+    private int displayOrder;
 
     @Column(nullable = false)
     private boolean primaryImage;
@@ -48,16 +53,21 @@ public class ProductImage {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    private ProductImage(String imageUrl, String storageKey, int displayOrder, boolean primaryImage) {
+    private ProductImage(
+            String imageUrl, String storageKey, AltText altText,
+            int displayOrder, boolean primaryImage) {
         this.publicId = UUID.randomUUID();
         this.imageUrl = imageUrl;
+        this.altText = altText;
         this.storageKey = storageKey;
         this.displayOrder = displayOrder;
         this.primaryImage = primaryImage;
     }
 
-    public static ProductImage create(String imageUrl, String storageKey, int displayOrder, boolean primaryImage) {
-        return new ProductImage(imageUrl, storageKey, displayOrder, primaryImage);
+    public static ProductImage create(
+            String imageUrl, String storageKey, AltText altText,
+            int displayOrder, boolean primaryImage) {
+        return new ProductImage(imageUrl, storageKey, altText, displayOrder, primaryImage);
     }
 
     void assignToVariant(ProductVariant variant) {
@@ -74,6 +84,14 @@ public class ProductImage {
         }
 
         this.imageUrl = newImageUrl;
+    }
+
+    public void changeAltText(AltText newAltText) {
+        if (this.altText.equals(newAltText)) {
+            throw new UnchangedValueException("A imagem já possui esse texto alternativo");
+        }
+
+        this.altText = newAltText;
     }
 
     public void changeDisplayOrder(int newDisplayOrder) {
