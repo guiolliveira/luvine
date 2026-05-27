@@ -129,8 +129,12 @@ public class ProductVariant {
         this.stockQuantity = new StockQuantity(this.stockQuantity.value() + quantity.value());
     }
 
+    public boolean hasStock(int quantity) {
+        return this.stockQuantity.value() >= quantity;
+    }
+
     public void decreaseStock(StockQuantity quantity) {
-        if (this.stockQuantity.value() < quantity.value()) {
+        if (!hasStock(quantity.value())) {
             throw new InsufficientStockException();
         }
 
