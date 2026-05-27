@@ -7,7 +7,7 @@ public class CategoryAlreadyDeactivateException extends BusinessException {
     public CategoryAlreadyDeactivateException() {
         super(
                 "Essa categoria já está desativada",
-                ErrorCode.CATEGORY_ALREADY_DEACTIVATE
+                ErrorCode.CATEGORY_ALREADY_DISABLE
         );
     }
 }

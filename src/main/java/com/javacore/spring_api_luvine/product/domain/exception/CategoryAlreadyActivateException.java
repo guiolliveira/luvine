@@ -7,7 +7,7 @@ public class CategoryAlreadyActivateException extends BusinessException {
     public CategoryAlreadyActivateException() {
         super(
                 "Essa categoria já está ativa",
-                ErrorCode.CATEGORY_ALREADY_ACTIVATE
+                ErrorCode.CATEGORY_ALREADY_ACTIVE
         );
     }
 }

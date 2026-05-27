@@ -2,8 +2,8 @@ package com.javacore.spring_api_luvine.product.domain.entity;
 
 import com.javacore.spring_api_luvine.common.exception.exceptions.UnchangedValueException;
 import com.javacore.spring_api_luvine.product.domain.exception.InsufficientStockException;
-import com.javacore.spring_api_luvine.product.domain.exception.VariantAlreadyActivateException;
-import com.javacore.spring_api_luvine.product.domain.exception.VariantAlreadyDeactivateException;
+import com.javacore.spring_api_luvine.product.domain.exception.VariantAlreadyActiveException;
+import com.javacore.spring_api_luvine.product.domain.exception.VariantAlreadyDisableException;
 import com.javacore.spring_api_luvine.product.domain.valueObject.*;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -143,7 +143,7 @@ public class ProductVariant {
 
     public void activate() {
         if (this.active) {
-            throw new VariantAlreadyActivateException();
+            throw new VariantAlreadyActiveException();
         }
 
         this.active = true;
@@ -151,7 +151,7 @@ public class ProductVariant {
 
     public void deactivate() {
         if (!this.active) {
-            throw new VariantAlreadyDeactivateException();
+            throw new VariantAlreadyDisableException();
         }
 
         this.active = false;
