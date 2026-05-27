@@ -1,6 +1,7 @@
 package com.javacore.spring_api_luvine.product.application.dto;
 
 import com.javacore.spring_api_luvine.product.domain.entity.Status;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
@@ -22,6 +23,7 @@ public record UpdateProductRequest(
         @Positive(message = "Preço base tem que ser maior que zero")
         BigDecimal newBasePrice,
 
+        @NotNull(message = "Informe o status do produto")
         Status newStatus
 ) {
 }

@@ -3,6 +3,7 @@ package com.javacore.spring_api_luvine.product.domain.entity;
 import com.javacore.spring_api_luvine.common.exception.exceptions.UnchangedValueException;
 import com.javacore.spring_api_luvine.product.domain.exception.DuplicatedSkuException;
 import com.javacore.spring_api_luvine.product.domain.exception.VariantAlreadyExistsException;
+import com.javacore.spring_api_luvine.product.domain.exception.VariantNotFoundException;
 import com.javacore.spring_api_luvine.product.domain.valueObject.Description;
 import com.javacore.spring_api_luvine.product.domain.valueObject.Money;
 import com.javacore.spring_api_luvine.product.domain.valueObject.ProductName;
@@ -107,7 +108,14 @@ public class Product {
 
     public void removeVariant(ProductVariant variant) {
         variants.remove(variant);
-        variant.unassignToProduct();;
+        variant.unassignToProduct();
+    }
+
+    public ProductVariant findVariantByPublicId(UUID variantPublicId) {
+        return this.variants.stream()
+                .filter(variant -> variant.getPublicId().equals(variantPublicId))
+                .findFirst()
+                .orElseThrow(VariantNotFoundException::new);
     }
 
     public void changeCategory(Category newCategory) {

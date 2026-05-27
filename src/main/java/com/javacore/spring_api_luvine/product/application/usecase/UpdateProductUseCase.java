@@ -65,9 +65,7 @@ public class UpdateProductUseCase {
             product.changeBasePrice(new Money(request.newBasePrice()));
         }
 
-        if (request.newStatus() != null) {
-            product.changeStatus(request.newStatus());
-        }
+        product.changeStatus(request.newStatus());
 
         return productMapper.toProductDetailsResponse(product);
     }
