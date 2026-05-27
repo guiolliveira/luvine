@@ -3,16 +3,11 @@ package com.javacore.spring_api_luvine.product.infrastructure.specification;
 import com.javacore.spring_api_luvine.product.domain.entity.Product;
 import com.javacore.spring_api_luvine.product.domain.entity.ProductVariant;
 import com.javacore.spring_api_luvine.product.domain.entity.Status;
-import com.javacore.spring_api_luvine.product.domain.valueObject.Color;
-import com.javacore.spring_api_luvine.product.domain.valueObject.Money;
-import com.javacore.spring_api_luvine.product.domain.valueObject.ProductName;
-import com.javacore.spring_api_luvine.product.domain.valueObject.Size;
+import com.javacore.spring_api_luvine.product.domain.valueObject.*;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
-
-import java.util.UUID;
 
 public final class ProductSpecifications {
 
@@ -22,11 +17,19 @@ public final class ProductSpecifications {
         return (root, query, cb) -> cb.equal(root.get("status"), Status.ACTIVE);
     }
 
-    public static Specification<Product> hasCategory(UUID categoryPublicId) {
+    public static Specification<Product> hasStatus(Status status) {
         return (root, query, cb) -> {
-            if (categoryPublicId == null) return null;
+            if (status == null) return null;
 
-            return cb.equal(root.get("category").get("publicId"), categoryPublicId);
+            return cb.equal(root.get("status"), status);
+        };
+    }
+
+    public static Specification<Product> hasCategory(Slug categorySlug) {
+        return (root, query, cb) -> {
+            if (categorySlug == null || categorySlug.value().isBlank()) return null;
+
+            return cb.equal(root.get("category").get("slug").get("value"), categorySlug.value());
         };
     }
 
