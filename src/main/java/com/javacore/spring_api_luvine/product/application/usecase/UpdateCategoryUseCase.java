@@ -39,7 +39,7 @@ public class UpdateCategoryUseCase {
             CategoryName newCategoryName = new CategoryName(request.newCategoryName());
             Slug newSlug = new Slug(request.newCategoryName());
 
-            if (categoryRepository.existsBySlug(newSlug) ||
+            if (categoryRepository.existsBySlugAndIdNot(newSlug, category.getId()) ||
                     categoryRepository.existsByCategoryNameAndIdNot(newCategoryName, category.getId())) {
                 throw new CategoryAlreadyExistsException();
             }
