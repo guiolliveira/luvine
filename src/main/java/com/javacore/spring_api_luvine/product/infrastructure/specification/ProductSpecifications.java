@@ -37,7 +37,7 @@ public final class ProductSpecifications {
         return (root, query, cb) -> {
             if (productName == null || productName.value().isBlank()) return null;
 
-            return cb.like(root.get("productName").get("value"), "%" + productName.value() + "%");
+            return cb.like(cb.lower(root.get("productName").get("value")), "%" + productName.value() + "%");
         };
     }
 
