@@ -3,7 +3,7 @@ package com.javacore.spring_api_luvine.product.application.usecase;
 import com.javacore.spring_api_luvine.common.config.UseCase;
 import com.javacore.spring_api_luvine.product.application.dto.CategoryDetailsResponse;
 import com.javacore.spring_api_luvine.product.application.dto.CreateCategoryRequest;
-import com.javacore.spring_api_luvine.product.application.mapper.ProductMapper;
+import com.javacore.spring_api_luvine.product.application.mapper.CategoryMapper;
 import com.javacore.spring_api_luvine.product.domain.entity.Category;
 import com.javacore.spring_api_luvine.product.domain.exception.CategoryAlreadyExistsException;
 import com.javacore.spring_api_luvine.product.domain.exception.CategoryNotFoundException;
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CreateCategoryUseCase {
 
     private final CategoryRepository categoryRepository;
-    private final ProductMapper productMapper;
+    private final CategoryMapper categoryMapper;
 
     @Transactional
     public CategoryDetailsResponse execute(CreateCategoryRequest request) {
@@ -46,6 +46,6 @@ public class CreateCategoryUseCase {
 
         categoryRepository.save(newCategory);
 
-        return productMapper.toCategoryDetailsResponse(newCategory);
+        return categoryMapper.toCategoryDetailsResponse(newCategory);
     }
 }

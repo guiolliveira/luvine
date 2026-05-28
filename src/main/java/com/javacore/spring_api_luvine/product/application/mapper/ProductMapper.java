@@ -11,15 +11,6 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
 
-    @Mapping(target = "categoryName", source = "categoryName.value")
-    @Mapping(target = "slug", source = "slug.value")
-    @Mapping(target = "description", source = "description.value")
-    CategoryDetailsResponse toCategoryDetailsResponse(Category category);
-
-    @Mapping(target = "categoryName", source = "categoryName.value")
-    @Mapping(target = "slug", source = "slug.value")
-    CategorySummaryResponse toCategorySummaryResponse(Category category);
-
     @Mapping(target = "productName", source = "productName.value")
     @Mapping(target = "description", source = "description.value")
     @Mapping(target = "slug", source = "slug.value")
