@@ -1,6 +1,7 @@
 package com.javacore.spring_api_luvine.product.infrastructure.repository;
 
 import com.javacore.spring_api_luvine.product.domain.entity.Product;
+import com.javacore.spring_api_luvine.product.domain.entity.Status;
 import com.javacore.spring_api_luvine.product.domain.valueObject.ProductName;
 import com.javacore.spring_api_luvine.product.domain.valueObject.Slug;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -16,6 +17,8 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     Optional<Product> findByPublicId(UUID publicId);
 
+    Optional<Product> findByPublicIdAndStatus(UUID publicId, Status status);
+
     @EntityGraph(attributePaths = {
             "category",
             "variants",
@@ -23,7 +26,16 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     })
     Optional<Product> findDetailsByPublicId(UUID publicId);
 
+    @EntityGraph(attributePaths = {
+            "category",
+            "variants",
+            "variants.image"
+    })
+    Optional<Product> findDetailsByPublicIdAndStatus(UUID publicId, Status status);
+
     Optional<Product> findBySlug(Slug slug);
+
+    Optional<Product> findBySlugAndStatus(Slug slug, Status status);
 
     boolean existsBySlug(Slug slug);
 
