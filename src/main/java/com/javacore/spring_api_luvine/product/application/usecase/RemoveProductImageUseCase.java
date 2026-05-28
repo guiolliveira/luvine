@@ -8,10 +8,12 @@ import com.javacore.spring_api_luvine.product.domain.exception.ProductNotFoundEx
 import com.javacore.spring_api_luvine.product.infrastructure.repository.ProductRepository;
 import com.javacore.spring_api_luvine.product.infrastructure.storage.StorageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Slf4j
 @UseCase
 @RequiredArgsConstructor
 public class RemoveProductImageUseCase {
@@ -28,8 +30,21 @@ public class RemoveProductImageUseCase {
 
         ProductImage image = variant.findImageByPublicId(imagePublicId);
 
-        variant.removeImage(image);
+        try {
+            storageService.delete(image.getStorageKey());
+        } catch (Exception ex) {
+            log.error(
+                    "FAILED_TO_DELETE_IMAGE_FROM_STORAGE storageKey={}, productPublicId={}, variantPublicId={}, " +
+                            "imagePublicId={}",
+                    image.getStorageKey(),
+                    productPublicId,
+                    variantPublicId,
+                    imagePublicId,
+                    ex
+            );
+            throw ex;
+        }
 
-        storageService.delete(image.getStorageKey());
+        variant.removeImage(image);
     }
 }
