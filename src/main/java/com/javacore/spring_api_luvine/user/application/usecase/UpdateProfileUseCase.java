@@ -35,12 +35,12 @@ public class UpdateProfileUseCase {
                     return new UserSessionInvalidException();
                 });
 
-        if (request.newFirstName() != null) {
+        if (request.newFirstName() != null && !request.newFirstName().isBlank()) {
             user.changeFirstName(new PersonName(request.newFirstName()));
             log.info("event=update_profile_first_name_changed publicId={}", user.getPublicId());
         }
 
-        if (request.newLastName() != null) {
+        if (request.newLastName() != null && !request.newLastName().isBlank()) {
             user.changeLastName(new PersonName(request.newLastName()));
             log.info("event=update_profile_last_name_changed publicId={}", user.getPublicId());
         }
