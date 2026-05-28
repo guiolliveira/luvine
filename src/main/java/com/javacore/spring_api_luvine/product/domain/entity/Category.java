@@ -2,6 +2,7 @@ package com.javacore.spring_api_luvine.product.domain.entity;
 
 import com.javacore.spring_api_luvine.product.domain.exception.CategoryAlreadyActivateException;
 import com.javacore.spring_api_luvine.product.domain.exception.CategoryAlreadyDeactivateException;
+import com.javacore.spring_api_luvine.product.domain.exception.CircularHierarchyDetectedException;
 import com.javacore.spring_api_luvine.product.domain.exception.InvalidCategoryHierarchyException;
 import com.javacore.spring_api_luvine.product.domain.valueObject.CategoryName;
 import com.javacore.spring_api_luvine.product.domain.valueObject.Description;
@@ -83,14 +84,21 @@ public class Category {
     }
 
     public void changeParent(Category newParent) {
+        if (newParent == null) {
+            this.parent = null;
+            return;
+        }
+
         if (this.equals(newParent)) {
             throw new InvalidCategoryHierarchyException();
         }
 
+        validateCircularHierarchy(newParent);
+
         this.parent = newParent;
     }
 
-    public void changeCategoryName(CategoryName newCategoryName) {
+    public void rename(CategoryName newCategoryName) {
         if (this.categoryName.equals(newCategoryName)) {
             throw new UnchangedValueException("A categoria já possui o nome informado");
         }
@@ -137,5 +145,16 @@ public class Category {
         }
 
         this.active = false;
+    }
+
+    private void validateCircularHierarchy(Category newParent) {
+        Category current = newParent;
+
+        while (current != null) {
+            if (current.equals(this)) {
+                throw new CircularHierarchyDetectedException();
+            }
+            current = current.getParent();
+        }
     }
 }

@@ -19,5 +19,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long>, JpaSp
 
     boolean existsBySlug(Slug slug);
 
+    boolean existsByCategoryNameAndIdNot(CategoryName categoryName, Long id);
+
     boolean existsByCategoryName(CategoryName categoryName);
 }
