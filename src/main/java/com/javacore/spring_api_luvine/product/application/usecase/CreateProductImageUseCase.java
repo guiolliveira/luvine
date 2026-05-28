@@ -14,11 +14,13 @@ import com.javacore.spring_api_luvine.product.infrastructure.repository.ProductR
 import com.javacore.spring_api_luvine.product.infrastructure.storage.StorageService;
 import com.javacore.spring_api_luvine.product.infrastructure.storage.validation.ProductImageValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
+@Slf4j
 @UseCase
 @RequiredArgsConstructor
 public class CreateProductImageUseCase {
@@ -40,20 +42,39 @@ public class CreateProductImageUseCase {
 
         ProductVariant variant = product.findVariantByPublicId(variantPublicId);
 
-        String folder = "products/variants";
+        String folder = String.format("products/%s/variants/%s/images", product.getPublicId(), variant.getPublicId());
         UUID imagePublicId = UUID.randomUUID();
 
-        UploadResult uploadResult = storageService.upload(file, folder, imagePublicId.toString());
+        UploadResult uploadResult = null;
 
-        ProductImage productImage = ProductImage.create(
-                uploadResult.imageUrl(),
-                uploadResult.storageKey(),
-                new AltText(request.altText()),
-                request.primaryImage()
-        );
+       try {
+           uploadResult = storageService.upload(file, folder, imagePublicId.toString());
 
-        variant.addImage(productImage, request.displayOrder());
+           ProductImage productImage = ProductImage.create(
+                   uploadResult.imageUrl(),
+                   uploadResult.storageKey(),
+                   new AltText(request.altText()),
+                   request.primaryImage()
+           );
 
-        return productMapper.toProductImageResponse(productImage);
+           variant.addImage(productImage, request.displayOrder());
+
+           return productMapper.toProductImageResponse(productImage);
+       } catch (Exception ex) {
+           if (uploadResult != null) {
+               try {
+                   storageService.delete(uploadResult.storageKey());
+               } catch (Exception rollbackEx) {
+                   log.error(
+                           "IMAGE_ROLLBACK_FAILED storageKey={}, productPublicId={}, variantPublicId={}",
+                           uploadResult.storageKey(),
+                           product.getPublicId(),
+                           variant.getPublicId(),
+                           rollbackEx
+                   );
+               }
+           }
+           throw ex;
+       }
     }
 }
