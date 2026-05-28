@@ -9,8 +9,8 @@ public final class ProductSearchSpecifications {
 
     private ProductSearchSpecifications() {}
 
-    public static Specification<Product> build(SearchProductRequest request, boolean includeInactive) {
-        Specification<Product> specification = includeInactive ?
+    public static Specification<Product> build(SearchProductRequest request, boolean includeAllStatuses) {
+        Specification<Product> specification = includeAllStatuses ?
                 ProductSpecifications.all() : ProductSpecifications.isVisible();
 
         if (request.categorySlug() != null) {
@@ -40,7 +40,7 @@ public final class ProductSearchSpecifications {
                     .and(ProductSpecifications.basePriceLessThanOrEqualTo(new Money(request.maxPrice())));
         }
 
-        if (includeInactive && request.status() != null) {
+        if (includeAllStatuses && request.status() != null) {
             specification = specification.and(ProductSpecifications.hasStatus(request.status()));
         }
 
