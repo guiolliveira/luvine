@@ -17,8 +17,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     Optional<Product> findByPublicId(UUID publicId);
 
-    Optional<Product> findByPublicIdAndStatus(UUID publicId, Status status);
-
     @EntityGraph(attributePaths = {
             "category",
             "variants",
@@ -32,10 +30,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
             "variants.images"
     })
     Optional<Product> findDetailsByPublicIdAndStatus(UUID publicId, Status status);
-
-    Optional<Product> findBySlug(Slug slug);
-
-    Optional<Product> findBySlugAndStatus(Slug slug, Status status);
 
     boolean existsBySlug(Slug slug);
 
