@@ -2,13 +2,10 @@ package com.javacore.spring_api_luvine.product.infrastructure.specification;
 
 import com.javacore.spring_api_luvine.product.domain.entity.Category;
 import com.javacore.spring_api_luvine.product.domain.valueObject.CategoryName;
+import com.javacore.spring_api_luvine.product.domain.valueObject.Slug;
 import org.springframework.data.jpa.domain.Specification;
 
 public class CategorySpecifications {
-
-    public static Specification<Category> all() {
-        return (root, query, cb) -> cb.conjunction();
-    }
 
     public static Specification<Category> isActive() {
         return (root, query, cb) -> cb.isTrue(root.get("active"));
@@ -30,11 +27,11 @@ public class CategorySpecifications {
         };
     }
 
-    public static Specification<Category> hasParent(Category parent) {
+    public static Specification<Category> hasParent(Slug parentSlug) {
         return (root, query, cb) -> {
-            if (parent == null) return null;
+            if (parentSlug == null || parentSlug.value().isBlank()) return null;
 
-            return cb.equal(root.get("parent"), parent);
+            return cb.equal(root.get("parent").get("slug").get("value"), parentSlug.value());
         };
     }
 

@@ -9,9 +9,8 @@ public final class ProductSearchSpecifications {
 
     private ProductSearchSpecifications() {}
 
-    public static Specification<Product> build(SearchProductRequest request, boolean includeAllStatuses) {
-        Specification<Product> specification = includeAllStatuses ?
-                ProductSpecifications.all() : ProductSpecifications.isVisible();
+    public static Specification<Product> build(SearchProductRequest request) {
+        Specification<Product> specification = (root, query, cb) -> cb.conjunction();
 
         if (request.categorySlug() != null) {
             specification = specification.and(ProductSpecifications.hasCategory(new Slug(request.categorySlug())));
@@ -40,7 +39,7 @@ public final class ProductSearchSpecifications {
                     .and(ProductSpecifications.basePriceLessThanOrEqualTo(new Money(request.maxPrice())));
         }
 
-        if (includeAllStatuses && request.status() != null) {
+        if (request.status() != null) {
             specification = specification.and(ProductSpecifications.hasStatus(request.status()));
         }
 

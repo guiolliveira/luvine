@@ -23,7 +23,7 @@ public class SearchProductUseCase {
 
     @Transactional(readOnly = true)
     public Page<ProductSummaryResponse> execute(SearchProductRequest request, Pageable pageable) {
-        Specification<Product> specification = ProductSearchSpecifications.build(request, false);
+        Specification<Product> specification = ProductSearchSpecifications.build(request);
 
         Page<Product> products = productRepository.findAll(specification, pageable);
 

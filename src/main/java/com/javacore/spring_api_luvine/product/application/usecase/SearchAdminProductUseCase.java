@@ -7,6 +7,7 @@ import com.javacore.spring_api_luvine.product.application.mapper.ProductMapper;
 import com.javacore.spring_api_luvine.product.domain.entity.Product;
 import com.javacore.spring_api_luvine.product.infrastructure.repository.ProductRepository;
 import com.javacore.spring_api_luvine.product.infrastructure.specification.ProductSearchSpecifications;
+import com.javacore.spring_api_luvine.product.infrastructure.specification.ProductSpecifications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +23,8 @@ public class SearchAdminProductUseCase {
 
     @Transactional(readOnly = true)
     public Page<ProductSummaryResponse> execute(SearchProductRequest request, Pageable pageable) {
-        Specification<Product> specification = ProductSearchSpecifications.build(request, true);
+        Specification<Product> specification = ProductSearchSpecifications.build(request)
+                .and(ProductSpecifications.isVisible());
 
         Page<Product> products = productRepository.findAll(specification, pageable);
 
