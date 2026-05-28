@@ -1,7 +1,7 @@
 package com.javacore.spring_api_luvine.product.application.usecase;
 
 import com.javacore.spring_api_luvine.common.config.UseCase;
-import com.javacore.spring_api_luvine.product.application.dto.ProductSummaryResponse;
+import com.javacore.spring_api_luvine.product.application.dto.ProductDetailsResponse;
 import com.javacore.spring_api_luvine.product.application.dto.SearchProductRequest;
 import com.javacore.spring_api_luvine.product.application.mapper.ProductMapper;
 import com.javacore.spring_api_luvine.product.domain.entity.Product;
@@ -22,12 +22,12 @@ public class SearchAdminProductUseCase {
     private final ProductMapper productMapper;
 
     @Transactional(readOnly = true)
-    public Page<ProductSummaryResponse> execute(SearchProductRequest request, Pageable pageable) {
+    public Page<ProductDetailsResponse> execute(SearchProductRequest request, Pageable pageable) {
         Specification<Product> specification = ProductSearchSpecifications.build(request)
                 .and(ProductSpecifications.isVisible());
 
         Page<Product> products = productRepository.findAll(specification, pageable);
 
-        return products.map(productMapper::toProductSummaryResponse);
+        return products.map(productMapper::toProductDetailsResponse);
     }
 }
