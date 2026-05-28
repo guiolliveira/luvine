@@ -96,14 +96,7 @@ public class Category {
         }
 
         this.categoryName = newCategoryName;
-    }
-
-    public void changeSlug(Slug newSlug) {
-        if (this.slug.equals(newSlug)) {
-            throw new UnchangedValueException("A categoria já possui o slug informado");
-        }
-
-        this.slug = newSlug;
+        this.slug = new Slug(newCategoryName.value());
     }
 
     public void changeDescription(Description newDescription) {
