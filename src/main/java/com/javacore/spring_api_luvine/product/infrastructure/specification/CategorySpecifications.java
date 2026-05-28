@@ -6,6 +6,10 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class CategorySpecifications {
 
+    public static Specification<Category> all() {
+        return (root, query, cb) -> cb.conjunction();
+    }
+
     public static Specification<Category> isActive() {
         return (root, query, cb) -> cb.isTrue(root.get("active"));
     }
