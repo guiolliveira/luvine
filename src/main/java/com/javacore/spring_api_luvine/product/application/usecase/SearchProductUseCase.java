@@ -7,7 +7,7 @@ import com.javacore.spring_api_luvine.product.application.mapper.ProductMapper;
 import com.javacore.spring_api_luvine.product.domain.entity.Product;
 import com.javacore.spring_api_luvine.product.domain.valueObject.*;
 import com.javacore.spring_api_luvine.product.infrastructure.repository.ProductRepository;
-import com.javacore.spring_api_luvine.product.infrastructure.specification.ProductSpecifications;
+import com.javacore.spring_api_luvine.product.infrastructure.specification.ProductSearchSpecifications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,38 +23,7 @@ public class SearchProductUseCase {
 
     @Transactional(readOnly = true)
     public Page<ProductSummaryResponse> execute(SearchProductRequest request, Pageable pageable) {
-        Specification<Product> specification = ProductSpecifications.isVisible();
-
-        if (request.categorySlug() != null) {
-            specification = specification.and(ProductSpecifications.hasCategory(new Slug(request.categorySlug())));
-        }
-
-        if (request.productName() != null && !request.productName().isBlank()) {
-            specification = specification
-                    .and(ProductSpecifications.nameContains(new ProductName(request.productName())));
-        }
-
-        if (request.color() != null && !request.color().isBlank()) {
-            specification = specification.and(ProductSpecifications.hasColor(new Color(request.color())));
-        }
-
-        if (request.size() != null && !request.size().isBlank()) {
-            specification = specification.and(ProductSpecifications.hasSize(new Size(request.size())));
-        }
-
-        if (request.minPrice() != null) {
-            specification = specification
-                    .and(ProductSpecifications.basePriceGreaterThanOrEqualTo(new Money(request.minPrice())));
-        }
-
-        if (request.maxPrice() != null) {
-            specification = specification
-                    .and(ProductSpecifications.basePriceLessThanOrEqualTo(new Money(request.maxPrice())));
-        }
-
-        if (request.status() != null) {
-            specification = specification.and(ProductSpecifications.hasStatus(request.status()));
-        }
+        Specification<Product> specification = ProductSearchSpecifications.build(request, false);
 
         Page<Product> products = productRepository.findAll(specification, pageable);
 

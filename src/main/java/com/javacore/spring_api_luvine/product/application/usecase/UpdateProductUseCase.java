@@ -31,7 +31,7 @@ public class UpdateProductUseCase {
 
     @Transactional
     public ProductDetailsResponse execute(UUID productPublicId, UpdateProductRequest request) {
-        Product product = productRepository.findDetailsByPublicId(productPublicId)
+        Product product = productRepository.findByPublicId(productPublicId)
                 .orElseThrow(ProductNotFoundException::new);
 
         if (request.newCategorySlug() != null && !request.newCategorySlug().isBlank()) {

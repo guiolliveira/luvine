@@ -13,6 +13,10 @@ public final class ProductSpecifications {
 
     private ProductSpecifications() {}
 
+    public static Specification<Product> all() {
+        return (root, query, cb) -> cb.conjunction();
+    }
+
     public static Specification<Product> isVisible() {
         return (root, query, cb) -> cb.equal(root.get("status"), Status.ACTIVE);
     }

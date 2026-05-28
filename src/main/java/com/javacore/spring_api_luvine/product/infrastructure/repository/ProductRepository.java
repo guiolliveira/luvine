@@ -29,7 +29,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @EntityGraph(attributePaths = {
             "category",
             "variants",
-            "variants.image"
+            "variants.images"
     })
     Optional<Product> findDetailsByPublicIdAndStatus(UUID publicId, Status status);
 

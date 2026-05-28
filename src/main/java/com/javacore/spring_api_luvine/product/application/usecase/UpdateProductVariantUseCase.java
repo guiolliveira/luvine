@@ -30,7 +30,10 @@ public class UpdateProductVariantUseCase {
 
         ProductVariant variant = product.findVariantByPublicId(variantPublicId);
 
-        if (request.newColor() != null || request.newSize() != null) {
+        boolean asNewColor = request.newColor() != null && !request.newColor().isBlank();
+        boolean asNewSize = request.newSize() != null && !request.newSize().isBlank();
+
+        if (asNewColor || asNewSize) {
 
             Color color = request.newColor() != null ? new Color(request.newColor()) : variant.getColor();
             Size size = request.newSize() != null ? new Size(request.newSize()) : variant.getSize();
