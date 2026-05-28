@@ -1,8 +1,6 @@
 package com.javacore.spring_api_luvine.product.domain.entity;
 
 import com.javacore.spring_api_luvine.common.exception.exceptions.UnchangedValueException;
-import com.javacore.spring_api_luvine.product.domain.exception.ImageAlreadyPrimaryException;
-import com.javacore.spring_api_luvine.product.domain.exception.ImageNotPrimaryException;
 import com.javacore.spring_api_luvine.product.domain.valueObject.AltText;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -12,7 +10,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -33,7 +30,7 @@ public class ProductImage {
     @JoinColumn(name = "product_variant_id", nullable = false)
     private ProductVariant productVariant;
 
-    @Column(nullable = false, length = 500)
+    @Column(nullable = false, length = 500, updatable = false)
     private String imageUrl;
 
     @Column(nullable = false, updatable = false)
@@ -53,21 +50,17 @@ public class ProductImage {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    private ProductImage(
-            String imageUrl, String storageKey, AltText altText,
-            int displayOrder, boolean primaryImage) {
+    private ProductImage(String imageUrl, String storageKey, AltText altText, boolean primaryImage) {
         this.publicId = UUID.randomUUID();
         this.imageUrl = imageUrl;
         this.altText = altText;
         this.storageKey = storageKey;
-        this.displayOrder = displayOrder;
         this.primaryImage = primaryImage;
     }
 
     public static ProductImage create(
-            String imageUrl, String storageKey, AltText altText,
-            int displayOrder, boolean primaryImage) {
-        return new ProductImage(imageUrl, storageKey, altText, displayOrder, primaryImage);
+            String imageUrl, String storageKey, AltText altText, boolean primaryImage) {
+        return new ProductImage(imageUrl, storageKey, altText, primaryImage);
     }
 
     void assignToVariant(ProductVariant variant) {
@@ -76,14 +69,6 @@ public class ProductImage {
 
     void unassignToVariant() {
         this.productVariant = null;
-    }
-
-    public void changeImageUrl(String newImageUrl) {
-        if (this.imageUrl.equals(newImageUrl)) {
-            throw new UnchangedValueException("O produto já possui a imagem informada");
-        }
-
-        this.imageUrl = newImageUrl;
     }
 
     public void changeAltText(AltText newAltText) {
@@ -95,10 +80,6 @@ public class ProductImage {
     }
 
     public void changeDisplayOrder(int newDisplayOrder) {
-        if (Objects.equals(displayOrder, newDisplayOrder)) {
-            throw new UnchangedValueException("A nova ordem de exibição não pode ser igual a atual");
-        }
-
         this.displayOrder = newDisplayOrder;
     }
 
@@ -107,10 +88,6 @@ public class ProductImage {
     }
 
     public void unsetAsPrimary() {
-        if (!this.primaryImage) {
-            throw new ImageNotPrimaryException();
-        }
-
         this.primaryImage = false;
     }
 }

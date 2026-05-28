@@ -97,12 +97,24 @@ public class ProductVariant {
         this.product = null;
     }
 
-    public void addImage(ProductImage newImage) {
+    public void addImage(ProductImage newImage, Integer displayOrder) {
         Objects.requireNonNull(newImage);
 
         if (this.images.size() >= 10) {
             throw new ImageLimitExceededException();
         }
+
+        int finalOrder = displayOrder != null ? displayOrder : nextDisplayOrder();
+
+        if (finalOrder <= 1 || finalOrder > nextDisplayOrder()) {
+            throw new InvalidImageReorderException();
+        }
+
+        this.images.stream()
+                .filter(image -> image.getDisplayOrder() >= finalOrder)
+                .forEach(image -> image.changeDisplayOrder(image.getDisplayOrder() + 1));
+
+        newImage.changeDisplayOrder(finalOrder);
 
         if (newImage.isPrimaryImage()) {
             this.images.forEach(ProductImage::unsetAsPrimary);
@@ -116,6 +128,10 @@ public class ProductVariant {
         newImage.changeDisplayOrder(nextDisplayOrder());
 
         this.images.add(newImage);
+
+        this.images.sort(
+                Comparator.comparing(ProductImage::getDisplayOrder)
+        );
     }
 
     public void removeImage(ProductImage image) {
@@ -208,6 +224,13 @@ public class ProductVariant {
         for (int i = 0; i < this.images.size(); i++) {
             this.images.get(i).changeDisplayOrder(i + 1);
         }
+    }
+
+    public ProductImage findImageByPublicId(UUID imagePublicId) {
+        return this.images.stream()
+                .filter(image -> image.getPublicId().equals(imagePublicId))
+                .findFirst()
+                .orElseThrow(ImageNotFoundException::new);
     }
 
     public void changeColor(Color newColor) {
