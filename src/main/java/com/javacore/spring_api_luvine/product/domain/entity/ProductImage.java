@@ -103,10 +103,6 @@ public class ProductImage {
     }
 
     public void setAsPrimary() {
-        if (this.primaryImage) {
-            throw new ImageAlreadyPrimaryException();
-        }
-
         this.primaryImage = true;
     }
 

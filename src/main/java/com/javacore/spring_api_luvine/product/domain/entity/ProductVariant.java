@@ -1,9 +1,7 @@
 package com.javacore.spring_api_luvine.product.domain.entity;
 
 import com.javacore.spring_api_luvine.common.exception.exceptions.UnchangedValueException;
-import com.javacore.spring_api_luvine.product.domain.exception.InsufficientStockException;
-import com.javacore.spring_api_luvine.product.domain.exception.VariantAlreadyActiveException;
-import com.javacore.spring_api_luvine.product.domain.exception.VariantAlreadyDisableException;
+import com.javacore.spring_api_luvine.product.domain.exception.*;
 import com.javacore.spring_api_luvine.product.domain.valueObject.*;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -14,10 +12,9 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "product_variants")
@@ -100,12 +97,117 @@ public class ProductVariant {
         this.product = null;
     }
 
-    public void changeSku(Sku newSku) {
-        if (this.sku.equals(newSku)) {
-            throw new UnchangedValueException("A variante já possui o sku informado");
+    public void addImage(ProductImage newImage) {
+        Objects.requireNonNull(newImage);
+
+        if (this.images.size() >= 10) {
+            throw new ImageLimitExceededException();
         }
 
-        this.sku = newSku;
+        if (newImage.isPrimaryImage()) {
+            this.images.forEach(ProductImage::unsetAsPrimary);
+        }
+
+        if (this.images.isEmpty()) {
+            newImage.setAsPrimary();
+        }
+
+        newImage.assignToVariant(this);
+        newImage.changeDisplayOrder(nextDisplayOrder());
+
+        this.images.add(newImage);
+    }
+
+    public void removeImage(ProductImage image) {
+        Objects.requireNonNull(image);
+
+        if (!this.images.contains(image)) {
+            throw new ImageNotFoundException();
+        }
+
+        boolean isPrimary = image.isPrimaryImage();
+
+        this.images.remove(image);
+        image.unassignToVariant();
+
+        if (isPrimary && !this.images.isEmpty()) {
+            this.images.getFirst().setAsPrimary();
+        }
+
+        normalizeDisplayOrder();
+    }
+
+    public void setPrimary(ProductImage image) {
+        Objects.requireNonNull(image);
+
+        if (!this.images.contains(image)) {
+            throw new ImageNotFoundException();
+        }
+
+        if (image.isPrimaryImage()) {
+            throw new ImageAlreadyPrimaryException();
+        }
+
+        this.images.forEach(ProductImage::unsetAsPrimary);
+
+        image.setAsPrimary();
+    }
+
+    public void reorderImages(List<UUID> orderedImageIds) {
+        Objects.requireNonNull(orderedImageIds);
+
+        if (orderedImageIds.isEmpty()) {
+            throw new InvalidImageReorderException();
+        }
+
+        Set<UUID> uniqueIds = new HashSet<>(orderedImageIds);
+
+        if (uniqueIds.size() != orderedImageIds.size()) {
+            throw new InvalidImageReorderException();
+        }
+
+        if (orderedImageIds.size() != this.images.size()) {
+            throw new InvalidImageReorderException();
+        }
+
+        Map<UUID, ProductImage> imageById = this.images.stream()
+                .collect(Collectors.toMap(
+                        ProductImage::getPublicId,
+                        Function.identity()
+                ));
+
+        for (int i = 0; i < orderedImageIds.size(); i++) {
+            UUID imageId = orderedImageIds.get(i);
+
+            ProductImage image = Optional.ofNullable(imageById.get(imageId))
+                    .orElseThrow(InvalidImageReorderException::new);
+
+            image.changeDisplayOrder(i + 1);
+        }
+
+        this.images.sort(
+                Comparator.comparing(ProductImage::getDisplayOrder)
+        );
+    }
+
+    public ProductImage getPrimaryImage() {
+        return this.images.stream()
+                .filter(ProductImage::isPrimaryImage)
+                .findFirst()
+                .orElseThrow(ImageNotFoundException::new);
+    }
+
+    public int nextDisplayOrder() {
+        return this.images.stream()
+                .map(ProductImage::getDisplayOrder)
+                .max(Integer::compareTo)
+                .orElse(0) + 1;
+    }
+
+    public void normalizeDisplayOrder() {
+        for (int i = 0; i < this.images.size(); i++) {
+            this.images.get(i).changeDisplayOrder(i + 1);
+        }
     }
 
     public void changeColor(Color newColor) {
