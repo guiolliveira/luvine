@@ -51,12 +51,6 @@ public class Category {
     @AttributeOverride(name = "value", column = @Column(name = "description", nullable = false))
     private Description description;
 
-    @Column(length = 500)
-    private String imageUrl;
-
-    @Column(nullable = false)
-    private int displayOrder;
-
     @Column(nullable = false)
     private boolean active;
 
@@ -74,8 +68,6 @@ public class Category {
         this.categoryName = categoryName;
         this.slug = new Slug(categoryName.value());
         this.description = description;
-        this.imageUrl = null;
-        this.displayOrder = 0;
         this.active = true;
     }
 
@@ -113,22 +105,6 @@ public class Category {
         }
 
         this.description = newDescription;
-    }
-
-    public void changeImageUrl(String newImageUrl) {
-        if (this.imageUrl.equals(newImageUrl)) {
-            throw new UnchangedValueException("A categoria já possui está imagem");
-        }
-
-        this.imageUrl = newImageUrl;
-    }
-
-    public void changeDisplayOrder(int newDisplayOrder) {
-        if (Objects.equals(displayOrder, newDisplayOrder)) {
-            throw new UnchangedValueException("A nova ordem de exibição não pode ser igual a atual");
-        }
-
-        this.displayOrder = newDisplayOrder;
     }
 
     public void activate() {
