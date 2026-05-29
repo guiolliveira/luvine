@@ -41,31 +41,24 @@ public class CategoryImage {
     @AttributeOverride(name = "value", column = @Column(name = "alt_text", nullable = false, length = 150))
     private AltText altText;
 
-    @Column(nullable = false)
-    private int displayOrder;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    private CategoryImage(String imageUrl, String storageKey, AltText altText, int displayOrder) {
+    private CategoryImage(String imageUrl, String storageKey, AltText altText) {
         this.publicId = UUID.randomUUID();
         this.imageUrl = imageUrl;
         this.storageKey = storageKey;
         this.altText = altText;
-        this.displayOrder = displayOrder;
     }
 
-    public static CategoryImage create(String imageUrl, String storageKey, AltText altText, int displayOrder) {
-        return new CategoryImage(imageUrl, storageKey, altText, displayOrder);
+    public static CategoryImage create(String imageUrl, String storageKey, AltText altText) {
+        return new CategoryImage(imageUrl, storageKey, altText);
     }
 
     public void assignToCategory(Category category) {
         this.category = category;
-    }
-
-    public void unassignToCategory() {
-        this.category = null;
     }
 
     public void changeAltText(AltText newAltText) {
@@ -74,9 +67,5 @@ public class CategoryImage {
         }
 
         this.altText = newAltText;
-    }
-
-    public void changeDisplayOrder(int newDisplayOrder) {
-        this.displayOrder = newDisplayOrder;
     }
 }

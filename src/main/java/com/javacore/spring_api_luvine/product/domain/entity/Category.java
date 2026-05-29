@@ -1,9 +1,6 @@
 package com.javacore.spring_api_luvine.product.domain.entity;
 
-import com.javacore.spring_api_luvine.product.domain.exception.CategoryAlreadyActivateException;
-import com.javacore.spring_api_luvine.product.domain.exception.CategoryAlreadyDeactivateException;
-import com.javacore.spring_api_luvine.product.domain.exception.CircularHierarchyDetectedException;
-import com.javacore.spring_api_luvine.product.domain.exception.InvalidCategoryHierarchyException;
+import com.javacore.spring_api_luvine.product.domain.exception.*;
 import com.javacore.spring_api_luvine.product.domain.valueObject.CategoryName;
 import com.javacore.spring_api_luvine.product.domain.valueObject.Description;
 import com.javacore.spring_api_luvine.product.domain.valueObject.Slug;
@@ -64,8 +61,9 @@ public class Category {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CategoryImage> images;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "image_id")
+    private CategoryImage image;
 
     private Category(Category parent, CategoryName categoryName, Description description) {
         this.publicId = UUID.randomUUID();
@@ -74,19 +72,14 @@ public class Category {
         this.slug = new Slug(categoryName.value());
         this.description = description;
         this.active = true;
-        this.images = new ArrayList<>();
     }
 
     public static Category create(Category parent, CategoryName categoryName, Description description) {
         return new Category(parent, categoryName, description);
     }
 
-    public void addImage(CategoryImage newImage) {
-        Objects.requireNonNull(newImage);
-
-        this.images.clear();
-        newImage.assignToCategory(this);
-        this.images.add(newImage);
+    public void addCategoryImage(CategoryImage newImage) {
+        this.image = newImage;
     }
 
     public void changeParent(Category newParent) {

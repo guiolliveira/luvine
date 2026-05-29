@@ -7,7 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Set;
 
 @Component
-public class ProductImageValidator {
+public class FileImageValidator {
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
 

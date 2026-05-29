@@ -12,7 +12,7 @@ import com.javacore.spring_api_luvine.product.domain.exception.ProductNotFoundEx
 import com.javacore.spring_api_luvine.product.domain.valueObject.AltText;
 import com.javacore.spring_api_luvine.product.infrastructure.repository.ProductRepository;
 import com.javacore.spring_api_luvine.product.infrastructure.storage.StorageService;
-import com.javacore.spring_api_luvine.product.infrastructure.storage.validation.ProductImageValidator;
+import com.javacore.spring_api_luvine.product.infrastructure.storage.validation.FileImageValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +26,7 @@ import java.util.UUID;
 public class CreateProductImageUseCase {
 
     private final ProductRepository productRepository;
-    private final ProductImageValidator imageValidator;
+    private final FileImageValidator imageValidator;
     private final StorageService storageService;
     private final ProductMapper productMapper;
 
