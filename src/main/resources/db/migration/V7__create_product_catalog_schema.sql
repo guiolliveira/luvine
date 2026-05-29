@@ -69,6 +69,18 @@ CREATE TABLE product_images(
     CONSTRAINT chk_product_images_display_order CHECK (display_order >= 0)
 );
 
+CREATE TABLE category_images(
+    id BIGSERIAL PRIMARY KEY,
+    public_id UUID UNIQUE NOT NULL,
+    category_id BIGINT NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+    image_url VARCHAR(500) NOT NULL,
+    storage_key VARCHAR(255) NOT NULL,
+    display_order INTEGER NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT chk_category_images_display_order CHECK (display_order >= 0)
+);
+
 CREATE INDEX idx_categories_parent_id ON categories(parent_id);
 CREATE INDEX idx_categories_active ON categories(active);
 CREATE INDEX idx_categories_display_order ON categories(display_order);
@@ -88,3 +100,6 @@ CREATE INDEX idx_product_variants_size ON product_variants(size);
 CREATE INDEX idx_product_images_product_variant_id ON product_images(product_variant_id);
 CREATE INDEX idx_product_images_primary_image ON product_images(product_variant_id) WHERE primary_image = TRUE;
 CREATE INDEX idx_product_images_storage_key ON product_images(storage_key);
+
+CREATE INDEX idx_category_images_category_id ON category_images(category_id);
+CREATE INDEX idx_category_images_storage_key ON category_images(storage_key);

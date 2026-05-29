@@ -17,6 +17,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -62,6 +64,9 @@ public class Category {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CategoryImage> images;
+
     private Category(Category parent, CategoryName categoryName, Description description) {
         this.publicId = UUID.randomUUID();
         this.parent = parent;
@@ -69,10 +74,19 @@ public class Category {
         this.slug = new Slug(categoryName.value());
         this.description = description;
         this.active = true;
+        this.images = new ArrayList<>();
     }
 
     public static Category create(Category parent, CategoryName categoryName, Description description) {
         return new Category(parent, categoryName, description);
+    }
+
+    public void addImage(CategoryImage newImage) {
+        Objects.requireNonNull(newImage);
+
+        this.images.clear();
+        newImage.assignToCategory(this);
+        this.images.add(newImage);
     }
 
     public void changeParent(Category newParent) {
