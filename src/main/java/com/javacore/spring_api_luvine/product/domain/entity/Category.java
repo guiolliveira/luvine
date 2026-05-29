@@ -82,6 +82,16 @@ public class Category {
         this.image = newImage;
     }
 
+    public CategoryImage findImageByPublicId(UUID imagePublicId) {
+        Objects.requireNonNull(this.image);
+
+        if (!this.image.getPublicId().equals(imagePublicId)) {
+            throw new CategoryImageNotFoundException();
+        }
+
+        return this.image;
+    }
+
     public void changeParent(Category newParent) {
         if (newParent == null) {
             this.parent = null;
