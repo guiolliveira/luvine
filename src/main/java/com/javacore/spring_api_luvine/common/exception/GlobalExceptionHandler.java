@@ -4,8 +4,10 @@ import com.javacore.spring_api_luvine.common.exception.exceptions.BusinessExcept
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
@@ -95,6 +97,25 @@ public class GlobalExceptionHandler {
         log.warn("event=authorization_failed message={} path={}", ex.getMessage(), request.getRequestURI());
 
         return buildError(HttpStatus.FORBIDDEN, "Acesso Negado", "AUTHORIZATION_DENIED", null, request);
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ApiError> handleOptimisticFailureException(
+            ObjectOptimisticLockingFailureException ex, HttpServletRequest request) {
+
+        log.warn(
+                "event=optimistic_lock_failure entity={} path={}",
+                ex.getPersistentClassName(),
+                request.getRequestURI()
+        );
+
+        return buildError(
+                HttpStatus.CONFLICT,
+                "O recurso foi alterado por outra operação. Tente novamente",
+                "OPTIMISTIC_LOCK_FAILURE",
+                null,
+                request
+        );
     }
 
     @ExceptionHandler(Exception.class)
