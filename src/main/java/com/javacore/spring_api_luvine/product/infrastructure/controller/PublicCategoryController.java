@@ -3,7 +3,6 @@ package com.javacore.spring_api_luvine.product.infrastructure.controller;
 import com.javacore.spring_api_luvine.product.application.dto.CategoryDetailsResponse;
 import com.javacore.spring_api_luvine.product.application.dto.CategorySummaryResponse;
 import com.javacore.spring_api_luvine.product.application.dto.SearchCategoryRequest;
-import com.javacore.spring_api_luvine.product.application.dto.SearchProductRequest;
 import com.javacore.spring_api_luvine.product.application.usecase.GetCategoryDetailsUseCase;
 import com.javacore.spring_api_luvine.product.application.usecase.SearchCategoryUseCase;
 import jakarta.validation.Valid;
