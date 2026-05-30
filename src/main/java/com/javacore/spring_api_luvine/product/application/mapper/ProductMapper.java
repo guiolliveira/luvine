@@ -1,7 +1,6 @@
 package com.javacore.spring_api_luvine.product.application.mapper;
 
 import com.javacore.spring_api_luvine.product.application.dto.*;
-import com.javacore.spring_api_luvine.product.domain.entity.Category;
 import com.javacore.spring_api_luvine.product.domain.entity.Product;
 import com.javacore.spring_api_luvine.product.domain.entity.ProductImage;
 import com.javacore.spring_api_luvine.product.domain.entity.ProductVariant;
