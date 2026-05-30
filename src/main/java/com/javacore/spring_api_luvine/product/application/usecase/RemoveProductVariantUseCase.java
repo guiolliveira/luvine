@@ -1,8 +1,6 @@
 package com.javacore.spring_api_luvine.product.application.usecase;
 
 import com.javacore.spring_api_luvine.common.config.UseCase;
-import com.javacore.spring_api_luvine.product.application.dto.ProductVariantResponse;
-import com.javacore.spring_api_luvine.product.application.mapper.ProductMapper;
 import com.javacore.spring_api_luvine.product.domain.entity.Product;
 import com.javacore.spring_api_luvine.product.domain.entity.ProductVariant;
 import com.javacore.spring_api_luvine.product.domain.exception.ProductNotFoundException;
@@ -17,17 +15,14 @@ import java.util.UUID;
 public class RemoveProductVariantUseCase {
 
     private final ProductRepository productRepository;
-    private final ProductMapper productMapper;
 
     @Transactional
-    public ProductVariantResponse execute(UUID productPublicId, UUID variantPublicId) {
+    public void execute(UUID productPublicId, UUID variantPublicId) {
         Product product = productRepository.findByPublicId(productPublicId)
                 .orElseThrow(ProductNotFoundException::new);
 
         ProductVariant variant = product.findVariantByPublicId(variantPublicId);
 
         product.removeVariant(variant);
-
-        return productMapper.toProductVariantResponse(variant);
     }
 }

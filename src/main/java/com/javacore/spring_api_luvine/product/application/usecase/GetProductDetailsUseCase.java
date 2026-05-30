@@ -6,11 +6,10 @@ import com.javacore.spring_api_luvine.product.application.mapper.ProductMapper;
 import com.javacore.spring_api_luvine.product.domain.entity.Product;
 import com.javacore.spring_api_luvine.product.domain.entity.Status;
 import com.javacore.spring_api_luvine.product.domain.exception.ProductNotFoundException;
+import com.javacore.spring_api_luvine.product.domain.valueObject.Slug;
 import com.javacore.spring_api_luvine.product.infrastructure.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @UseCase
 @RequiredArgsConstructor
@@ -20,8 +19,8 @@ public class GetProductDetailsUseCase {
     private final ProductMapper productMapper;
 
     @Transactional(readOnly = true)
-    public ProductDetailsResponse execute(UUID productPublicId) {
-        Product product = productRepository.findDetailsByPublicIdAndStatus(productPublicId, Status.ACTIVE)
+    public ProductDetailsResponse execute(Slug productSlug) {
+        Product product = productRepository.findDetailsBySlugAndStatus(productSlug, Status.ACTIVE)
                 .orElseThrow(ProductNotFoundException::new);
 
         return productMapper.toProductDetailsResponse(product);

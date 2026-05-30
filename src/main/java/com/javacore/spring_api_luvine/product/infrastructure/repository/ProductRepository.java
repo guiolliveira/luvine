@@ -29,7 +29,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
             "variants",
             "variants.images"
     })
-    Optional<Product> findDetailsByPublicIdAndStatus(UUID publicId, Status status);
+    Optional<Product> findDetailsBySlugAndStatus(Slug slug, Status status);
 
     boolean existsBySlug(Slug slug);
 
