@@ -1,9 +1,6 @@
 package com.javacore.spring_api_luvine.product.infrastructure.controller;
 
-import com.javacore.spring_api_luvine.product.application.dto.CreateProductRequest;
-import com.javacore.spring_api_luvine.product.application.dto.ProductDetailsResponse;
-import com.javacore.spring_api_luvine.product.application.dto.SearchProductRequest;
-import com.javacore.spring_api_luvine.product.application.dto.UpdateProductRequest;
+import com.javacore.spring_api_luvine.product.application.dto.*;
 import com.javacore.spring_api_luvine.product.application.usecase.CreateProductUseCase;
 import com.javacore.spring_api_luvine.product.application.usecase.GetAdminProductDetailsUseCase;
 import com.javacore.spring_api_luvine.product.application.usecase.SearchAdminProductUseCase;
@@ -55,14 +52,14 @@ public class AdminProductController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<ProductDetailsResponse>> searchProductDetails(
+    public ResponseEntity<Page<ProductSummaryResponse>> searchProduct(
             @ParameterObject @Valid SearchProductRequest request,
             @PageableDefault(
                     size = 20,
                     sort = "createdAt",
                     direction = Sort.Direction.DESC
             ) @ParameterObject Pageable pageable) {
-        Page<ProductDetailsResponse> response = searchAdminProductUseCase.execute(request, pageable);
+        Page<ProductSummaryResponse> response = searchAdminProductUseCase.execute(request, pageable);
         return ResponseEntity.ok(response);
     }
 }

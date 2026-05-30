@@ -1,9 +1,6 @@
 package com.javacore.spring_api_luvine.product.infrastructure.controller;
 
-import com.javacore.spring_api_luvine.product.application.dto.CategoryDetailsResponse;
-import com.javacore.spring_api_luvine.product.application.dto.CreateCategoryRequest;
-import com.javacore.spring_api_luvine.product.application.dto.SearchCategoryRequest;
-import com.javacore.spring_api_luvine.product.application.dto.UpdateCategoryRequest;
+import com.javacore.spring_api_luvine.product.application.dto.*;
 import com.javacore.spring_api_luvine.product.application.usecase.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +62,7 @@ public class AdminCategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<CategoryDetailsResponse>> searchProduct(
+    public ResponseEntity<Page<CategorySummaryResponse>> searchProduct(
             @ParameterObject @Valid SearchCategoryRequest request,
             @PageableDefault(
                     size = 20,
@@ -73,7 +70,7 @@ public class AdminCategoryController {
                     direction = Sort.Direction.DESC
             )
             @ParameterObject Pageable pageable) {
-        Page<CategoryDetailsResponse> response = searchCategoryUseCase.execute(request, pageable);
+        Page<CategorySummaryResponse> response = searchCategoryUseCase.execute(request, pageable);
         return ResponseEntity.ok(response);
     }
 }

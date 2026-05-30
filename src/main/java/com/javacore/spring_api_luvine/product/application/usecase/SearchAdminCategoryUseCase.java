@@ -1,7 +1,7 @@
 package com.javacore.spring_api_luvine.product.application.usecase;
 
 import com.javacore.spring_api_luvine.common.config.UseCase;
-import com.javacore.spring_api_luvine.product.application.dto.CategoryDetailsResponse;
+import com.javacore.spring_api_luvine.product.application.dto.CategorySummaryResponse;
 import com.javacore.spring_api_luvine.product.application.dto.SearchCategoryRequest;
 import com.javacore.spring_api_luvine.product.application.mapper.CategoryMapper;
 import com.javacore.spring_api_luvine.product.domain.entity.Category;
@@ -21,11 +21,11 @@ public class SearchAdminCategoryUseCase {
     private final CategoryMapper categoryMapper;
 
     @Transactional(readOnly = true)
-    public Page<CategoryDetailsResponse> execute(SearchCategoryRequest request, Pageable pageable) {
+    public Page<CategorySummaryResponse> execute(SearchCategoryRequest request, Pageable pageable) {
         Specification<Category> specification = CategorySearchSpecifications.build(request);
 
         Page<Category> categories = categoryRepository.findAll(specification, pageable);
 
-        return categories.map(categoryMapper::toCategoryDetailsResponse);
+        return categories.map(categoryMapper::toCategorySummaryResponse);
     }
 }
