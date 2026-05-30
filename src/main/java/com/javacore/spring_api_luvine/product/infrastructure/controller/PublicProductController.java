@@ -5,6 +5,7 @@ import com.javacore.spring_api_luvine.product.application.dto.ProductSummaryResp
 import com.javacore.spring_api_luvine.product.application.dto.SearchProductRequest;
 import com.javacore.spring_api_luvine.product.application.usecase.GetProductDetailsUseCase;
 import com.javacore.spring_api_luvine.product.application.usecase.SearchProductUseCase;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -50,7 +51,7 @@ public class PublicProductController {
 
     @GetMapping
     public ResponseEntity<Page<ProductSummaryResponse>> searchProduct(
-            @ParameterObject SearchProductRequest request,
+            @ParameterObject @Valid SearchProductRequest request,
             @PageableDefault(
                     size = 20,
                     sort = "createdAt",
