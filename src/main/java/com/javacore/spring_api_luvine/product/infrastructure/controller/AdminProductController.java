@@ -61,8 +61,7 @@ public class AdminProductController {
                     size = 20,
                     sort = "createdAt",
                     direction = Sort.Direction.DESC
-            )
-            @ParameterObject Pageable pageable) {
+            ) @ParameterObject Pageable pageable) {
         Page<ProductDetailsResponse> response = searchAdminProductUseCase.execute(request, pageable);
         return ResponseEntity.ok(response);
     }

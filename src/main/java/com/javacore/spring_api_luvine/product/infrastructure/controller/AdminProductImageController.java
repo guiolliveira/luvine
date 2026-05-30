@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/catalog/products")
+@RequestMapping("/api/v1/admin/catalog/products")
 @PreAuthorize("hasAnyRole('ADMIN')")
 public class AdminProductImageController {
 
