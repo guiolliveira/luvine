@@ -7,7 +7,10 @@ import com.javacore.spring_api_luvine.product.domain.entity.ProductVariant;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper(
+        componentModel = "spring",
+        uses = CategoryMapper.class
+)
 public interface ProductMapper {
 
     @Mapping(target = "productName", source = "productName.value")
@@ -15,6 +18,7 @@ public interface ProductMapper {
     @Mapping(target = "slug", source = "slug.value")
     ProductDetailsResponse toProductDetailsResponse(Product product);
 
+    @Mapping(target = "altText", source = "altText.value")
     ProductImageResponse toProductImageResponse(ProductImage productImage);
 
     @Mapping(target = "productName", source = "productName.value")

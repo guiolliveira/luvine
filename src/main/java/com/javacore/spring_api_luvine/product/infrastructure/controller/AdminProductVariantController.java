@@ -28,7 +28,7 @@ public class AdminProductVariantController {
     private final DecreaseProductVariantUseCase decreaseProductVariantUseCase;
     private final RemoveProductVariantUseCase removeProductVariantUseCase;
 
-    @PostMapping("/{productPublicId}/variants}")
+    @PostMapping("/{productPublicId}/variants")
     public ResponseEntity<ProductVariantResponse> create(
             @PathVariable UUID productPublicId,
             @RequestBody @Valid CreateVariantRequest request) {

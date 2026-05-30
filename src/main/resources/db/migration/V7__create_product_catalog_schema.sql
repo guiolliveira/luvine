@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 ALTER TABLE users
 ADD CONSTRAINT chk_users_user_role CHECK (user_role IN ('CUSTOMER', 'ADMIN', 'SUPER_ADMIN')),
 ADD CONSTRAINT chk_users_user_provider CHECK(user_provider IN ('GOOGLE', 'LOCAL'));
