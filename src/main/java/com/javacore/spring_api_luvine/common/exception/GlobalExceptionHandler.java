@@ -4,7 +4,6 @@ import com.javacore.spring_api_luvine.common.exception.exceptions.BusinessExcept
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.List;
 
@@ -113,6 +113,19 @@ public class GlobalExceptionHandler {
                 HttpStatus.CONFLICT,
                 "O recurso foi alterado por outra operação. Tente novamente",
                 "OPTIMISTIC_LOCK_FAILURE",
+                null,
+                request
+        );
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleNoResourceFound(NoResourceFoundException ex, HttpServletRequest request) {
+        log.warn("event=noResource_Found message={} path={}", ex.getMessage(), request.getRequestURI());
+
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "O recurso solicitado não foi encontrado em nosso servidor",
+                "NO_RESOURCE_FOUND",
                 null,
                 request
         );
