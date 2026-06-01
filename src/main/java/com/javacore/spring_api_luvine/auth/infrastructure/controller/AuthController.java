@@ -79,9 +79,9 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Refresh token inválido ou expirado")
     })
     @PostMapping("/refresh")
-    public ResponseEntity<LoginResponse> refresh(@CookieValue(value = "refreshToken") RefreshTokenRequest request) {
+    public ResponseEntity<LoginResponse> refresh(@CookieValue("refreshToken") String refreshToken) {
 
-        LoginResponse loginResponse = refresh.execute(request);
+        LoginResponse loginResponse = refresh.execute(refreshToken);
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", loginResponse.refreshToken())
                 .httpOnly(true)

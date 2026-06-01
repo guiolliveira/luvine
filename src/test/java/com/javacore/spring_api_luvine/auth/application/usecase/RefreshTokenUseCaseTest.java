@@ -1,7 +1,6 @@
 package com.javacore.spring_api_luvine.auth.application.usecase;
 
 import com.javacore.spring_api_luvine.auth.application.dto.LoginResponse;
-import com.javacore.spring_api_luvine.auth.application.dto.RefreshTokenRequest;
 import com.javacore.spring_api_luvine.auth.application.service.TokenService;
 import com.javacore.spring_api_luvine.auth.domain.entity.RefreshToken;
 import com.javacore.spring_api_luvine.auth.domain.exception.InvalidTokenException;

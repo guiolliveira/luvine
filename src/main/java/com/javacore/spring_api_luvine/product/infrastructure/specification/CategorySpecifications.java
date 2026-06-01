@@ -23,7 +23,8 @@ public class CategorySpecifications {
         return (root, query, cb) -> {
             if (categoryName == null || categoryName.value().isBlank()) return null;
 
-            return cb.like(cb.lower(root.get("categoryName").get("value")), "%" + categoryName.value() + "%");
+            return cb.like(cb.lower(root.get("categoryName").get("value")),
+                    "%" + categoryName.value().toLowerCase() + "%");
         };
     }
 
