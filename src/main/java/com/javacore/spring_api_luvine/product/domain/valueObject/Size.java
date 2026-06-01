@@ -4,6 +4,8 @@ import com.javacore.spring_api_luvine.product.domain.exception.InvalidSizeExcept
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
+import java.util.Set;
+
 @Embeddable
 public record Size(@Column String value) {
     public Size(String value) {
@@ -24,9 +26,17 @@ public record Size(@Column String value) {
         return size.trim().toUpperCase().replaceAll("\\s+", "");
     }
 
+    private static final Set<String> VALID_SIZES = Set.of(
+            "PP",
+            "P",
+            "M",
+            "G",
+            "GG",
+            "XG",
+            "XGG"
+    );
+
     private static boolean isValid(String size) {
-        return !size.isBlank()
-                && size.length() >= 20
-                && size.matches("^[A-Z0-9 ]+$");
+        return !size.isBlank() && VALID_SIZES.contains(size);
     }
 }
