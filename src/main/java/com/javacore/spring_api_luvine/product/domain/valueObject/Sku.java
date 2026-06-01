@@ -4,6 +4,8 @@ import com.javacore.spring_api_luvine.product.domain.exception.InvalidSkuExcepti
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
+import java.util.UUID;
+
 @Embeddable
 public record Sku(@Column String value) {
     public Sku(String value) {
@@ -18,6 +20,14 @@ public record Sku(@Column String value) {
         }
 
         this.value = normalized;
+    }
+
+    public static String generate() {
+        return UUID.randomUUID()
+                .toString()
+                .replace("-", "")
+                .substring(0, 12)
+                .toUpperCase();
     }
 
     private static String normalize(String sku) {

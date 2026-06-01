@@ -74,9 +74,9 @@ public class ProductVariant {
     @OrderBy("displayOrder ASC")
     private List<ProductImage> images;
 
-    private ProductVariant(Sku sku, Color color, Size size, Money price, StockQuantity stockQuantity) {
+    private ProductVariant(Color color, Size size, Money price, StockQuantity stockQuantity) {
         this.publicId = UUID.randomUUID();
-        this.sku = sku;
+        this.sku = new Sku(Sku.generate());
         this.color = color;
         this.size = size;
         this.price = price;
@@ -85,8 +85,8 @@ public class ProductVariant {
         this.images = new ArrayList<>();
     }
 
-    public static ProductVariant create(Sku sku, Color color, Size size, Money price, StockQuantity stockQuantity) {
-        return new ProductVariant(sku, color, size, price, stockQuantity);
+    public static ProductVariant create(Color color, Size size, Money price, StockQuantity stockQuantity) {
+        return new ProductVariant(color, size, price, stockQuantity);
     }
 
     void assignToProduct(Product product) {

@@ -23,7 +23,7 @@ CREATE TABLE products(
     public_id UUID UNIQUE NOT NULL,
     category_id BIGINT NOT NULL REFERENCES categories(id) ON DELETE RESTRICT,
     product_name VARCHAR(255) UNIQUE NOT NULL,
-    slu VARCHAR(150) UNIQUE NOT NULL,
+    slug VARCHAR(150) UNIQUE NOT NULL,
     description TEXT NOT NULL,
     base_price DECIMAL(10,2) NOT NULL,
     status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE',

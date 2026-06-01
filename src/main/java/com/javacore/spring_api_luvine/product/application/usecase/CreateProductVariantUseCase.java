@@ -27,7 +27,6 @@ public class CreateProductVariantUseCase {
                 .orElseThrow(ProductNotFoundException::new);
 
         ProductVariant variant = ProductVariant.create(
-                new Sku(request.sku()),
                 new Color(request.color()),
                 new Size(request.size()),
                 new Money(request.price()),

@@ -5,12 +5,6 @@ import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
 public record CreateVariantRequest(
-
-        @NotBlank(message = "Informe o SKU")
-        @Size(min = 3, max = 50, message = "O SKU deve ter entre 3 a 50 caracteres")
-        @Pattern(regexp = "^[A-Z0-9-]+$", message = "SKU inválido")
-        String sku,
-
         @NotBlank(message = "Informe a cor")
         @Size(min = 2, max = 50, message = "A cor deve ter entre 3 a 50 caracteres")
         @Pattern(regexp = "^[\\p{L} ]+$", message = "Cor inválida")
