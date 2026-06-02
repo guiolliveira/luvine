@@ -10,10 +10,12 @@ import com.javacore.spring_api_luvine.product.domain.exception.ProductNotFoundEx
 import com.javacore.spring_api_luvine.product.domain.valueObject.*;
 import com.javacore.spring_api_luvine.product.infrastructure.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Slf4j
 @UseCase
 @RequiredArgsConstructor
 public class CreateProductVariantUseCase {
@@ -23,8 +25,14 @@ public class CreateProductVariantUseCase {
 
     @Transactional
     public ProductVariantResponse execute(UUID productPublicId, CreateVariantRequest request) {
+        log.info("event=create_product_variant_attempt productId={}", productPublicId);
+
         Product product = productRepository.findByPublicId(productPublicId)
-                .orElseThrow(ProductNotFoundException::new);
+                .orElseThrow(() -> {
+                    log.warn("event=create_product_variant_rejected reason=product_not_found productId={}",
+                            productPublicId);
+                    return new ProductNotFoundException();
+                });
 
         ProductVariant variant = ProductVariant.create(
                 new Color(request.color()),
@@ -35,6 +43,8 @@ public class CreateProductVariantUseCase {
 
         product.addVariant(variant);
 
+        log.info("event=create_product_variant_completed productId={} variantId={}",
+                productPublicId, variant.getPublicId());
         return productMapper.toProductVariantResponse(variant);
     }
 }

@@ -7,10 +7,12 @@ import com.javacore.spring_api_luvine.product.domain.entity.Category;
 import com.javacore.spring_api_luvine.product.domain.exception.CategoryNotFoundException;
 import com.javacore.spring_api_luvine.product.infrastructure.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Slf4j
 @UseCase
 @RequiredArgsConstructor
 public class GetCategoryDetailsUseCase {
@@ -20,9 +22,16 @@ public class GetCategoryDetailsUseCase {
 
     @Transactional(readOnly = true)
     public CategoryDetailsResponse execute(UUID categoryPublicId) {
-        Category category = categoryRepository.findByPublicIdAndActiveTrue(categoryPublicId)
-                .orElseThrow(CategoryNotFoundException::new);
+        log.info("event=get_category_details_attempt publicId={}", categoryPublicId);
 
+        Category category = categoryRepository.findByPublicIdAndActiveTrue(categoryPublicId)
+                .orElseThrow(() -> {
+                    log.warn("event=get_category_details_rejected reason=category_not_found publicId={}",
+                            categoryPublicId);
+                    return new CategoryNotFoundException();
+                });
+
+        log.info("event=get_category_details_completed publicId={}", categoryPublicId);
         return categoryMapper.toCategoryDetailsResponse(category);
     }
 }

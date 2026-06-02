@@ -17,10 +17,12 @@ import com.javacore.spring_api_luvine.product.domain.valueObject.Slug;
 import com.javacore.spring_api_luvine.product.infrastructure.repository.CategoryRepository;
 import com.javacore.spring_api_luvine.product.infrastructure.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Slf4j
 @UseCase
 @RequiredArgsConstructor
 public class UpdateProductUseCase {
@@ -31,14 +33,24 @@ public class UpdateProductUseCase {
 
     @Transactional
     public ProductDetailsResponse execute(UUID productPublicId, UpdateProductRequest request) {
+        log.info("event=update_product_attempt publicId={}", productPublicId);
+
         Product product = productRepository.findByPublicId(productPublicId)
-                .orElseThrow(ProductNotFoundException::new);
+                .orElseThrow(() -> {
+                    log.warn("event=update_product_rejected reason=product_not_found publicId={}", productPublicId);
+                    return new ProductNotFoundException();
+                });
 
         if (request.newCategorySlug() != null && !request.newCategorySlug().isBlank()) {
             Category category = categoryRepository.findBySlug(new Slug(request.newCategorySlug()))
-                    .orElseThrow(CategoryNotFoundException::new);
+                    .orElseThrow(() -> {
+                        log.warn("event=update_product_rejected reason=category_not_found publicId={}", productPublicId);
+                        return new CategoryNotFoundException();
+                    });
 
             if (!category.isActive()) {
+                log.warn("event=update_product_rejected reason=category_inactive publicId={} categoryId={}",
+                        productPublicId, category.getPublicId());
                 throw new CategoryInactiveException();
             }
 
@@ -51,6 +63,7 @@ public class UpdateProductUseCase {
 
             if (productRepository.existsByProductNameAndIdNot(newProductName, product.getId())
                     || productRepository.existsBySlugAndIdNot(newSlug, product.getId())) {
+                log.warn("event=update_product_rejected reason=name_already_exists publicId={}", productPublicId);
                 throw new ProductAlreadyExistsException();
             }
 
@@ -67,6 +80,7 @@ public class UpdateProductUseCase {
 
         product.changeStatus(request.newStatus());
 
+        log.info("event=update_product_completed publicId={}", productPublicId);
         return productMapper.toProductDetailsResponse(product);
     }
 }

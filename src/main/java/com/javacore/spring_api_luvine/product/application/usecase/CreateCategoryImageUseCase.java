@@ -32,11 +32,16 @@ public class CreateCategoryImageUseCase {
     @Transactional
     public CategoryImageResponse execute(
             UUID categoryPublicId, MultipartFile file, CreateCategoryImageRequest request) {
+        log.info("event=create_category_image_attempt categoryId={}", categoryPublicId);
 
         imageValidator.validate(file);
 
         Category category = categoryRepository.findByPublicId(categoryPublicId)
-                .orElseThrow(CategoryNotFoundException::new);
+                .orElseThrow(() -> {
+                    log.warn("event=create_category_image_rejected reason=category_not_found categoryId={}",
+                            categoryPublicId);
+                    return new CategoryNotFoundException();
+                });
 
         CategoryImage oldImage = category.getImage();
 
@@ -60,20 +65,18 @@ public class CreateCategoryImageUseCase {
                 storageService.delete(uploadResult.storageKey());
             }
 
+            log.info("event=create_category_image_completed categoryId={} imageId={}", categoryPublicId, imagePublicId);
             return categoryMapper.toCategoryImageResponse(categoryImage);
         } catch (Exception ex) {
             if (uploadResult != null) {
                 try {
                     storageService.delete(uploadResult.storageKey());
                 } catch (Exception rollbackEx) {
-                    log.error(
-                            "IMAGE_ROLLBACK_FAILED storageKey={}, categoryPublicId={}",
-                            uploadResult.storageKey(),
-                            category.getPublicId(),
-                            rollbackEx
-                    );
+                    log.error("event=create_category_image_rollback_failed categoryId={} imageId={}",
+                            categoryPublicId, imagePublicId, rollbackEx);
                 }
             }
+            log.error("event=create_category_image_error categoryId={}", categoryPublicId, ex);
             throw ex;
         }
     }

@@ -9,10 +9,12 @@ import com.javacore.spring_api_luvine.product.domain.entity.ProductVariant;
 import com.javacore.spring_api_luvine.product.domain.exception.ProductNotFoundException;
 import com.javacore.spring_api_luvine.product.infrastructure.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Slf4j
 @UseCase
 @RequiredArgsConstructor
 public class SetPrimaryProductImageUseCase {
@@ -22,8 +24,14 @@ public class SetPrimaryProductImageUseCase {
 
     @Transactional
     public ProductImageResponse execute(UUID productPublicId, UUID variantPublicId, UUID imagePublicId) {
+        log.info("event=set_primary_image_attempt productId={} variantId={} imageId={}",
+                productPublicId, variantPublicId, imagePublicId);
+
         Product product = productRepository.findByPublicId(productPublicId)
-                .orElseThrow(ProductNotFoundException::new);
+                .orElseThrow(() -> {
+                    log.warn("event=set_primary_image_rejected reason=product_not_found productId={}", productPublicId);
+                    return new ProductNotFoundException();
+                });
 
         ProductVariant variant = product.findVariantByPublicId(variantPublicId);
 
@@ -31,6 +39,8 @@ public class SetPrimaryProductImageUseCase {
 
         variant.setPrimary(image);
 
+        log.info("event=set_primary_image_completed productId={} variantId={} imageId={}",
+                productPublicId, variantPublicId, imagePublicId);
         return productMapper.toProductImageResponse(image);
     }
 }

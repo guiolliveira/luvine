@@ -12,10 +12,12 @@ import com.javacore.spring_api_luvine.product.domain.valueObject.Description;
 import com.javacore.spring_api_luvine.product.domain.valueObject.Slug;
 import com.javacore.spring_api_luvine.product.infrastructure.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Slf4j
 @UseCase
 @RequiredArgsConstructor
 public class UpdateCategoryUseCase {
@@ -25,12 +27,21 @@ public class UpdateCategoryUseCase {
 
     @Transactional
     public CategoryDetailsResponse execute(UUID categoryPublicId, UpdateCategoryRequest request) {
+        log.info("event=update_category_attempt publicId={}", categoryPublicId);
+
         Category category = categoryRepository.findByPublicId(categoryPublicId)
-                .orElseThrow(CategoryNotFoundException::new);
+                .orElseThrow(() -> {
+                    log.warn("event=update_category_rejected reason=category_not_found publicId={}", categoryPublicId);
+                    return new CategoryNotFoundException();
+                });
 
         if (request.newParentPublicId() != null) {
             Category parent = categoryRepository.findByPublicId(request.newParentPublicId())
-                    .orElseThrow(CategoryNotFoundException::new);
+                    .orElseThrow(() -> {
+                        log.warn("event=update_category_rejected reason=parent_not_found publicId={} parentId={}",
+                                categoryPublicId, request.newParentPublicId());
+                        return new CategoryNotFoundException();
+                    });
 
             category.changeParent(parent);
         }
@@ -41,6 +52,7 @@ public class UpdateCategoryUseCase {
 
             if (categoryRepository.existsBySlugAndIdNot(newSlug, category.getId()) ||
                     categoryRepository.existsByCategoryNameAndIdNot(newCategoryName, category.getId())) {
+                log.warn("event=update_category_rejected reason=name_already_exists publicId={}", categoryPublicId);
                 throw new CategoryAlreadyExistsException();
             }
 
@@ -51,6 +63,7 @@ public class UpdateCategoryUseCase {
             category.changeDescription(new Description(request.newDescription()));
         }
 
+        log.info("event=update_category_completed publicId={}", categoryPublicId);
         return categoryMapper.toCategoryDetailsResponse(category);
     }
 }

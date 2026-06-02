@@ -34,11 +34,16 @@ public class CreateProductImageUseCase {
     public ProductImageResponse execute(
             UUID productPublicId, UUID variantPublicId,
             MultipartFile file, CreateImageRequest request) {
+        log.info("event=create_product_image_attempt productId={} variantId={}", productPublicId, variantPublicId);
 
         imageValidator.validate(file);
 
         Product product = productRepository.findByPublicId(productPublicId)
-                .orElseThrow(ProductNotFoundException::new);
+                .orElseThrow(() -> {
+                    log.warn("event=create_product_image_rejected reason=product_not_found productId={}",
+                            productPublicId);
+                    return new ProductNotFoundException();
+                });
 
         ProductVariant variant = product.findVariantByPublicId(variantPublicId);
 
@@ -47,34 +52,33 @@ public class CreateProductImageUseCase {
 
         UploadResult uploadResult = null;
 
-       try {
-           uploadResult = storageService.upload(file, folder, imagePublicId.toString());
+        try {
+            uploadResult = storageService.upload(file, folder, imagePublicId.toString());
 
-           ProductImage productImage = ProductImage.create(
-                   uploadResult.imageUrl(),
-                   uploadResult.storageKey(),
-                   new AltText(request.altText()),
-                   request.primaryImage()
-           );
+            ProductImage productImage = ProductImage.create(
+                    uploadResult.imageUrl(),
+                    uploadResult.storageKey(),
+                    new AltText(request.altText()),
+                    request.primaryImage()
+            );
 
-           variant.addImage(productImage, request.displayOrder());
+            variant.addImage(productImage, request.displayOrder());
 
-           return productMapper.toProductImageResponse(productImage);
-       } catch (Exception ex) {
-           if (uploadResult != null) {
-               try {
-                   storageService.delete(uploadResult.storageKey());
-               } catch (Exception rollbackEx) {
-                   log.error(
-                           "IMAGE_ROLLBACK_FAILED storageKey={}, productPublicId={}, variantPublicId={}",
-                           uploadResult.storageKey(),
-                           product.getPublicId(),
-                           variant.getPublicId(),
-                           rollbackEx
-                   );
-               }
-           }
-           throw ex;
-       }
+            log.info("event=create_product_image_completed productId={} variantId={} imageId={}",
+                    productPublicId, variantPublicId, imagePublicId);
+            return productMapper.toProductImageResponse(productImage);
+        } catch (Exception ex) {
+            if (uploadResult != null) {
+                try {
+                    storageService.delete(uploadResult.storageKey());
+                } catch (Exception rollbackEx) {
+                    log.error("event=create_product_image_rollback_failed productId={} variantId={} imageId={}",
+                            productPublicId, variantPublicId, imagePublicId, rollbackEx);
+                }
+            }
+            log.error("event=create_product_image_error productId={} variantId={}",
+                    productPublicId, variantPublicId, ex);
+            throw ex;
+        }
     }
 }

@@ -12,8 +12,10 @@ import com.javacore.spring_api_luvine.product.domain.valueObject.Description;
 import com.javacore.spring_api_luvine.product.domain.valueObject.Slug;
 import com.javacore.spring_api_luvine.product.infrastructure.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @UseCase
 @RequiredArgsConstructor
 public class CreateCategoryUseCase {
@@ -23,11 +25,14 @@ public class CreateCategoryUseCase {
 
     @Transactional
     public CategoryDetailsResponse execute(CreateCategoryRequest request) {
+        log.info("event=create_category_attempt");
+
         CategoryName categoryName = new CategoryName(request.categoryName());
         Description description = new Description(request.description());
         Slug slug = new Slug(request.categoryName());
 
         if (categoryRepository.existsBySlug(slug) || categoryRepository.existsByCategoryName(categoryName)) {
+            log.warn("event=create_category_rejected reason=name_already_exists");
             throw new CategoryAlreadyExistsException();
         }
 
@@ -35,17 +40,18 @@ public class CreateCategoryUseCase {
 
         if (request.parentPublicId() != null) {
             parent = categoryRepository.findByPublicId(request.parentPublicId())
-                    .orElseThrow(CategoryNotFoundException::new);
+                    .orElseThrow(() -> {
+                        log.warn("event=create_category_rejected reason=parent_not_found parentId={}",
+                                request.parentPublicId());
+                        return new CategoryNotFoundException();
+                    });
         }
 
-        Category newCategory = Category.create(
-                parent,
-                categoryName,
-                description
-        );
+        Category newCategory = Category.create(parent, categoryName, description);
 
         categoryRepository.save(newCategory);
 
+        log.info("event=create_category_completed publicId={}", newCategory.getPublicId());
         return categoryMapper.toCategoryDetailsResponse(newCategory);
     }
 }

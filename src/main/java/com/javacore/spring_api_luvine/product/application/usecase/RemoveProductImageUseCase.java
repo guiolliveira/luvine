@@ -23,8 +23,15 @@ public class RemoveProductImageUseCase {
 
     @Transactional
     public void execute(UUID productPublicId, UUID variantPublicId, UUID imagePublicId) {
+        log.info("event=remove_product_image_attempt productId={} variantId={} imageId={}",
+                productPublicId, variantPublicId, imagePublicId);
+
         Product product = productRepository.findByPublicId(productPublicId)
-                .orElseThrow(ProductNotFoundException::new);
+                .orElseThrow(() -> {
+                    log.warn("event=remove_product_image_rejected reason=product_not_found productId={}",
+                            productPublicId);
+                    return new ProductNotFoundException();
+                });
 
         ProductVariant variant = product.findVariantByPublicId(variantPublicId);
 
@@ -33,18 +40,14 @@ public class RemoveProductImageUseCase {
         try {
             storageService.delete(image.getStorageKey());
         } catch (Exception ex) {
-            log.error(
-                    "FAILED_TO_DELETE_IMAGE_FROM_STORAGE storageKey={}, productPublicId={}, variantPublicId={}, " +
-                            "imagePublicId={}",
-                    image.getStorageKey(),
-                    productPublicId,
-                    variantPublicId,
-                    imagePublicId,
-                    ex
-            );
+            log.error("event=remove_product_image_storage_error productId={} variantId={} imageId={}",
+                    productPublicId, variantPublicId, imagePublicId, ex);
             throw ex;
         }
 
         variant.removeImage(image);
+
+        log.info("event=remove_product_image_completed productId={} variantId={} imageId={}",
+                productPublicId, variantPublicId, imagePublicId);
     }
 }
