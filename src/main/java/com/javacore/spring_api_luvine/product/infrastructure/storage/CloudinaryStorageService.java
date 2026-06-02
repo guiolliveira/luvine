@@ -29,7 +29,7 @@ public class CloudinaryStorageService implements StorageService {
                     file.getBytes(),
                     ObjectUtils.asMap(
                             "folder", folder,
-                            "public_id", file,
+                            "public_id", fileName,
                             "overwrite", true,
                             "resource_type", "image"
                     )

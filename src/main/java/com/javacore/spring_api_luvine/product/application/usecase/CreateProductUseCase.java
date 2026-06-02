@@ -56,7 +56,6 @@ public class CreateProductUseCase {
 
         for (var variantRequest : request.variants()) {
             ProductVariant variant = ProductVariant.create(
-                    new Sku(variantRequest.sku()),
                     new Color(variantRequest.color()),
                     new Size(variantRequest.size()),
                     new Money(variantRequest.price()),

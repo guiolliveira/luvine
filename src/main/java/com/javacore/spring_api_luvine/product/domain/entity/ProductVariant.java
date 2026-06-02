@@ -106,7 +106,7 @@ public class ProductVariant {
 
         int finalOrder = displayOrder != null ? displayOrder : nextDisplayOrder();
 
-        if (finalOrder <= 1 || finalOrder > nextDisplayOrder()) {
+        if (finalOrder < 1 || finalOrder > nextDisplayOrder()) {
             throw new InvalidImageReorderException();
         }
 
@@ -125,7 +125,6 @@ public class ProductVariant {
         }
 
         newImage.assignToVariant(this);
-        newImage.changeDisplayOrder(nextDisplayOrder());
 
         this.images.add(newImage);
 
