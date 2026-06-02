@@ -61,8 +61,10 @@ public class CreateCategoryImageUseCase {
 
             category.addCategoryImage(categoryImage);
 
+            categoryRepository.saveAndFlush(category);
+
             if (oldImage != null) {
-                storageService.delete(uploadResult.storageKey());
+                storageService.delete(oldImage.getStorageKey());
             }
 
             log.info("event=create_category_image_completed categoryId={} imageId={}", categoryPublicId, imagePublicId);

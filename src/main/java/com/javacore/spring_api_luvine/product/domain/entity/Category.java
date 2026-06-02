@@ -79,6 +79,10 @@ public class Category {
     }
 
     public void addCategoryImage(CategoryImage newImage) {
+        Objects.requireNonNull(newImage, "A imagem da categoria não pode ser nula");
+
+        newImage.assignToCategory(this);
+
         this.image = newImage;
     }
 

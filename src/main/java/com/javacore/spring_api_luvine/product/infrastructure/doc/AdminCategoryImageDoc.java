@@ -43,7 +43,8 @@ public interface AdminCategoryImageDoc {
             @PathVariable UUID categoryPublicId,
             @Parameter(description = "Arquivo de imagem (JPEG, PNG ou WebP, máx. 5MB)", required = true)
             @RequestPart("file") MultipartFile file,
-            @RequestPart("data") @Valid CreateCategoryImageRequest request);
+            @Parameter(description = "Texto alternativo da imagem para acessibilidade e SEO", required = true)
+            @RequestParam("altText") String altText);
 
 
     @Operation(

@@ -74,10 +74,7 @@ CREATE TABLE category_images(
     category_id BIGINT NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
     image_url VARCHAR(500) NOT NULL,
     storage_key VARCHAR(255) NOT NULL,
-    display_order INTEGER NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT chk_category_images_display_order CHECK (display_order >= 0)
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_categories_parent_id ON categories(parent_id);

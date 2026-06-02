@@ -26,7 +26,10 @@ public class AdminCategoryImageController implements AdminCategoryImageDoc {
 
     @Override
     public ResponseEntity<CategoryImageResponse> create(
-            UUID categoryPublicId, MultipartFile file, CreateCategoryImageRequest request) {
+            UUID categoryPublicId, MultipartFile file, String altText) {
+
+        CreateCategoryImageRequest request = new CreateCategoryImageRequest(altText);
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(createCategoryImageUseCase.execute(categoryPublicId, file, request));
     }

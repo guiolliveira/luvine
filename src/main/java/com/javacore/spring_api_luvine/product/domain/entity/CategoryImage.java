@@ -41,7 +41,6 @@ public class CategoryImage {
     @AttributeOverride(name = "value", column = @Column(name = "alt_text", nullable = false, length = 150))
     private AltText altText;
 
-
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;

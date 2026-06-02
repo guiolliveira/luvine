@@ -5,7 +5,6 @@ import java.util.UUID;
 public record CategoryImageResponse(
         UUID publicId,
         String imageUrl,
-        String altText,
-        Integer displayOrder
+        String altText
 ) {
 }

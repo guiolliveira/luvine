@@ -64,6 +64,8 @@ public class CreateProductImageUseCase {
 
             variant.addImage(productImage, request.displayOrder());
 
+            productRepository.saveAndFlush(product);
+
             log.info("event=create_product_image_completed productId={} variantId={} imageId={}",
                     productPublicId, variantPublicId, imagePublicId);
             return productMapper.toProductImageResponse(productImage);
