@@ -5,9 +5,8 @@ import com.javacore.spring_api_luvine.product.application.usecase.CreateProductU
 import com.javacore.spring_api_luvine.product.application.usecase.GetAdminProductDetailsUseCase;
 import com.javacore.spring_api_luvine.product.application.usecase.SearchAdminProductUseCase;
 import com.javacore.spring_api_luvine.product.application.usecase.UpdateProductUseCase;
-import jakarta.validation.Valid;
+import com.javacore.spring_api_luvine.product.infrastructure.doc.AdminProductDoc;
 import lombok.RequiredArgsConstructor;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -23,43 +22,33 @@ import java.util.UUID;
 @RequestMapping("api/v1/admin/catalog/products")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN')")
-public class AdminProductController {
+public class AdminProductController implements AdminProductDoc {
 
     private final CreateProductUseCase createProductUseCase;
     private final UpdateProductUseCase updateProductUseCase;
     private final GetAdminProductDetailsUseCase getAdminProductDetailsUseCase;
     private final SearchAdminProductUseCase searchAdminProductUseCase;
 
-    @PostMapping
-    public ResponseEntity<ProductDetailsResponse> create(@RequestBody @Valid CreateProductRequest request) {
-        ProductDetailsResponse response = createProductUseCase.execute(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    @Override
+    public ResponseEntity<ProductDetailsResponse> create(CreateProductRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(createProductUseCase.execute(request));
     }
 
-    @PatchMapping("/{productPublicId}")
-    public ResponseEntity<ProductDetailsResponse> update(
-            @PathVariable UUID productPublicId,
-            @RequestBody @Valid UpdateProductRequest request) {
-        ProductDetailsResponse response = updateProductUseCase.execute(productPublicId, request);
-
-        return ResponseEntity.ok(response);
+    @Override
+    public ResponseEntity<ProductDetailsResponse> update(UUID productPublicId, UpdateProductRequest request) {
+        return ResponseEntity.ok(updateProductUseCase.execute(productPublicId, request));
     }
 
-    @GetMapping("/{productPublicId}")
-    public ResponseEntity<ProductDetailsResponse> getProductsDetails(@PathVariable UUID productPublicId) {
-        ProductDetailsResponse response = getAdminProductDetailsUseCase.execute(productPublicId);
-        return ResponseEntity.ok(response);
+    @Override
+    public ResponseEntity<ProductDetailsResponse> getProductsDetails(UUID productPublicId) {
+        return ResponseEntity.ok(getAdminProductDetailsUseCase.execute(productPublicId));
     }
 
-    @GetMapping
+    @Override
     public ResponseEntity<Page<ProductSummaryResponse>> searchProduct(
-            @ParameterObject @Valid SearchProductRequest request,
-            @PageableDefault(
-                    size = 20,
-                    sort = "createdAt",
-                    direction = Sort.Direction.DESC
-            ) @ParameterObject Pageable pageable) {
-        Page<ProductSummaryResponse> response = searchAdminProductUseCase.execute(request, pageable);
-        return ResponseEntity.ok(response);
+            SearchProductRequest request,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(searchAdminProductUseCase.execute(request, pageable));
     }
 }

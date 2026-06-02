@@ -5,7 +5,7 @@ import com.javacore.spring_api_luvine.product.application.dto.CreateCategoryImag
 import com.javacore.spring_api_luvine.product.application.dto.UpdateImageAltTextRequest;
 import com.javacore.spring_api_luvine.product.application.usecase.CreateCategoryImageUseCase;
 import com.javacore.spring_api_luvine.product.application.usecase.UpdateCategoryImageAltTextUseCase;
-import jakarta.validation.Valid;
+import com.javacore.spring_api_luvine.product.infrastructure.doc.AdminCategoryImageDoc;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,27 +19,22 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/categories")
 @PreAuthorize("hasAnyRole('ADMIN')")
-public class AdminCategoryImageController {
+public class AdminCategoryImageController implements AdminCategoryImageDoc {
 
     private final CreateCategoryImageUseCase createCategoryImageUseCase;
     private final UpdateCategoryImageAltTextUseCase updateCategoryImageAltTextUseCase;
 
-    @PostMapping("{categoryPublicId}/image")
+    @Override
     public ResponseEntity<CategoryImageResponse> create(
-            @PathVariable UUID categoryPublicId,
-            @RequestPart("file") MultipartFile file,
-            @RequestPart("data") @Valid CreateCategoryImageRequest request) {
-        CategoryImageResponse response = createCategoryImageUseCase.execute(categoryPublicId, file, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            UUID categoryPublicId, MultipartFile file, CreateCategoryImageRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(createCategoryImageUseCase.execute(categoryPublicId, file, request));
     }
 
-    @PatchMapping("/{categoryPublicId}/image/{imagePublicId}")
+    @Override
     public ResponseEntity<CategoryImageResponse> update(
-            @PathVariable UUID categoryPublicId,
-            @PathVariable UUID imagePublicId,
-            UpdateImageAltTextRequest request) {
-        CategoryImageResponse response =
-                updateCategoryImageAltTextUseCase.execute(categoryPublicId, imagePublicId, request);
-        return ResponseEntity.ok(response);
+            UUID categoryPublicId, UUID imagePublicId, UpdateImageAltTextRequest request) {
+        return ResponseEntity.ok(
+                updateCategoryImageAltTextUseCase.execute(categoryPublicId, imagePublicId, request));
     }
 }

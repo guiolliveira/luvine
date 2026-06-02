@@ -5,6 +5,7 @@ import com.javacore.spring_api_luvine.product.application.dto.ProductSummaryResp
 import com.javacore.spring_api_luvine.product.application.dto.SearchProductRequest;
 import com.javacore.spring_api_luvine.product.application.usecase.GetProductDetailsUseCase;
 import com.javacore.spring_api_luvine.product.application.usecase.SearchProductUseCase;
+import com.javacore.spring_api_luvine.product.infrastructure.doc.PublicProductDoc;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
@@ -27,37 +28,30 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/catalog/products")
 @PreAuthorize("hasAnyRole('CUSTOMER')")
-public class PublicProductController {
+public class PublicProductController implements PublicProductDoc {
 
     private final GetProductDetailsUseCase getProductDetailsUseCase;
     private final SearchProductUseCase searchProductUseCase;
 
-    @GetMapping("/{slug}-{productPublicId}")
-    public ResponseEntity<?> getProductDetails(
-            @PathVariable UUID productPublicId,
-            @PathVariable String slug) {
+
+    @Override
+    public ResponseEntity<?> getProductDetails(UUID productPublicId, String slug) {
         ProductDetailsResult result = getProductDetailsUseCase.execute(productPublicId);
 
         if (!result.currentSlug().equals(slug)) {
             URI uri = URI.create(
                     "/api/v1/catalog/products/" + result.currentSlug() + "-" + productPublicId
             );
-
             return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT).location(uri).build();
         }
 
         return ResponseEntity.ok(result.response());
     }
 
-    @GetMapping
+    @Override
     public ResponseEntity<Page<ProductSummaryResponse>> searchProduct(
-            @ParameterObject @Valid SearchProductRequest request,
-            @PageableDefault(
-                    size = 20,
-                    sort = "createdAt",
-                    direction = Sort.Direction.DESC
-            ) @ParameterObject Pageable pageable) {
-        Page<ProductSummaryResponse> response = searchProductUseCase.execute(request, pageable);
-        return ResponseEntity.ok(response);
+            SearchProductRequest request,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(searchProductUseCase.execute(request, pageable));
     }
 }

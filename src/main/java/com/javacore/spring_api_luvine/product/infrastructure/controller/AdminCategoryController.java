@@ -2,9 +2,8 @@ package com.javacore.spring_api_luvine.product.infrastructure.controller;
 
 import com.javacore.spring_api_luvine.product.application.dto.*;
 import com.javacore.spring_api_luvine.product.application.usecase.*;
-import jakarta.validation.Valid;
+import com.javacore.spring_api_luvine.product.infrastructure.doc.AdminCategoryDoc;
 import lombok.RequiredArgsConstructor;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -20,7 +19,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/categories")
 @PreAuthorize("hasAnyRole('ADMIN')")
-public class AdminCategoryController {
+public class AdminCategoryController implements AdminCategoryDoc {
 
     private final CreateCategoryUseCase createCategoryUseCase;
     private final UpdateCategoryUseCase updateCategoryUseCase;
@@ -29,48 +28,37 @@ public class AdminCategoryController {
     private final GetAdminCategoryDetailsUseCase getAdminCategoryDetailsUseCase;
     private final SearchAdminCategoryUseCase searchCategoryUseCase;
 
-    @PostMapping
-    public ResponseEntity<CategoryDetailsResponse> create(@RequestBody @Valid CreateCategoryRequest request) {
-        CategoryDetailsResponse response = createCategoryUseCase.execute(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    @Override
+    public ResponseEntity<CategoryDetailsResponse> create(CreateCategoryRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(createCategoryUseCase.execute(request));
     }
 
-    @PatchMapping("/{categoryPublicId}")
-    public ResponseEntity<CategoryDetailsResponse> update(
-            @PathVariable UUID categoryPublicId,
-            @RequestBody @Valid UpdateCategoryRequest request) {
-        CategoryDetailsResponse response = updateCategoryUseCase.execute(categoryPublicId, request);
-        return ResponseEntity.ok(response);
+    @Override
+    public ResponseEntity<CategoryDetailsResponse> update(UUID categoryPublicId, UpdateCategoryRequest request) {
+        return ResponseEntity.ok(updateCategoryUseCase.execute(categoryPublicId, request));
     }
 
-    @PatchMapping("/{categoryPublicId}/activate")
-    public ResponseEntity<Void> activate(@PathVariable UUID categoryPublicId) {
+    @Override
+    public ResponseEntity<Void> activate(UUID categoryPublicId) {
         activateCategoryUseCase.execute(categoryPublicId);
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{categoryPublicId}/deactivate")
-    public ResponseEntity<Void> deactivate(@PathVariable UUID categoryPublicId) {
+    @Override
+    public ResponseEntity<Void> deactivate(UUID categoryPublicId) {
         deactivateCategoryUseCase.execute(categoryPublicId);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{categoryPublicId}")
-    public ResponseEntity<CategoryDetailsResponse> getCategoryDetails(@PathVariable UUID categoryPublicId) {
-        CategoryDetailsResponse response = getAdminCategoryDetailsUseCase.execute(categoryPublicId);
-        return ResponseEntity.ok(response);
+    @Override
+    public ResponseEntity<CategoryDetailsResponse> getCategoryDetails(UUID categoryPublicId) {
+        return ResponseEntity.ok(getAdminCategoryDetailsUseCase.execute(categoryPublicId));
     }
 
-    @GetMapping
+    @Override
     public ResponseEntity<Page<CategorySummaryResponse>> searchProduct(
-            @ParameterObject @Valid SearchCategoryRequest request,
-            @PageableDefault(
-                    size = 20,
-                    sort = "createdAt",
-                    direction = Sort.Direction.DESC
-            )
-            @ParameterObject Pageable pageable) {
-        Page<CategorySummaryResponse> response = searchCategoryUseCase.execute(request, pageable);
-        return ResponseEntity.ok(response);
+            SearchCategoryRequest request,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(searchCategoryUseCase.execute(request, pageable));
     }
 }
