@@ -65,4 +65,21 @@ public interface AdminCategoryImageDoc {
             @Parameter(description = "Identificador público da imagem", required = true)
             @PathVariable UUID imagePublicId,
             @RequestBody @Valid UpdateImageAltTextRequest request);
+
+    @Operation(
+            summary = "Remover imagem da categoria",
+            description = "Remove a imagem associada à categoria e exclui o arquivo do storage."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Imagem removida com sucesso",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Categoria ou imagem não encontrada",
+                    content = @Content)
+    })
+    @DeleteMapping("/{categoryPublicId}/image/{imagePublicId}")
+    ResponseEntity<Void> remove(
+            @Parameter(description = "Identificador público da categoria", required = true)
+            @PathVariable UUID categoryPublicId,
+            @Parameter(description = "Identificador público da imagem", required = true)
+            @PathVariable UUID imagePublicId);
 }

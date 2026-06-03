@@ -4,6 +4,7 @@ import com.javacore.spring_api_luvine.product.application.dto.CategoryImageRespo
 import com.javacore.spring_api_luvine.product.application.dto.CreateCategoryImageRequest;
 import com.javacore.spring_api_luvine.product.application.dto.UpdateImageAltTextRequest;
 import com.javacore.spring_api_luvine.product.application.usecase.CreateCategoryImageUseCase;
+import com.javacore.spring_api_luvine.product.application.usecase.RemoveCategoryImageUseCase;
 import com.javacore.spring_api_luvine.product.application.usecase.UpdateCategoryImageAltTextUseCase;
 import com.javacore.spring_api_luvine.product.infrastructure.doc.AdminCategoryImageDoc;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class AdminCategoryImageController implements AdminCategoryImageDoc {
 
     private final CreateCategoryImageUseCase createCategoryImageUseCase;
     private final UpdateCategoryImageAltTextUseCase updateCategoryImageAltTextUseCase;
+    private final RemoveCategoryImageUseCase removeCategoryImageUseCase;
 
     @Override
     public ResponseEntity<CategoryImageResponse> create(
@@ -39,5 +41,11 @@ public class AdminCategoryImageController implements AdminCategoryImageDoc {
             UUID categoryPublicId, UUID imagePublicId, UpdateImageAltTextRequest request) {
         return ResponseEntity.ok(
                 updateCategoryImageAltTextUseCase.execute(categoryPublicId, imagePublicId, request));
+    }
+
+    @Override
+    public ResponseEntity<Void> remove(UUID categoryPublicId, UUID imagePublicId) {
+        removeCategoryImageUseCase.execute(categoryPublicId, imagePublicId);
+        return ResponseEntity.noContent().build();
     }
 }

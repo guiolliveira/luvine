@@ -86,6 +86,14 @@ public class Category {
         this.image = newImage;
     }
 
+    public void removeCategoryImage(CategoryImage image) {
+        Objects.requireNonNull(image, "A imagem da categoria não pode ser nula");
+
+        image.unassignToCategory();
+
+        this.image = null;
+    }
+
     public CategoryImage findImageByPublicId(UUID imagePublicId) {
         Objects.requireNonNull(this.image);
 

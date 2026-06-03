@@ -60,6 +60,10 @@ public class CategoryImage {
         this.category = category;
     }
 
+    public void unassignToCategory() {
+        this.category = null;
+    }
+
     public void changeAltText(AltText newAltText) {
         if (this.altText.equals(newAltText)) {
             throw new UnchangedValueException("A imagem já possui esse texto alternativo");

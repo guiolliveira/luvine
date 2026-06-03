@@ -75,6 +75,7 @@ CREATE TABLE category_images(
     category_id BIGINT NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
     image_url VARCHAR(500) NOT NULL,
     storage_key VARCHAR(255) NOT NULL,
+    alt_text VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
