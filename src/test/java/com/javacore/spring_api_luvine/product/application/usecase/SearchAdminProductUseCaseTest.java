@@ -27,6 +27,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.never;
 
 @DisplayName("SearchAdminProductUseCase")
 @ExtendWith(MockitoExtension.class)
@@ -38,8 +39,6 @@ class SearchAdminProductUseCaseTest {
     @InjectMocks
     private SearchAdminProductUseCase searchAdminProductUseCase;
 
-    // --- HELPERS ------------------------------------------------------------------
-
     private static final Pageable PAGEABLE = PageRequest.of(0, 10);
 
     private SearchProductRequest validRequest() {
@@ -50,11 +49,28 @@ class SearchAdminProductUseCaseTest {
         return new SearchProductRequest("camisas", "Camiseta", "Azul", "M", null, null, Status.ACTIVE);
     }
 
-    // --- EXECUTE ------------------------------------------------------------------
-
     @Nested
     @DisplayName("execute()")
     class Execute {
+
+        @Test
+        @DisplayName("não deve aplicar filtro de visibilidade — admin vê todos os status")
+        void execute_adminSearch_doesNotApplyVisibilityFilter() {
+            Page<Product> emptyPage = new PageImpl<>(List.of(), PAGEABLE, 0);
+
+            try (MockedStatic<ProductSearchSpecifications> searchSpecs = mockStatic(ProductSearchSpecifications.class);
+                 MockedStatic<ProductSpecifications> productSpecs = mockStatic(ProductSpecifications.class)) {
+
+                Specification<Product> searchSpec = mock(Specification.class);
+
+                searchSpecs.when(() -> ProductSearchSpecifications.build(any())).thenReturn(searchSpec);
+                given(productRepository.findAll(searchSpec, PAGEABLE)).willReturn(emptyPage);
+
+                searchAdminProductUseCase.execute(validRequest(), PAGEABLE);
+
+                productSpecs.verify(ProductSpecifications::isVisible, never());
+            }
+        }
 
         @Test
         @DisplayName("deve retornar Page de ProductSummaryResponse com os resultados mapeados")
@@ -63,17 +79,12 @@ class SearchAdminProductUseCaseTest {
             ProductSummaryResponse response = mock(ProductSummaryResponse.class);
             Page<Product> productPage = new PageImpl<>(List.of(product), PAGEABLE, 1);
 
-            try (MockedStatic<ProductSearchSpecifications> searchSpecs = mockStatic(ProductSearchSpecifications.class);
-                 MockedStatic<ProductSpecifications> productSpecs = mockStatic(ProductSpecifications.class)) {
+            try (MockedStatic<ProductSearchSpecifications> searchSpecs = mockStatic(ProductSearchSpecifications.class)) {
 
                 Specification<Product> searchSpec = mock(Specification.class);
-                Specification<Product> visibleSpec = mock(Specification.class);
-                Specification<Product> combinedSpec = mock(Specification.class);
 
                 searchSpecs.when(() -> ProductSearchSpecifications.build(any())).thenReturn(searchSpec);
-                productSpecs.when(ProductSpecifications::isVisible).thenReturn(visibleSpec);
-                given(searchSpec.and(visibleSpec)).willReturn(combinedSpec);
-                given(productRepository.findAll(combinedSpec, PAGEABLE)).willReturn(productPage);
+                given(productRepository.findAll(searchSpec, PAGEABLE)).willReturn(productPage);
                 given(productMapper.toProductSummaryResponse(product)).willReturn(response);
 
                 Page<ProductSummaryResponse> result = searchAdminProductUseCase.execute(validRequest(), PAGEABLE);
@@ -88,17 +99,12 @@ class SearchAdminProductUseCaseTest {
         void execute_noResults_returnsEmptyPage() {
             Page<Product> emptyPage = new PageImpl<>(List.of(), PAGEABLE, 0);
 
-            try (MockedStatic<ProductSearchSpecifications> searchSpecs = mockStatic(ProductSearchSpecifications.class);
-                 MockedStatic<ProductSpecifications> productSpecs = mockStatic(ProductSpecifications.class)) {
+            try (MockedStatic<ProductSearchSpecifications> searchSpecs = mockStatic(ProductSearchSpecifications.class)) {
 
                 Specification<Product> searchSpec = mock(Specification.class);
-                Specification<Product> visibleSpec = mock(Specification.class);
-                Specification<Product> combinedSpec = mock(Specification.class);
 
                 searchSpecs.when(() -> ProductSearchSpecifications.build(any())).thenReturn(searchSpec);
-                productSpecs.when(ProductSpecifications::isVisible).thenReturn(visibleSpec);
-                given(searchSpec.and(visibleSpec)).willReturn(combinedSpec);
-                given(productRepository.findAll(combinedSpec, PAGEABLE)).willReturn(emptyPage);
+                given(productRepository.findAll(searchSpec, PAGEABLE)).willReturn(emptyPage);
 
                 Page<ProductSummaryResponse> result = searchAdminProductUseCase.execute(validRequest(), PAGEABLE);
 
@@ -109,27 +115,21 @@ class SearchAdminProductUseCaseTest {
         }
 
         @Test
-        @DisplayName("deve construir specification a partir do request com filtro isVisible")
-        void execute_validRequest_buildsSpecificationWithIsVisibleFilter() {
+        @DisplayName("deve construir specification apenas a partir do request, sem filtro adicional")
+        void execute_validRequest_buildsSpecificationFromRequestOnly() {
             SearchProductRequest request = requestWithFilters();
             Page<Product> emptyPage = new PageImpl<>(List.of(), PAGEABLE, 0);
 
-            try (MockedStatic<ProductSearchSpecifications> searchSpecs = mockStatic(ProductSearchSpecifications.class);
-                 MockedStatic<ProductSpecifications> productSpecs = mockStatic(ProductSpecifications.class)) {
+            try (MockedStatic<ProductSearchSpecifications> searchSpecs = mockStatic(ProductSearchSpecifications.class)) {
 
                 Specification<Product> searchSpec = mock(Specification.class);
-                Specification<Product> visibleSpec = mock(Specification.class);
-                Specification<Product> combinedSpec = mock(Specification.class);
 
                 searchSpecs.when(() -> ProductSearchSpecifications.build(request)).thenReturn(searchSpec);
-                productSpecs.when(ProductSpecifications::isVisible).thenReturn(visibleSpec);
-                given(searchSpec.and(visibleSpec)).willReturn(combinedSpec);
-                given(productRepository.findAll(combinedSpec, PAGEABLE)).willReturn(emptyPage);
+                given(productRepository.findAll(searchSpec, PAGEABLE)).willReturn(emptyPage);
 
                 searchAdminProductUseCase.execute(request, PAGEABLE);
 
                 searchSpecs.verify(() -> ProductSearchSpecifications.build(request));
-                productSpecs.verify(ProductSpecifications::isVisible);
             }
         }
 
@@ -140,17 +140,12 @@ class SearchAdminProductUseCaseTest {
             Product product2 = mock(Product.class);
             Page<Product> productPage = new PageImpl<>(List.of(product1, product2), PAGEABLE, 2);
 
-            try (MockedStatic<ProductSearchSpecifications> searchSpecs = mockStatic(ProductSearchSpecifications.class);
-                 MockedStatic<ProductSpecifications> productSpecs = mockStatic(ProductSpecifications.class)) {
+            try (MockedStatic<ProductSearchSpecifications> searchSpecs = mockStatic(ProductSearchSpecifications.class)) {
 
                 Specification<Product> searchSpec = mock(Specification.class);
-                Specification<Product> visibleSpec = mock(Specification.class);
-                Specification<Product> combinedSpec = mock(Specification.class);
 
                 searchSpecs.when(() -> ProductSearchSpecifications.build(any())).thenReturn(searchSpec);
-                productSpecs.when(ProductSpecifications::isVisible).thenReturn(visibleSpec);
-                given(searchSpec.and(visibleSpec)).willReturn(combinedSpec);
-                given(productRepository.findAll(combinedSpec, PAGEABLE)).willReturn(productPage);
+                given(productRepository.findAll(searchSpec, PAGEABLE)).willReturn(productPage);
                 given(productMapper.toProductSummaryResponse(any(Product.class)))
                         .willReturn(mock(ProductSummaryResponse.class));
 
@@ -167,17 +162,12 @@ class SearchAdminProductUseCaseTest {
             Pageable pageable = PageRequest.of(1, 20);
             Page<Product> productPage = new PageImpl<>(List.of(), pageable, 45);
 
-            try (MockedStatic<ProductSearchSpecifications> searchSpecs = mockStatic(ProductSearchSpecifications.class);
-                 MockedStatic<ProductSpecifications> productSpecs = mockStatic(ProductSpecifications.class)) {
+            try (MockedStatic<ProductSearchSpecifications> searchSpecs = mockStatic(ProductSearchSpecifications.class)) {
 
                 Specification<Product> searchSpec = mock(Specification.class);
-                Specification<Product> visibleSpec = mock(Specification.class);
-                Specification<Product> combinedSpec = mock(Specification.class);
 
                 searchSpecs.when(() -> ProductSearchSpecifications.build(any())).thenReturn(searchSpec);
-                productSpecs.when(ProductSpecifications::isVisible).thenReturn(visibleSpec);
-                given(searchSpec.and(visibleSpec)).willReturn(combinedSpec);
-                given(productRepository.findAll(combinedSpec, pageable)).willReturn(productPage);
+                given(productRepository.findAll(searchSpec, pageable)).willReturn(productPage);
 
                 Page<ProductSummaryResponse> result = searchAdminProductUseCase.execute(validRequest(), pageable);
 
