@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -15,6 +17,7 @@ import java.util.UUID;
 @Table(name = "addresses")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class Address {
 
     @Id
@@ -68,6 +71,7 @@ public class Address {
     @Column(nullable = false)
     private boolean defaultAddress;
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -94,7 +98,6 @@ public class Address {
         this.country = country != null ? country.trim() : null;
         this.phone = phone;
         this.defaultAddress = defaultAddress;
-        this.createdAt = Instant.now();
         this.active = true;
     }
 

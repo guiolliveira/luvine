@@ -4,12 +4,15 @@ import com.javacore.spring_api_luvine.user.domain.exception.InvalidNameException
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@DisplayName("Name")
-class NameTest {
+@DisplayName("PersonName")
+class PersonNameTest {
 
     // --- CRIAÇÃO VÁLIDA --------------------------------------------------
 
@@ -18,22 +21,22 @@ class NameTest {
     class Creation {
 
         @Test
-        @DisplayName("deve criar Name com nome simples válido")
-        void shouldCreateNameWithSimpleValidName() {
+        @DisplayName("deve criar PersonName com nome simples válido")
+        void shouldCreateWithSimpleValidName() {
             PersonName name = new PersonName("João");
             assertThat(name.value()).isEqualTo("João");
         }
 
         @Test
-        @DisplayName("deve criar Name com nome composto")
-        void shouldCreateNameWithCompoundName() {
+        @DisplayName("deve criar PersonName com nome composto")
+        void shouldCreateWithCompoundName() {
             PersonName name = new PersonName("João Silva");
             assertThat(name.value()).isEqualTo("João Silva");
         }
 
         @Test
-        @DisplayName("deve criar Name com três ou mais palavras")
-        void shouldCreateNameWithThreeOrMoreWords() {
+        @DisplayName("deve criar PersonName com três ou mais palavras")
+        void shouldCreateWithThreeOrMoreWords() {
             PersonName name = new PersonName("Maria das Graças");
             assertThat(name.value()).isEqualTo("Maria Das Graças");
         }
@@ -103,61 +106,47 @@ class NameTest {
     @DisplayName("exceptionHandling()")
     class ExceptionHandling {
 
-        @Test
-        @DisplayName("deve lançar InvalidNameException quando valor for null")
-        void shouldThrowWhenValueIsNull() {
-            assertThatThrownBy(() -> new PersonName(null))
+        @ParameterizedTest
+        @NullAndEmptySource
+        @DisplayName("deve lançar InvalidNameException quando valor for nulo ou vazio")
+        void shouldThrowWhenNullOrEmpty(String value) {
+            assertThatThrownBy(() -> new PersonName(value))
                     .isInstanceOf(InvalidNameException.class);
         }
 
-        @Test
-        @DisplayName("deve lançar InvalidNameException quando valor for string vazia")
-        void shouldThrowWhenValueIsEmpty() {
-            assertThatThrownBy(() -> new PersonName(""))
-                    .isInstanceOf(InvalidNameException.class);
-        }
-
-        @Test
-        @DisplayName("deve lançar InvalidNameException quando valor for blank (só espaços)")
-        void shouldThrowWhenValueIsBlank() {
-            assertThatThrownBy(() -> new PersonName("     "))
-                    .isInstanceOf(InvalidNameException.class);
-        }
-
-        @Test
-        @DisplayName("deve lançar InvalidNameException quando valor for tab ou quebra de linha")
-        void shouldThrowWhenValueIsTabOrNewline() {
-            assertThatThrownBy(() -> new PersonName("\t"))
-                    .isInstanceOf(InvalidNameException.class);
-            assertThatThrownBy(() -> new PersonName("\n"))
+        @ParameterizedTest
+        @ValueSource(strings = {"     ", "\t", "\n"})
+        @DisplayName("deve lançar InvalidNameException quando valor for apenas espaços em branco")
+        void shouldThrowWhenBlank(String value) {
+            assertThatThrownBy(() -> new PersonName(value))
                     .isInstanceOf(InvalidNameException.class);
         }
 
         @Test
         @DisplayName("deve lançar InvalidNameException quando nome tiver apenas uma letra")
-        void shouldThrowWhenNameIsSingleLetter() {
+        void shouldThrowWhenSingleLetter() {
             assertThatThrownBy(() -> new PersonName("A"))
                     .isInstanceOf(InvalidNameException.class);
         }
 
         @Test
-        @DisplayName("deve lançar InvalidNameException quando nome tiver mais de 100 caracteres")
-        void shouldThrowWhenNameExceedsMaxLength() {
-            String tooLong = "A".repeat(101);
+        @DisplayName("deve lançar InvalidNameException quando nome exceder 100 caracteres")
+        void shouldThrowWhenExceedsMaxLength() {
+            String tooLong = "Ab".repeat(51);
             assertThatThrownBy(() -> new PersonName(tooLong))
                     .isInstanceOf(InvalidNameException.class);
         }
 
         @Test
         @DisplayName("deve lançar InvalidNameException quando nome contiver números")
-        void shouldThrowWhenNameContainsNumbers() {
+        void shouldThrowWhenContainsNumbers() {
             assertThatThrownBy(() -> new PersonName("Joao123"))
                     .isInstanceOf(InvalidNameException.class);
         }
 
         @Test
         @DisplayName("deve lançar InvalidNameException quando nome contiver caracteres especiais")
-        void shouldThrowWhenNameContainsSpecialChars() {
+        void shouldThrowWhenContainsSpecialChars() {
             assertThatThrownBy(() -> new PersonName("Joao@Silva"))
                     .isInstanceOf(InvalidNameException.class);
         }
@@ -170,7 +159,7 @@ class NameTest {
     class Equality {
 
         @Test
-        @DisplayName("dois Names com mesmo valor devem ser iguais")
+        @DisplayName("dois PersonNames com mesmo valor devem ser iguais")
         void shouldBeEqualWhenSameValue() {
             PersonName a = new PersonName("Joao Silva");
             PersonName b = new PersonName("Joao Silva");
@@ -178,7 +167,7 @@ class NameTest {
         }
 
         @Test
-        @DisplayName("dois Names normalizados para o mesmo valor devem ser iguais")
+        @DisplayName("dois PersonNames normalizados para o mesmo valor devem ser iguais")
         void shouldBeEqualAfterNormalization() {
             PersonName a = new PersonName("JOAO SILVA");
             PersonName b = new PersonName("joao silva");
@@ -186,7 +175,7 @@ class NameTest {
         }
 
         @Test
-        @DisplayName("dois Names com valores diferentes devem ser diferentes")
+        @DisplayName("dois PersonNames com valores diferentes devem ser diferentes")
         void shouldNotBeEqualWhenDifferentValues() {
             PersonName a = new PersonName("Joao Silva");
             PersonName b = new PersonName("Pedro Souza");
@@ -194,7 +183,7 @@ class NameTest {
         }
 
         @Test
-        @DisplayName("hashCode deve ser igual para Names com mesmo valor normalizado")
+        @DisplayName("hashCode deve ser igual para PersonNames com mesmo valor normalizado")
         void shouldHaveSameHashCodeForEqualNames() {
             PersonName a = new PersonName("JOAO SILVA");
             PersonName b = new PersonName("joao silva");

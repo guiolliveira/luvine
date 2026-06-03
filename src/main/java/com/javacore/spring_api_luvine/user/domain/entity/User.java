@@ -1,6 +1,6 @@
 package com.javacore.spring_api_luvine.user.domain.entity;
 
-import com.javacore.spring_api_luvine.user.domain.exception.UnchangedValueException;
+import com.javacore.spring_api_luvine.common.exception.exceptions.UnchangedValueException;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Email;
 import com.javacore.spring_api_luvine.user.domain.valueObject.Password;
 import com.javacore.spring_api_luvine.user.domain.valueObject.PersonName;
@@ -8,6 +8,9 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +24,7 @@ import java.util.UUID;
 @Table(name = "users")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class User implements UserDetails {
 
     @Id
@@ -46,9 +50,11 @@ public class User implements UserDetails {
     @AttributeOverride(name = "value", column = @Column(name = "password", nullable = false))
     private Password password;
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
+    @LastModifiedDate
     @Column(nullable = false)
     private Instant updatedAt;
 
@@ -79,8 +85,6 @@ public class User implements UserDetails {
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
         this.active = true;
         this.emailVerified = false;
         this.userProvider = userProvider;
@@ -97,30 +101,26 @@ public class User implements UserDetails {
 
     public void changeFirstName(PersonName newFirstName) {
         if (this.firstName.equals(newFirstName)) {
-            throw new UnchangedValueException();
+            throw new UnchangedValueException("O usuário já possui o nome informado");
         }
 
         this.firstName = newFirstName;
-        touch();
     }
 
     public void changeLastName(PersonName newLastName) {
         if (this.lastName.equals(newLastName)) {
-            throw new UnchangedValueException();
+            throw new UnchangedValueException("O usuário já possui o sobrenome informado");
         }
 
         this.lastName = newLastName;
-        touch();
     }
 
     public void changePassword(Password newPassword) {
         this.password = newPassword;
-        touch();
     }
 
     public void changeRole(UserRole newRole) {
         this.userRole = newRole;
-        touch();
     }
 
     public void markEmailAsVerified() {
@@ -134,10 +134,6 @@ public class User implements UserDetails {
 
     public void resetEmailVerificationRequests() {
         this.verificationEmailRequestCount = 0;
-    }
-
-    public void touch() {
-        this.updatedAt = Instant.now();
     }
 
     @Override

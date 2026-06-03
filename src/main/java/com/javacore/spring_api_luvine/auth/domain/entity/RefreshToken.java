@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -14,6 +16,7 @@ import java.util.UUID;
 @Table(name = "refresh_tokens")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class RefreshToken {
 
     @Id
@@ -27,6 +30,7 @@ public class RefreshToken {
     @Column(nullable = false, unique = true, updatable = false)
     private String token;
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -47,8 +51,7 @@ public class RefreshToken {
     private RefreshToken(User user, String token, String deviceInfo, String ipAddress) {
         this.user = user;
         this.token = token;
-        this.createdAt = Instant.now();
-        this.expiresAt = this.createdAt.plus(7, ChronoUnit.DAYS);
+        this.expiresAt = Instant.now().plus(7, ChronoUnit.DAYS);
         this.revoked = false;
         this.deviceInfo = deviceInfo != null ? deviceInfo : "unknown";
         this.ipAddress = ipAddress != null ? ipAddress : "unknown";

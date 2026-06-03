@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.List;
 
@@ -95,6 +97,38 @@ public class GlobalExceptionHandler {
         log.warn("event=authorization_failed message={} path={}", ex.getMessage(), request.getRequestURI());
 
         return buildError(HttpStatus.FORBIDDEN, "Acesso Negado", "AUTHORIZATION_DENIED", null, request);
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ApiError> handleOptimisticFailureException(
+            ObjectOptimisticLockingFailureException ex, HttpServletRequest request) {
+
+        log.warn(
+                "event=optimistic_lock_failure entity={} path={}",
+                ex.getPersistentClassName(),
+                request.getRequestURI()
+        );
+
+        return buildError(
+                HttpStatus.CONFLICT,
+                "O recurso foi alterado por outra operação. Tente novamente",
+                "OPTIMISTIC_LOCK_FAILURE",
+                null,
+                request
+        );
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleNoResourceFound(NoResourceFoundException ex, HttpServletRequest request) {
+        log.warn("event=noResource_Found message={} path={}", ex.getMessage(), request.getRequestURI());
+
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "O recurso solicitado não foi encontrado em nosso servidor",
+                "NO_RESOURCE_FOUND",
+                null,
+                request
+        );
     }
 
     @ExceptionHandler(Exception.class)

@@ -1,7 +1,7 @@
 package com.javacore.spring_api_luvine.common.messaging.service.consumer;
 
 import com.javacore.spring_api_luvine.notification.application.dto.MailSenderRequest;
-import com.javacore.spring_api_luvine.notification.infrastructure.provider.MailSenderService;
+import com.javacore.spring_api_luvine.notification.infrastructure.provider.MailSenderProvider;
 import com.javacore.spring_api_luvine.common.messaging.config.RabbitMQDLQConfig;
 import com.javacore.spring_api_luvine.common.messaging.dto.EmailMessageRequest;
 import com.javacore.spring_api_luvine.common.util.EmailMask;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ConsumerService {
 
-    private final MailSenderService mailSenderService;
+    private final MailSenderProvider mailSenderService;
 
     @RabbitListener(queues = RabbitMQDLQConfig.EMAIL_QUEUE)
     public void consumer(EmailMessageRequest request) {

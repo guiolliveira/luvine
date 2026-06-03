@@ -1,7 +1,6 @@
 package com.javacore.spring_api_luvine.auth.application.usecase;
 
 import com.javacore.spring_api_luvine.auth.application.dto.LoginResponse;
-import com.javacore.spring_api_luvine.auth.application.dto.RefreshTokenRequest;
 import com.javacore.spring_api_luvine.auth.application.service.TokenService;
 import com.javacore.spring_api_luvine.auth.domain.entity.RefreshToken;
 import com.javacore.spring_api_luvine.auth.domain.exception.InvalidTokenException;
@@ -21,10 +20,10 @@ public class RefreshTokenUseCase {
     private final TokenService tokenService;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public LoginResponse execute(RefreshTokenRequest request) {
+    public LoginResponse execute(String refreshToken) {
         log.debug("event=token_refresh_attempt");
 
-        String tokenHash = TokenHash.hash(request.refreshToken());
+        String tokenHash = TokenHash.hash(refreshToken);
 
         RefreshToken token = refreshTokenRepository.findByToken(tokenHash)
                 .filter(t -> t.getExpiresAt().isAfter(Instant.now()))

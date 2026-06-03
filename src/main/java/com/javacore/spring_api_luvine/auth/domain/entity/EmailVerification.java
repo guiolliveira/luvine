@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -14,6 +16,7 @@ import java.util.UUID;
 @Table(name = "email_verification_codes")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class EmailVerification {
 
     @Id
@@ -27,6 +30,7 @@ public class EmailVerification {
     @Column(nullable = false, updatable = false)
     private String verificationCode;
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -39,8 +43,7 @@ public class EmailVerification {
     private EmailVerification(User user, String verificationCode) {
         this.user = user;
         this.verificationCode = verificationCode;
-        this.createdAt = Instant.now();
-        this.expiresAt = this.createdAt.plus(15, ChronoUnit.MINUTES);
+        this.expiresAt = Instant.now().plus(15, ChronoUnit.MINUTES);
         this.used = false;
     }
 

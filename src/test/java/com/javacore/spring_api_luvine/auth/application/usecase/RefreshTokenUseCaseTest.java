@@ -1,7 +1,7 @@
 package com.javacore.spring_api_luvine.auth.application.usecase;
 
 import com.javacore.spring_api_luvine.auth.application.dto.LoginResponse;
-import com.javacore.spring_api_luvine.auth.application.dto.RefreshTokenRequest;
+
 import com.javacore.spring_api_luvine.auth.application.service.TokenService;
 import com.javacore.spring_api_luvine.auth.domain.entity.RefreshToken;
 import com.javacore.spring_api_luvine.auth.domain.exception.InvalidTokenException;
@@ -42,11 +42,11 @@ class RefreshTokenUseCaseTest {
 
     // --- HELPERS ------------------------------------------------------------------
 
-    private static final String DEVICE_INFO        = "Mozilla/5.0";
-    private static final String IP_ADDRESS         = "192.168.0.1";
-    private static final String RAW_REFRESH_TOKEN  = "raw-refresh-token-value";
-    private static final String NEW_ACCESS_TOKEN   = "new-access-token";
-    private static final String NEW_REFRESH_TOKEN  = "new-refresh-token";
+    private static final String DEVICE_INFO = "Mozilla/5.0";
+    private static final String IP_ADDRESS = "192.168.0.1";
+    private static final String RAW_REFRESH_TOKEN = "raw-refresh-token-value";
+    private static final String NEW_ACCESS_TOKEN = "new-access-token";
+    private static final String NEW_REFRESH_TOKEN = "new-refresh-token";
 
     private User buildVerifiedUser() {
         User user = User.create(
@@ -64,8 +64,8 @@ class RefreshTokenUseCaseTest {
         return RefreshToken.create(user, "hashed-token", DEVICE_INFO, IP_ADDRESS);
     }
 
-    private RefreshTokenRequest validRequest() {
-        return new RefreshTokenRequest(RAW_REFRESH_TOKEN);
+    private String validRequest() {
+        return RAW_REFRESH_TOKEN;
     }
 
     // --- EXECUTE ------------------------------------------------------------------

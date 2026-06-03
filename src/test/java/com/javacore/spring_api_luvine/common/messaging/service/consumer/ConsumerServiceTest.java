@@ -1,7 +1,7 @@
 package com.javacore.spring_api_luvine.common.messaging.service.consumer;
 
 import com.javacore.spring_api_luvine.notification.application.dto.MailSenderRequest;
-import com.javacore.spring_api_luvine.notification.infrastructure.provider.MailSenderService;
+import com.javacore.spring_api_luvine.notification.infrastructure.provider.MailSenderProvider;
 import com.javacore.spring_api_luvine.common.messaging.dto.EmailMessageRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -24,7 +24,7 @@ import static org.mockito.BDDMockito.*;
 @ExtendWith(MockitoExtension.class)
 class ConsumerServiceTest {
 
-    @Mock private MailSenderService mailSenderService;
+    @Mock private MailSenderProvider mailSenderService;
 
     @InjectMocks
     private ConsumerService consumerService;
