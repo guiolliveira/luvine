@@ -16,10 +16,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "products")
@@ -59,6 +56,9 @@ public class Product {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @Column(length = 500)
+    private String thumbnailUrl;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
@@ -86,6 +86,7 @@ public class Product {
         this.description = description;
         this.basePrice = basePrice;
         this.status = Status.ACTIVE;
+        this.thumbnailUrl = null;
         this.variants = new HashSet<>();
     }
 
@@ -171,6 +172,27 @@ public class Product {
         }
 
         this.status = newStatus;
+    }
+
+    public void changeThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
+    }
+
+    public Optional<String> resolveThumbnailUrl() {
+        return variants.stream()
+                .filter(ProductVariant::isActive)
+                .flatMap(v -> v.getImages().stream())
+                .filter(ProductImage::isPrimaryImage)
+                .findFirst()
+                .map(ProductImage::getImageUrl);
+    }
+
+    public boolean isInStock() {
+        if (variants == null || variants.isEmpty()) return false;
+
+        return variants.stream()
+                .filter(ProductVariant::isActive)
+                .anyMatch(v -> v.getStockQuantity().value() > 0);
     }
 
     private void validateDuplicatedVariant(ProductVariant productVariant) {

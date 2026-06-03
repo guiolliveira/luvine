@@ -23,6 +23,7 @@ public interface ProductMapper {
 
     @Mapping(target = "productName", source = "productName.value")
     @Mapping(target = "slug", source = "slug.value")
+    @Mapping(target = "inStock", expression = "java(product.isInStock())")
     @Mapping(target = "lowestPrice", source = "basePrice.value")
     ProductSummaryResponse toProductSummaryResponse(Product product);
 

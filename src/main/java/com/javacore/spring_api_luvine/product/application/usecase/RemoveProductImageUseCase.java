@@ -47,6 +47,8 @@ public class RemoveProductImageUseCase {
 
         variant.removeImage(image);
 
+        product.changeThumbnailUrl(product.resolveThumbnailUrl().orElse(null));
+
         log.info("event=remove_product_image_completed productId={} variantId={} imageId={}",
                 productPublicId, variantPublicId, imagePublicId);
     }

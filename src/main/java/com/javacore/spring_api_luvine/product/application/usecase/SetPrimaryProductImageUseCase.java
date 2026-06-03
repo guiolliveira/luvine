@@ -39,6 +39,8 @@ public class SetPrimaryProductImageUseCase {
 
         variant.setPrimary(image);
 
+        product.changeThumbnailUrl(product.resolveThumbnailUrl().orElse(null));
+
         log.info("event=set_primary_image_completed productId={} variantId={} imageId={}",
                 productPublicId, variantPublicId, imagePublicId);
         return productMapper.toProductImageResponse(image);
