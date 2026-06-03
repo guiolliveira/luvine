@@ -31,7 +31,8 @@ public class UpdateCategoryImageAltTextUseCase {
 
         Category category = categoryRepository.findByPublicId(categoryPublicId)
                 .orElseThrow(() -> {
-                    log.warn("event=update_category_image_alt_text_rejected reason=category_not_found categoryId={}", categoryPublicId);
+                    log.warn("event=update_category_image_alt_text_rejected reason=category_not_found categoryId={}",
+                            categoryPublicId);
                     return new CategoryNotFoundException();
                 });
 
